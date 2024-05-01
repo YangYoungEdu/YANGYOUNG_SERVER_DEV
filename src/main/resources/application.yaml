@@ -1,0 +1,8 @@
+springdoc:
+  swagger-ui:
+    path: /
+spring:
+  profiles:
+    include: db
+#logging:
+#  config: classpath:logback-spring.xml
