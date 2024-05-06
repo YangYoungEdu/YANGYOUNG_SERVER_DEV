@@ -21,7 +21,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(LectureNameDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleLectureNameDuplicateException(LectureNameDuplicateException e) {
         ErrorResponse errorresponse = new ErrorResponse(e.lectureErrorCode.name(), e.getLectureErrorCode().getHttpStatus(), e.getMessage());
-        logger.error("LectureNameDuplicateException: {}", errorresponse);
+        logger.error("LectureNameDuplicateException: {}", errorresponse.getMessage());
         return ResponseEntity.status(e.getLectureErrorCode().getHttpStatus()).body(errorresponse);
     }
 
@@ -29,7 +29,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(LectureNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleLectureNotFoundException(LectureNotFoundException e) {
         ErrorResponse errorresponse = new ErrorResponse(e.getLectureErrorCode().name(), e.getLectureErrorCode().getHttpStatus(), e.getMessage());
-        logger.error("LectureNotFoundException: {}", errorresponse);
+        logger.error("LectureNotFoundException: {}", errorresponse.getMessage());
         return ResponseEntity.status(e.getLectureErrorCode().getHttpStatus()).body(errorresponse);
     }
 
@@ -37,7 +37,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(StudentIdDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleStudentIdDuplicateException(StudentIdDuplicateException e) {
         ErrorResponse errorresponse = new ErrorResponse(e.getStudentErrorCode().name(), e.getStudentErrorCode().getHttpStatus(), e.getMessage());
-        logger.error("StudentIdDuplicateException: {}", errorresponse);
+        logger.error("StudentIdDuplicateException: {}", errorresponse.getMessage());
         return ResponseEntity.status(e.getStudentErrorCode().getHttpStatus()).body(errorresponse);
     }
 
@@ -45,7 +45,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(StudentNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleStudentNotFoundException(StudentNotFoundException e) {
         ErrorResponse errorresponse = new ErrorResponse(e.getStudentErrorCode().name(), e.getStudentErrorCode().getHttpStatus(), e.getMessage());
-        logger.error("StudentNotFoundException: {}", errorresponse);
+        logger.error("StudentNotFoundException: {}", errorresponse.getMessage());
         return ResponseEntity.status(e.getStudentErrorCode().getHttpStatus()).body(errorresponse);
     }
 }
