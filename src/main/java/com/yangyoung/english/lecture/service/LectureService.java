@@ -3,8 +3,11 @@ package com.yangyoung.english.lecture.service;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
+import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
+import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
+import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
@@ -33,11 +36,13 @@ import java.util.List;
 public class LectureService {
 
     private final static String LECTURE_NAME_DUPLICATED_MESSAGE = "Lecture name is already exist. (lectureName: %s)";
+    private final static String LECTURE_NOT_FOUND_MESSAGE = "Lecture is not found. (lectureId: %d)";
     private final LectureRepository lectureRepository;
     private final LectureDateRepository lectureDateRepository;
     private final LectureDayRepository lectureDayRepository;
     private final StudentLectureRepository studentLectureRepository;
     private final StudentUtilService studentUtilService;
+    private final LectureUtilService lectureUtilService;
     private final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     // 강의 정보 등록 - 폼 입력으로 등록
@@ -94,14 +99,14 @@ public class LectureService {
 
     // 강의 전체 조회 - 페이징 처리
     @Transactional
-    public Page<LectureResponse> findAll(int page, int size) {
+    public Page<LectureResponse> getAllLecture(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return lectureRepository.findAll(pageable).map(LectureResponse::new);
     }
 
     // 강의 상세 조회
     @Transactional
-    public LectureResponse findById(Long lectureId) {
+    public LectureResponse getLecture(Long lectureId) {
         Lecture lecture = lectureRepository.findById(lectureId).orElseThrow();
         return new LectureResponse(lecture);
     }
@@ -112,4 +117,52 @@ public class LectureService {
 
         return studentLectureRepository.findByLectureId(lectureId);
     }
+
+    // 강의 정보 수정
+    @Transactional
+    public LectureResponse updateLecture(LectureUpdateRequest request) {
+
+        Lecture lecture = lectureUtilService.findLectureById(request.getId());
+
+        lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
+
+        lectureDateRepository.deleteByLectureId(lecture.getId());
+        lectureDayRepository.deleteByLectureId(lecture.getId());
+        assignLectureDateAndDay(lecture, request.getLectureDayList(), request.getLectureDateList());
+
+        return new LectureResponse(lecture);
+    }
+
+    // 강의 수강 학생 수정
+    @Transactional
+    public void updateLectureStudents(LectureStudentUpdateRequest request) {
+
+        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+
+        studentLectureRepository.deleteByLectureId(lecture.getId());
+        assignLectureStudents(lecture, request.getStudentIdList());
+    }
+
+    // 강의 삭제 - single
+    @Transactional
+    public void deleteLecture(Long lectureId) {
+
+        boolean isExist = lectureRepository.existsById(lectureId);
+        if (!isExist) {
+            String errorMessage = String.format(LECTURE_NOT_FOUND_MESSAGE, lectureId);
+            logger.error(errorMessage);
+            throw new LectureNotFoundException(lectureId);
+        }
+
+        lectureRepository.deleteById(lectureId);
+    }
+
+    // 강의 삭제 - multiple
+    @Transactional
+    public void deleteLectures(List<Long> lectureIdList) {
+        for (Long lectureId : lectureIdList) {
+            deleteLecture(lectureId);
+        }
+    }
+
 }

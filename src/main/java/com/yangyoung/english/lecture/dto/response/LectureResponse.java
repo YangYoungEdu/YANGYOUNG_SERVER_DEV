@@ -33,7 +33,7 @@ public class LectureResponse {
 
     public LectureResponse(Lecture lecture) {
         this.id = lecture.getId();
-        this.lecSeq = lecture.getLecSeq();
+        this.lecSeq = lecture.getSeq();
         this.name = lecture.getName();
         this.teacher = lecture.getTeacher();
         this.room = lecture.getRoom();

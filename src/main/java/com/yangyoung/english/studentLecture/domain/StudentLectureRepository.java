@@ -10,4 +10,6 @@ public interface StudentLectureRepository extends JpaRepository<StudentLecture, 
 
     @Query("SELECT sl.student FROM StudentLecture sl WHERE sl.lecture.id = :lectureId")
     List<Student> findByLectureId(Long lectureId);
+
+    void deleteByLectureId(Long lectureId);
 }

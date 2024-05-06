@@ -62,6 +62,24 @@ public class Lecture {
         this.endTime = endTime;
     }
 
+    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
+        if (!name.isBlank()) {
+            this.name = name;
+        }
+        if (!teacher.isBlank()) {
+            this.teacher = teacher;
+        }
+        if (!room.isBlank()) {
+            this.room = room;
+        }
+        if (startTime != null) {
+            this.startTime = startTime;
+        }
+        if (endTime != null) {
+            this.endTime = endTime;
+        }
+    }
+
     public void updateSeq(Long seq) {
         this.seq = seq;
     }
