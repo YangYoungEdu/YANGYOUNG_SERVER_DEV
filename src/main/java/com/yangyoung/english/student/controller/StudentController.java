@@ -54,7 +54,7 @@ public class StudentController {
     }
 
     // 학생 정보 수정 컨트롤러
-    @PatchMapping("/update")
+    @PatchMapping("")
     public ResponseEntity<StudentResponse> updateStudent(@RequestBody StudentRequest request) {
         StudentResponse response = studentService.updateStudent(request);
 
@@ -62,15 +62,23 @@ public class StudentController {
     }
 
     // 학생 정보 보관 - single 컨트롤러
-    @PatchMapping("/discharge/{studentId}")
+    @PatchMapping("/hidden/{studentId}")
     public ResponseEntity<Void> saveStudent(@PathVariable(value = "studentId") Long studentId) {
         studentService.dischargeStudent(studentId);
 
         return ResponseEntity.ok().build();
     }
 
+    // 숨김 학생 정보 조회 컨트롤러
+    @GetMapping("/hidden")
+    public ResponseEntity<Page<StudentResponse>> getHiddenStudents(@RequestParam int page, @RequestParam int size) {
+        Page<StudentResponse> response = studentService.getHiddenStudents(page, size);
+
+        return ResponseEntity.ok(response);
+    }
+
     // 학생 정보 보관 - multiple 컨트롤러
-    @PatchMapping("/discharge")
+    @PatchMapping("/hidden")
     public ResponseEntity<Void> saveStudents(@RequestBody StudentsDischargeRequest request) {
         studentService.dischargeStudents(request);
 

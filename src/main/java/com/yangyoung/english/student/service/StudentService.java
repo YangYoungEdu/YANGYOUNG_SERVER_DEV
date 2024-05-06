@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -106,14 +109,26 @@ public class StudentService {
     @Transactional
     public Page<StudentResponse> getAllStudents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return studentRepository.findAll(pageable).map(StudentResponse::new);
+
+        return studentRepository.findByIsEnrolled(pageable, true)
+                .map(StudentResponse::new);
     }
+
+    // 숨김 학생 전체 조회 - 페이징 처리
+    @Transactional
+    public Page<StudentResponse> getHiddenStudents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return studentRepository.findByIsEnrolled(pageable, false)
+                .map(StudentResponse::new);
+    }
+
 
     // 학생 상세 조회
     @Transactional
-    public StudentResponse getStudent(Long id) {
+    public StudentResponse getStudent(Long studentId) {
 
-        Student student = studentUtilService.findStudentById(id);
+        Student student = studentUtilService.findStudentById(studentId);
 
         return new StudentResponse(student);
     }
