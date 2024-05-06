@@ -135,12 +135,14 @@ public class LectureService {
 
     // 강의 수강 학생 수정
     @Transactional
-    public void updateLectureStudents(LectureStudentUpdateRequest request) {
+    public LectureResponse updateLectureStudents(LectureStudentUpdateRequest request) {
 
         Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
 
         studentLectureRepository.deleteByLectureId(lecture.getId());
         assignLectureStudents(lecture, request.getStudentIdList());
+
+        return new LectureResponse(lecture);
     }
 
     // 강의 삭제 - single
