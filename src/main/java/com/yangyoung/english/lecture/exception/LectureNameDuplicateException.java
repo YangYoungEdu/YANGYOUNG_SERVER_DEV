@@ -1,16 +1,14 @@
 package com.yangyoung.english.lecture.exception;
 
-import com.yangyoung.english.exception.CommonException;
+import lombok.Getter;
 
-public class LectureNameDuplicateException extends CommonException {
+@Getter
+public class LectureNameDuplicateException extends RuntimeException {
 
-    private final static String LECTURE_NAME_DUPLICATED_MESSAGE = "Lecture name is already exist. (lectureName: %s)";
+    public LectureErrorCode lectureErrorCode;
 
-    public LectureNameDuplicateException(String message) {
-        super(message);
-    }
-
-    public static LectureNameDuplicateException of(String lectureName) {
-        return new LectureNameDuplicateException(String.format(LECTURE_NAME_DUPLICATED_MESSAGE, lectureName));
+    public LectureNameDuplicateException(LectureErrorCode lectureErrorCode, String name) {
+        super(String.format(lectureErrorCode.getMessage(), name));
+        this.lectureErrorCode = lectureErrorCode;
     }
 }

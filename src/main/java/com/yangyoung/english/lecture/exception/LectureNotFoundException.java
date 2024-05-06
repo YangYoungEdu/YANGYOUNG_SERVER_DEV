@@ -1,16 +1,14 @@
 package com.yangyoung.english.lecture.exception;
 
-import com.yangyoung.english.exception.CommonException;
+import lombok.Getter;
 
-public class LectureNotFoundException extends CommonException {
+@Getter
+public class LectureNotFoundException extends RuntimeException {
 
-    private final static String LECTURE_NOT_FOUND_MESSAGE = "Lecture not found. (lectureId: %d)";
+    private final LectureErrorCode lectureErrorCode;
 
-    public LectureNotFoundException(String message) {
-        super(message);
-    }
-
-    public LectureNotFoundException(Long id) {
-        super(String.format(LECTURE_NOT_FOUND_MESSAGE, id));
+    public LectureNotFoundException(LectureErrorCode lectureErrorCode, Long id) {
+        super(String.format(lectureErrorCode.getMessage(), id));
+        this.lectureErrorCode = lectureErrorCode;
     }
 }

@@ -1,10 +1,14 @@
 package com.yangyoung.english.student.exception;
 
-import com.yangyoung.english.exception.CommonException;
+import lombok.Getter;
 
-public class StudentIdDuplicateException extends CommonException {
+@Getter
+public class StudentIdDuplicateException extends RuntimeException {
 
-    public StudentIdDuplicateException(String message) {
-        super(message);
+    public StudentErrorCode studentErrorCode;
+
+    public StudentIdDuplicateException(StudentErrorCode studentErrorCode, Long id) {
+        super(String.format(studentErrorCode.getMessage(), id));
+        this.studentErrorCode = studentErrorCode;
     }
 }

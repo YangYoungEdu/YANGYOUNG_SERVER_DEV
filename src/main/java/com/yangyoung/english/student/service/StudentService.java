@@ -9,6 +9,7 @@ import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
 import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
+import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
 import com.yangyoung.english.util.UtilService;
 import jakarta.transaction.Transactional;
@@ -30,11 +31,9 @@ import java.util.Map;
 @Slf4j
 public class StudentService {
 
-    private final static String ID_DUPLICATED_MESSAGE = "Student Id is already exist. (studentId: %d)";
     private final StudentRepository studentRepository;
     private final StudentUtilService studentUtilService;
     private final UtilService utilService;
-    private final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     // 학생 정보 등록 - 폼 입력으로 등록
     @Transactional
@@ -93,9 +92,8 @@ public class StudentService {
 
         boolean isIdDuplicated = studentRepository.existsById(id);
         if (isIdDuplicated) {  // 아이디 중복 검사
-            String errorMessage = String.format(ID_DUPLICATED_MESSAGE, id);
-            logger.error(errorMessage);
-            throw new StudentIdDuplicateException(errorMessage);
+            StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
+            throw new StudentIdDuplicateException(studentErrorCode, id);
         }
     }
 

@@ -39,11 +39,15 @@ public class LectureResponse {
         this.room = lecture.getRoom();
         this.startTime = lecture.getStartTime().toString();
         this.endTime = lecture.getEndTime().toString();
-        this.dayList = lecture.getLectureDayList().stream()
-                .map(LectureDay::getLectureDay)
-                .toList();
-        this.dateList = lecture.getLectureDateList().stream()
-                .map(lectureDate -> lectureDate.getLectureDate().toString())
-                .toList();
+        if (lecture.getLectureDayList() != null) {
+            this.dayList = lecture.getLectureDayList().stream()
+                    .map(LectureDay::getLectureDay)
+                    .toList();
+        }
+        if (lecture.getLectureDateList() != null) {
+            this.dateList = lecture.getLectureDateList().stream()
+                    .map(lectureDate -> lectureDate.getLectureDate().toString())
+                    .toList();
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
 import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
+import com.yangyoung.english.lecture.exception.LectureErrorCode;
 import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
@@ -13,14 +14,11 @@ import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
 import com.yangyoung.english.student.domain.Student;
-import com.yangyoung.english.student.service.StudentService;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,15 +33,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LectureService {
 
-    private final static String LECTURE_NAME_DUPLICATED_MESSAGE = "Lecture name is already exist. (lectureName: %s)";
-    private final static String LECTURE_NOT_FOUND_MESSAGE = "Lecture is not found. (lectureId: %d)";
     private final LectureRepository lectureRepository;
     private final LectureDateRepository lectureDateRepository;
     private final LectureDayRepository lectureDayRepository;
     private final StudentLectureRepository studentLectureRepository;
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
-    private final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     // 강의 정보 등록 - 폼 입력으로 등록
     @Transactional
@@ -65,9 +60,8 @@ public class LectureService {
     private void isNameDuplicated(String name) {
         boolean isDuplicated = lectureRepository.existsByName(name);
         if (isDuplicated) {
-            String errorMessage = String.format(LECTURE_NAME_DUPLICATED_MESSAGE, name);
-            logger.error(errorMessage);
-            throw new LectureNameDuplicateException(errorMessage);
+            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NAME_DUPLICATED;
+            throw new LectureNameDuplicateException(lectureErrorCode, name);
         }
     }
 
@@ -151,9 +145,8 @@ public class LectureService {
 
         boolean isExist = lectureRepository.existsById(lectureId);
         if (!isExist) {
-            String errorMessage = String.format(LECTURE_NOT_FOUND_MESSAGE, lectureId);
-            logger.error(errorMessage);
-            throw new LectureNotFoundException(lectureId);
+            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NOT_FOUND;
+            throw new LectureNotFoundException(lectureErrorCode, lectureId);
         }
 
         lectureRepository.deleteById(lectureId);
