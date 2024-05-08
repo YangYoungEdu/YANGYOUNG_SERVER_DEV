@@ -30,7 +30,7 @@ public class LectureController {
 
     // 강의 전체 조회 - 페이징 처리 조회 컨트롤러
     @GetMapping("")
-    @ApiOperation(value = "강의 전체 조회 - 페이징 처리", notes = "강의 정보를 전체 조회합니다.")
+    @Operation(summary = "강의 전체 조회 - 페이징 처리", description = "강의 정보를 전체 조회합니다.")
     public ResponseEntity<Page<LectureResponse>> getLectures(@RequestParam(value = "page", defaultValue = "0") int page,
                                                              @RequestParam(value = "size", defaultValue = "10") int size) {
         return ResponseEntity.ok(lectureService.getAllLecture(page, size));
@@ -38,28 +38,28 @@ public class LectureController {
 
     // 강의 상세 조회 컨트롤러
     @GetMapping("/{lectureId}")
-    @ApiOperation(value = "강의 상세 조회", notes = "강의 정보를 상세 조회합니다.")
+    @Operation(summary = "강의 상세 조회", description = "강의 정보를 상세 조회합니다.")
     public ResponseEntity<LectureResponse> getLecture(@PathVariable Long lectureId) {
         return ResponseEntity.ok(lectureService.getLecture(lectureId));
     }
 
     // 강의 정보 수정 컨트롤러
     @PatchMapping("")
-    @ApiOperation(value = "강의 정보 수정", notes = "강의 정보를 수정합니다.")
+    @Operation(summary = "강의 정보 수정", description = "강의 정보를 수정합니다.")
     public ResponseEntity<LectureResponse> updateLecture(@RequestBody LectureUpdateRequest request) {
         return ResponseEntity.ok(lectureService.updateLecture(request));
     }
 
     // 강의 수강 학생 수정 컨트롤러
     @PatchMapping("/student")
-    @ApiOperation(value = "강의 수강 학생 수정", notes = "강의 수강 학생을 수정합니다.")
+    @Operation(summary = "강의 수강 학생 수정", description = "강의 수강 학생을 수정합니다.")
     public ResponseEntity<LectureResponse> updateLectureStudent(@RequestBody LectureStudentUpdateRequest request) {
         return ResponseEntity.ok(lectureService.updateLectureStudents(request));
     }
 
     // 강의 정보 삭제 - single 컨트롤러
     @DeleteMapping("/{lectureId}")
-    @ApiOperation(value = "강의 정보 삭제 - single", notes = "강의 정보를 삭제합니다.")
+    @Operation(summary = "강의 정보 삭제 - single", description = "강의 정보를 삭제합니다.")
     public ResponseEntity<Void> deleteLecture(@PathVariable Long lectureId) {
         lectureService.deleteLecture(lectureId);
         return ResponseEntity.ok().build();
@@ -67,7 +67,7 @@ public class LectureController {
 
     // 강의 정보 삭제 - multiple 컨트롤러
     @DeleteMapping("")
-    @ApiOperation(value = "강의 정보 삭제 - multiple", notes = "강의 정보를 삭제합니다.")
+    @Operation(summary = "강의 정보 삭제 - multiple", description = "강의 정보를 삭제합니다.")
     public ResponseEntity<Void> deleteLectures(@RequestParam List<Long> lectureIds) {
         lectureService.deleteLectures(lectureIds);
         return ResponseEntity.ok().build();
