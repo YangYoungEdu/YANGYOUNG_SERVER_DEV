@@ -6,6 +6,7 @@ import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.service.LectureService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class LectureController {
 
     // 강의 정보 등록 - 폼 입력으로 등록 컨트롤러
     @PostMapping("")
-    @ApiOperation(value = "강의 정보 등록 - 폼", notes = "강의 정보를 등록합니다.")
+    @Operation(summary = "강의 정보 등록 - 폼", description = "강의 정보를 등록합니다.")
     public ResponseEntity<LectureResponse> addLectureByForm(@RequestBody AddLectureByFormRequest request) {
         return ResponseEntity.ok(lectureService.addLectureByForm(request));
     }
@@ -66,7 +67,7 @@ public class LectureController {
 
     // 강의 정보 삭제 - multiple 컨트롤러
     @DeleteMapping("")
-    @ApiOperation(value = "강의 정보 삭제 - multiple", notes = "강의 정보를 다중 삭제합니다.")
+    @ApiOperation(value = "강의 정보 삭제 - multiple", notes = "강의 정보를 삭제합니다.")
     public ResponseEntity<Void> deleteLectures(@RequestParam List<Long> lectureIds) {
         lectureService.deleteLectures(lectureIds);
         return ResponseEntity.ok().build();
