@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.yangyoung.english.lectureTask.domain.LectureTask;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,4 +37,11 @@ public class Task {
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
     private List<LectureTask> lectureTaskList;
+
+    @Builder
+    public Task(String content, TaskType taskType, LocalDate taskDate) {
+        this.content = content;
+        this.taskType = taskType;
+        this.taskDate = taskDate;
+    }
 }

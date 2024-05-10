@@ -19,6 +19,7 @@ import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,11 +27,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LectureService {
 
     private final LectureRepository lectureRepository;
@@ -96,6 +100,28 @@ public class LectureService {
     public Page<LectureResponse> getAllLecture(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return lectureRepository.findAll(pageable).map(LectureResponse::new);
+    }
+
+    // 강의 전체 조회 - 달 단위
+    @Transactional
+    public List<LectureResponse> getAllLectureByMonth(int year, int month) {
+
+        return lectureRepository.findLecturesByYearAndMonth(year, month).stream()
+                .map(LectureResponse::new)
+                .toList();
+    }
+
+    // 강의 전체 조회 - 주 단위
+    @Transactional
+    public List<LectureResponse> getAllLectureByWeek(LocalDate date) {
+
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int week = date.get(WeekFields.of(Locale.KOREA).weekOfWeekBasedYear());
+
+        return lectureRepository.findLecturesByYearAndMonthAndWeek(year, month, week).stream()
+                .map(LectureResponse::new)
+                .toList();
     }
 
     // 강의 상세 조회

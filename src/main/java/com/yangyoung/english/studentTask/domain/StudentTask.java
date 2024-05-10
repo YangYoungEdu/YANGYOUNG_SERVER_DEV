@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.task.domain.Task;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,4 +26,10 @@ public class StudentTask {
     @JoinColumn(name = "task_id")
     @JsonManagedReference
     private Task task;
+
+    @Builder
+    public StudentTask(Student student, Task task) {
+        this.student = student;
+        this.task = task;
+    }
 }

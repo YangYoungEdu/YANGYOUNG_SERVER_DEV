@@ -5,13 +5,13 @@ import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
 import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.service.LectureService;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,6 +34,20 @@ public class LectureController {
     public ResponseEntity<Page<LectureResponse>> getLectures(@RequestParam(value = "page", defaultValue = "0") int page,
                                                              @RequestParam(value = "size", defaultValue = "10") int size) {
         return ResponseEntity.ok(lectureService.getAllLecture(page, size));
+    }
+
+    // 강의 전체 조회 - 달 단위
+    @GetMapping("/month")
+    @Operation(summary = "강의 전체 조회 - 달 단위", description = "강의 정보를 달 단위로 조회합니다.")
+    public ResponseEntity<List<LectureResponse>> getLecturesByMonth(@RequestParam int year, @RequestParam int month) {
+        return ResponseEntity.ok(lectureService.getAllLectureByMonth(year, month));
+    }
+
+    // 강의 전체 조회 - 주 단위
+    @GetMapping("/week")
+    @Operation(summary = "강의 전체 조회 - 주 단위", description = "강의 정보를 주 단위로 조회합니다.")
+    public ResponseEntity<List<LectureResponse>> getLecturesByWeek(@RequestParam LocalDate date) {
+        return ResponseEntity.ok(lectureService.getAllLectureByWeek(date));
     }
 
     // 강의 상세 조회 컨트롤러
