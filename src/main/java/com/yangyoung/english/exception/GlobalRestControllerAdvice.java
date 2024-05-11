@@ -4,6 +4,7 @@ import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
 import com.yangyoung.english.student.exception.StudentNotFoundException;
+import com.yangyoung.english.task.exception.TaskNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +46,13 @@ public class GlobalRestControllerAdvice {
         ErrorResponse errorresponse = new ErrorResponse(e.getStudentErrorCode().name(), e.getStudentErrorCode().getHttpStatus(), e.getMessage());
         logger.error("StudentNotFoundException: {}", errorresponse.getMessage());
         return ResponseEntity.status(e.getStudentErrorCode().getHttpStatus()).body(errorresponse);
+    }
+
+    // 학생 과제 조회 예외 처리 - 과제가 존재하지 않을 때
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTaskNotFoundException(TaskNotFoundException e) {
+        ErrorResponse errorresponse = new ErrorResponse(e.getTaskErrorCode().name(), e.getTaskErrorCode().getHttpStatus(), e.getMessage());
+        logger.error("TaskNotFoundException: {}", errorresponse.getMessage());
+        return ResponseEntity.status(e.getTaskErrorCode().getHttpStatus()).body(errorresponse);
     }
 }

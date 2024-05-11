@@ -4,10 +4,12 @@ import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
 import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentNotFoundException;
+import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,6 +17,7 @@ import java.util.Optional;
 public class StudentUtilService {
 
     private final StudentRepository studentRepository;
+    private final StudentLectureRepository studentLectureRepository;
 
     // id로 학생 정보 조회
     @Transactional
@@ -26,5 +29,11 @@ public class StudentUtilService {
         }
 
         return student.get();
+    }
+
+    // 특정 강의 수강하는 학생 조회
+    @Transactional
+    public List<Student> findStudentsByLectureId(Long lectureId) {
+        return studentLectureRepository.findByLectureId(lectureId);
     }
 }

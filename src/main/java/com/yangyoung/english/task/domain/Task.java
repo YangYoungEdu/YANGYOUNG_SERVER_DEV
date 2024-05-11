@@ -2,6 +2,7 @@ package com.yangyoung.english.task.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.yangyoung.english.lectureTask.domain.LectureTask;
+import com.yangyoung.english.studentTask.domain.TaskProgress;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -20,21 +21,18 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private TaskType taskType;
 
-    @Column(nullable = false)
     private LocalDate taskDate;
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<StudentTask> studentTaskList;
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<LectureTask> lectureTaskList;
 
@@ -43,5 +41,14 @@ public class Task {
         this.content = content;
         this.taskType = taskType;
         this.taskDate = taskDate;
+    }
+
+    public void update(String content, LocalDate taskDate) {
+        if (!content.isBlank()) {
+            this.content = content;
+        }
+        if (taskDate != null) {
+            this.taskDate = taskDate;
+        }
     }
 }

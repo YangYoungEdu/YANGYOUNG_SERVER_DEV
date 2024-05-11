@@ -3,15 +3,13 @@ package com.yangyoung.english.task.dto.request;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.domain.TaskType;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Getter
-@NoArgsConstructor
-public class StudentTaskAddRequest {
+public class LectureTaskAddRequest {
 
-    private Long studentId;
+    private Long lectureId;
 
     private String content;
 
@@ -20,7 +18,7 @@ public class StudentTaskAddRequest {
     public Task toEntity(){
         return Task.builder()
                 .content(content)
-                .taskType(TaskType.STUDENT)
+                .taskType(TaskType.LECTURE)
                 .taskDate(taskDate)
                 .build();
     }

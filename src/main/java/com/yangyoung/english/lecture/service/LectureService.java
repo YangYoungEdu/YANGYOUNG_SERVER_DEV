@@ -196,4 +196,10 @@ public class LectureService {
         }
     }
 
+    // 특정 강의 수강하는 학생 조회
+    @Transactional
+    public List<Student> findStudentByLectureId(Long lectureId) {
+
+        return studentLectureRepository.findByLectureId(lectureId);
+    }
 }

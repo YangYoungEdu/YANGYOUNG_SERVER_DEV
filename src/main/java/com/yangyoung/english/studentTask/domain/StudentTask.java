@@ -27,9 +27,17 @@ public class StudentTask {
     @JsonManagedReference
     private Task task;
 
+    @Enumerated(EnumType.STRING)
+    private TaskProgress taskProgress;
+
     @Builder
     public StudentTask(Student student, Task task) {
         this.student = student;
         this.task = task;
+        this.taskProgress = TaskProgress.NOT_STARTED;
+    }
+
+    public void updateTaskProgress(TaskProgress taskProgress) {
+        this.taskProgress = taskProgress;
     }
 }
