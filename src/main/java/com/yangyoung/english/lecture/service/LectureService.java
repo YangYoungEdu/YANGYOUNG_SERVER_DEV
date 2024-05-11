@@ -124,6 +124,16 @@ public class LectureService {
                 .toList();
     }
 
+    // 강의 전체 조회 - 일 단위 & 시간 오름차순 정렬
+    @Transactional
+    public List<LectureResponse> getAllLectureByDate(LocalDate date) {
+
+        return lectureRepository.findLecturesByDate(date).stream()
+                .sorted((l1, l2) -> l1.getStartTime().compareTo(l2.getStartTime()))
+                .map(LectureResponse::new)
+                .toList();
+    }
+
     // 강의 상세 조회
     @Transactional
     public LectureResponse getLecture(Long lectureId) {

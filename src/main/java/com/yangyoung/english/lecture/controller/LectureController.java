@@ -50,6 +50,13 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.getAllLectureByWeek(date));
     }
 
+    // 강의 전체 조회 - 날짜 단위
+    @GetMapping("/date")
+    @Operation(summary = "강의 전체 조회 - 날짜 단위", description = "강의 정보를 날짜 단위로 조회합니다.")
+    public ResponseEntity<List<LectureResponse>> getLecturesByDate(@RequestParam LocalDate date) {
+        return ResponseEntity.ok(lectureService.getAllLectureByDate(date));
+    }
+
     // 강의 상세 조회 컨트롤러
     @GetMapping("/{lectureId}")
     @Operation(summary = "강의 상세 조회", description = "강의 정보를 상세 조회합니다.")
