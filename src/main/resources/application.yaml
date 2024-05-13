@@ -3,6 +3,6 @@ springdoc:
     path: /
 spring:
   profiles:
-    include: db
+    include: db, oauth2
 #logging:
 #  config: classpath:logback-spring.xml
