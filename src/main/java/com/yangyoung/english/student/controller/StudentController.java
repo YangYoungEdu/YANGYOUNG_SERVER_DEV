@@ -1,5 +1,6 @@
 package com.yangyoung.english.student.controller;
 
+import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
@@ -124,8 +125,12 @@ public class StudentController {
     // 학생 검색(이름, 학교, 학년) 컨트롤러
     @GetMapping("/search")
     @Operation(summary = "학생 검색", description = "학생 정보를 검색합니다.")
-    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestBody StudentSearchRequest request) {
-        Page<StudentResponse> response = studentService.searchStudents(request);
+    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestParam(required = false) List<String> nameList,
+                                                                @RequestParam(required = false) List<String> schoolList,
+                                                                @RequestParam(required = false) List<Grade> gradeList,
+                                                                @RequestParam(defaultValue = "1") int page,
+                                                                @RequestParam(defaultValue = "10") int size) {
+        Page<StudentResponse> response = studentService.searchStudents(nameList, schoolList, gradeList, page, size);
 
         return ResponseEntity.ok(response);
     }

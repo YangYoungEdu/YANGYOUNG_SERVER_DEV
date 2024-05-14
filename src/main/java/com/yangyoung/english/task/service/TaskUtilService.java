@@ -21,14 +21,9 @@ public class TaskUtilService {
 
     // 학생 & 날짜별 과제 조회
     @Transactional
-    public List<TaskBriefResponse> getTaskByStudentAndDate(Long studentId, LocalDate date) {
-
-        List<Task> taskList = studentTaskRepository.findByStudentIdAndDate(studentId, date).stream()
+    public List<Task> getTaskByStudentAndDate(Long studentId, LocalDate date) {
+        return studentTaskRepository.findByStudentIdAndDate(studentId, date).stream()
                 .map(StudentTask::getTask)
-                .toList();
-
-        return taskList.stream()
-                .map(TaskBriefResponse::new)
                 .toList();
     }
 }

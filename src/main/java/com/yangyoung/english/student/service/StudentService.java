@@ -1,6 +1,7 @@
 package com.yangyoung.english.student.service;
 
 import com.yangyoung.english.configuration.OneIndexedPageable;
+import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
 import com.yangyoung.english.student.domain.Grade;
@@ -13,6 +14,7 @@ import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
+import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
 import com.yangyoung.english.util.UtilService;
@@ -204,12 +206,9 @@ public class StudentService {
 
     // 학생 검색(이름, 학교, 학년)
     @Transactional
-    public Page<StudentResponse> searchStudents(StudentSearchRequest request) {
-        List<String> nameList = request.getNameList();
-        List<String> schoolList = request.getSchoolList();
-        List<Grade> gradeList = request.getGradeList();
+    public Page<StudentResponse> searchStudents(List<String> nameList, List<String> schoolList, List<Grade> gradeList, int size, int page) {
 
-        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
         Page<Student> students = studentRepository.findByNameInAndSchoolInAndGradeIn(nameList, schoolList, gradeList, oneIndexedPageable);
@@ -223,11 +222,17 @@ public class StudentService {
 
         StudentBriefResponse studentBrief = getStudentBrief(studentId);
 
-        List<LectureBriefResponse> lectureList = lectureUtilService.getLectureBriefByDay(today);
+        List<Lecture> lectureList = lectureUtilService.getLectureBriefByDay(today);
+        List<LectureBriefResponse> lectureBriefResponseList = lectureList.stream()
+                .map(LectureBriefResponse::new)
+                .toList();
 
-        List<TaskBriefResponse> taskList = taskUtilService.getTaskByStudentAndDate(studentId, today);
+        List<Task> taskList = taskUtilService.getTaskByStudentAndDate(studentId, today);
+        List<TaskBriefResponse> taskBriefResponseList = taskList.stream()
+                .map(TaskBriefResponse::new)
+                .toList();
 
-        return new StudentScheduleResponse(studentBrief, lectureList, taskList);
+        return new StudentScheduleResponse(studentBrief, lectureBriefResponseList, taskBriefResponseList);
     }
 
     // 학생 간단 조회

@@ -33,11 +33,7 @@ public class LectureUtilService {
 
     // 강의 간단 조회 - 일단위
     @Transactional
-    public List<LectureBriefResponse> getLectureBriefByDay(LocalDate date) {
-        List<Lecture> lectureList = lectureRepository.findLecturesByDate(date);
-
-        return lectureList.stream()
-                .map(LectureBriefResponse::new)
-                .toList();
+    public List<Lecture> getLectureBriefByDay(LocalDate date) {
+        return lectureRepository.findLecturesByDate(date);
     }
 }

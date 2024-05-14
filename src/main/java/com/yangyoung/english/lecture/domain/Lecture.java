@@ -1,6 +1,7 @@
 package com.yangyoung.english.lecture.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureTask.domain.LectureTask;
@@ -58,6 +59,11 @@ public class Lecture {
     @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
     private List<LectureTask> lectureTaskList;
+
+    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<Attendance> attendanceList;
+
 
     @Builder
     public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {

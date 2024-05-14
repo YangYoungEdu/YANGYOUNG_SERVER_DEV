@@ -1,8 +1,10 @@
 package com.yangyoung.english.attendance.domain;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.student.domain.Student;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,4 +30,19 @@ public class Attendance {
     @JoinColumn(name = "student_id")
     @JsonManagedReference
     private Student student;
+
+    @ManyToOne()
+    @JoinColumn(name = "lecture_id")
+    @JsonManagedReference
+    private Lecture lecture;
+
+    @Builder
+    public Attendance(AttendanceType attendanceType, LocalDateTime attendedDateTime, Student student) {
+        this.attendanceType = attendanceType;
+        this.note = "";
+        this.attendedDateTime = attendedDateTime;
+        this.student = student;
+    }
+
+
 }
