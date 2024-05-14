@@ -1,12 +1,10 @@
 package com.yangyoung.english.student.service;
 
+import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
-import com.yangyoung.english.student.dto.request.StudentAddByExcelRequest;
-import com.yangyoung.english.student.dto.request.StudentRequest;
-import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
-import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
+import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.exception.StudentErrorCode;
@@ -109,8 +107,9 @@ public class StudentService {
     @Transactional
     public Page<StudentResponse> getAllStudents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
-        return studentRepository.findByIsEnrolled(pageable, true)
+        return studentRepository.findByIsEnrolled(oneIndexedPageable, true)
                 .map(StudentResponse::new);
     }
 
@@ -118,8 +117,9 @@ public class StudentService {
     @Transactional
     public Page<StudentResponse> getHiddenStudents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
-        return studentRepository.findByIsEnrolled(pageable, false)
+        return studentRepository.findByIsEnrolled(oneIndexedPageable, false)
                 .map(StudentResponse::new);
     }
 
@@ -196,5 +196,20 @@ public class StudentService {
                 studentToUpdate.updateSequence(student.getValue());
             }
         }
+    }
+
+    // 학생 검색(이름, 학교, 학년)
+    @Transactional
+    public Page<StudentResponse> searchStudents(StudentSearchRequest request) {
+        List<String> nameList = request.getNameList();
+        List<String> schoolList = request.getSchoolList();
+        List<Grade> gradeList = request.getGradeList();
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
+
+        Page<Student> students = studentRepository.findByNameInAndSchoolInAndGradeIn(nameList, schoolList, gradeList, oneIndexedPageable);
+
+        return students.map(StudentResponse::new);
     }
 }

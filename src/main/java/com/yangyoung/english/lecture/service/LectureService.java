@@ -53,7 +53,7 @@ public class LectureService {
         Lecture newLecture = request.toEntity();
         lectureRepository.save(newLecture); // 강의 저장
 
-        assignLectureDateAndDay(newLecture, request.getLectureDayList(), request.getLectureDateList()); // 강의 -> 날짜/요일 할당
+        assignLectureDateAndDay(newLecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat()); // 강의 -> 날짜/요일 할당
 
         assignLectureStudents(newLecture, request.getStudentList()); // 강의 -> 학생 할당
 
@@ -69,17 +69,11 @@ public class LectureService {
         }
     }
 
-    // 강의 -> 날짜/요일 할당
-    private void assignLectureDateAndDay(Lecture lecture, List<DayOfWeek> dayList, List<LocalDate> dateList) {
+    // 강의 -> 날짜 할당
+    private void assignLectureDateAndDay(Lecture lecture, List<LocalDate> dateList, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
 
-        // 강의 -> 날짜 할당
         for (LocalDate date : dateList) {
             lectureDateRepository.save(new LectureDate(date, lecture));
-        }
-
-        // 강의 -> 요일 할당
-        for (DayOfWeek day : dayList) {
-            lectureDayRepository.save(new LectureDay(day, lecture));
         }
     }
 
@@ -115,11 +109,12 @@ public class LectureService {
     @Transactional
     public List<LectureResponse> getAllLectureByWeek(LocalDate date) {
 
-        int year = date.getYear();
-        int month = date.getMonthValue();
-        int week = date.get(WeekFields.of(Locale.KOREA).weekOfWeekBasedYear());
+        WeekFields weekFields = WeekFields.of(Locale.KOREA);
 
-        return lectureRepository.findLecturesByYearAndMonthAndWeek(year, month, week).stream()
+        LocalDate firstDayOfWeek = date.with(weekFields.dayOfWeek(), 1);
+        LocalDate lastDayOfWeek = date.with(weekFields.dayOfWeek(), 7);
+
+        return lectureRepository.findByLectureDateList_LectureDateBetween(firstDayOfWeek, lastDayOfWeek).stream()
                 .map(LectureResponse::new)
                 .toList();
     }
@@ -154,11 +149,11 @@ public class LectureService {
 
         Lecture lecture = lectureUtilService.findLectureById(request.getId());
 
-        lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
+        lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat());
 
         lectureDateRepository.deleteByLectureId(lecture.getId());
         lectureDayRepository.deleteByLectureId(lecture.getId());
-        assignLectureDateAndDay(lecture, request.getLectureDayList(), request.getLectureDateList());
+        assignLectureDateAndDay(lecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat());
 
         return new LectureResponse(lecture);
     }

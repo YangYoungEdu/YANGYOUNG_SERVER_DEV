@@ -23,4 +23,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     // 강의 조회 - LocalDate 기준
     @Query("SELECT l FROM Lecture l JOIN l.lectureDateList ld WHERE ld.lectureDate = :date")
     List<Lecture> findLecturesByDate(@Param("date") LocalDate date);
+
+    // 강의 조회 - 주 단위(첫날, 마지막날)
+    List<Lecture> findByLectureDateList_LectureDateBetween(LocalDate startDate, LocalDate endDate);
+
 }

@@ -23,11 +23,17 @@ public class AddLectureByFormRequest {
 
     private LocalTime endTime;
 
-    private List<DayOfWeek> lectureDayList;
-
     private List<LocalDate> lectureDateList;
 
     private List<Long> studentList;
+
+    private boolean dailyRepeat;
+
+    private boolean weeklyRepeat;
+
+    private boolean monthlyRepeat;
+
+    private boolean yearlyRepeat;
 
     public Lecture toEntity() {
         return Lecture.builder()
@@ -36,6 +42,10 @@ public class AddLectureByFormRequest {
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
+                .dailyRepeat(dailyRepeat)
+                .weeklyRepeat(weeklyRepeat)
+                .monthlyRepeat(monthlyRepeat)
+                .yearlyRepeat(yearlyRepeat)
                 .build();
     }
 }

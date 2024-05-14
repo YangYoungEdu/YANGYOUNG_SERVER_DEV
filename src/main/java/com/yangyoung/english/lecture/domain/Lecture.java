@@ -35,6 +35,14 @@ public class Lecture {
 
     private LocalTime endTime;
 
+    private boolean dailyRepeat;
+
+    private boolean weeklyRepeat;
+
+    private boolean monthlyRepeat;
+
+    private boolean yearlyRepeat;
+
     @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
     private List<LectureDay> lectureDayList;
@@ -52,7 +60,7 @@ public class Lecture {
     private List<LectureTask> lectureTaskList;
 
     @Builder
-    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
+    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
         this.id = id;
         this.seq = id;
         this.name = name;
@@ -60,9 +68,13 @@ public class Lecture {
         this.room = room;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.dailyRepeat = dailyRepeat;
+        this.weeklyRepeat = weeklyRepeat;
+        this.monthlyRepeat = monthlyRepeat;
+        this.yearlyRepeat = yearlyRepeat;
     }
 
-    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
+    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
         if (!name.isBlank()) {
             this.name = name;
         }
@@ -78,6 +90,9 @@ public class Lecture {
         if (endTime != null) {
             this.endTime = endTime;
         }
+        this.dailyRepeat = dailyRepeat;
+        this.weeklyRepeat = weeklyRepeat;
+        this.monthlyRepeat = monthlyRepeat;
     }
 
     public void updateSeq(Long seq) {

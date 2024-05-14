@@ -12,7 +12,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @Query("SELECT s FROM Student s WHERE s.isEnrolled = :isEnrolled")
     Page<Student> findByIsEnrolled(Pageable pageable, boolean isEnrolled);
 
-    Page<Student> findByIsEnrolledTrue(Pageable pageable);
+    List<Student> findByNameIn(List<String> nameList);
 
+    List<Student> findBySchoolIn(List<String> schoolList);
 
+    List<Student> findByGradeIn(List<Grade> gradeList);
+
+    Page<Student> findByNameInAndSchoolInAndGradeIn(List<String> names, List<String> schools, List<Grade> grades, Pageable pageable);
 }

@@ -1,9 +1,6 @@
 package com.yangyoung.english.student.controller;
 
-import com.yangyoung.english.student.dto.request.StudentAddByExcelRequest;
-import com.yangyoung.english.student.dto.request.StudentRequest;
-import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
-import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
+import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.service.StudentService;
@@ -120,5 +117,14 @@ public class StudentController {
         studentService.updateStudentSequence(request);
 
         return ResponseEntity.ok().build();
+    }
+
+    // 학생 검색(이름, 학교, 학년) 컨트롤러
+    @GetMapping("/search")
+    @Operation(summary = "학생 검색", description = "학생 정보를 검색합니다.")
+    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestBody StudentSearchRequest request) {
+        Page<StudentResponse> response = studentService.searchStudents(request);
+
+        return ResponseEntity.ok(response);
     }
 }
