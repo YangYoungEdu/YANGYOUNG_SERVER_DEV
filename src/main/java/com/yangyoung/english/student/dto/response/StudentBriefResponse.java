@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StudentBriefResponse {
 
+    private Long id;
+
     private String name;
 
     private String school;
@@ -17,6 +19,7 @@ public class StudentBriefResponse {
     private String grade;
 
     public StudentBriefResponse(Student student) {
+        this.id = student.getId();
         this.name = student.getName();
         this.school = student.getSchool();
         this.grade = student.getGrade().getGradeName();

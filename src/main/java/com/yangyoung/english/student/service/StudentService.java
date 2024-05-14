@@ -1,31 +1,33 @@
 package com.yangyoung.english.student.service;
 
 import com.yangyoung.english.configuration.OneIndexedPageable;
+import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
+import com.yangyoung.english.lecture.service.LectureUtilService;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
 import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
+import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
+import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
+import com.yangyoung.english.task.dto.response.TaskBriefResponse;
+import com.yangyoung.english.task.service.TaskUtilService;
 import com.yangyoung.english.util.UtilService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,8 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final StudentUtilService studentUtilService;
+    private final LectureUtilService lectureUtilService;
+    private final TaskUtilService taskUtilService;
     private final UtilService utilService;
 
     // 학생 정보 등록 - 폼 입력으로 등록
@@ -211,5 +215,27 @@ public class StudentService {
         Page<Student> students = studentRepository.findByNameInAndSchoolInAndGradeIn(nameList, schoolList, gradeList, oneIndexedPageable);
 
         return students.map(StudentResponse::new);
+    }
+
+    // 학생 오늘 스케줄 조회
+    @Transactional
+    public StudentScheduleResponse getStudentTodaySchedule(Long studentId, LocalDate today) {
+
+        StudentBriefResponse studentBrief = getStudentBrief(studentId);
+
+        List<LectureBriefResponse> lectureList = lectureUtilService.getLectureBriefByDay(today);
+
+        List<TaskBriefResponse> taskList = taskUtilService.getTaskByStudentAndDate(studentId, today);
+
+        return new StudentScheduleResponse(studentBrief, lectureList, taskList);
+    }
+
+    // 학생 간단 조회
+    @Transactional
+    public StudentBriefResponse getStudentBrief(Long studentId) {
+
+        Student student = studentUtilService.findStudentById(studentId);
+
+        return new StudentBriefResponse(student);
     }
 }

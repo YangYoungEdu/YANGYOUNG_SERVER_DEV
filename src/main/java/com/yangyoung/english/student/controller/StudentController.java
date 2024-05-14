@@ -3,6 +3,7 @@ package com.yangyoung.english.student.controller;
 import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
+import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.service.StudentService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -124,6 +126,15 @@ public class StudentController {
     @Operation(summary = "학생 검색", description = "학생 정보를 검색합니다.")
     public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestBody StudentSearchRequest request) {
         Page<StudentResponse> response = studentService.searchStudents(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 학생 날짜별 스케줄 조회 컨트롤러
+    @GetMapping("/schedule")
+    @Operation(summary = "학생 날짜별 스케줄 조회", description = "학생의 날짜별 스케줄을 조회합니다.")
+    public ResponseEntity<StudentScheduleResponse> getStudentSchedule(@RequestParam Long studentId, @RequestParam LocalDate date) {
+        StudentScheduleResponse response = studentService.getStudentTodaySchedule(studentId, date);
 
         return ResponseEntity.ok(response);
     }
