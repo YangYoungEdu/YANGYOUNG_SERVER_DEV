@@ -53,8 +53,9 @@ public class AttendanceService {
 
             Attendance attendance = Attendance.builder()
                     .student(attendStudent)
-                    .attendedDateTime(request.getAttendTime())
+                    .lecture(lecture)
                     .attendanceType(AttendanceType.ATTENDANCE)
+                    .attendedDateTime(request.getAttendTime())
                     .build();
             attendanceRepository.save(attendance);
         }

@@ -37,11 +37,12 @@ public class Attendance {
     private Lecture lecture;
 
     @Builder
-    public Attendance(AttendanceType attendanceType, LocalDateTime attendedDateTime, Student student) {
+    public Attendance(AttendanceType attendanceType, LocalDateTime attendedDateTime, Student student, Lecture lecture) {
         this.attendanceType = attendanceType;
         this.note = "";
         this.attendedDateTime = attendedDateTime;
         this.student = student;
+        this.lecture = lecture;
     }
 
 
