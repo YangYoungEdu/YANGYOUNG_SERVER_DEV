@@ -207,7 +207,6 @@ public class StudentService {
     // 학생 검색(이름, 학교, 학년)
     @Transactional
     public Page<StudentResponse> searchStudents(List<String> nameList, List<String> schoolList, List<Grade> gradeList, int size, int page) {
-
         Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 

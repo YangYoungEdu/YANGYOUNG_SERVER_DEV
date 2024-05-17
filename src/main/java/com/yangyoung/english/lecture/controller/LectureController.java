@@ -51,7 +51,7 @@ public class LectureController {
     }
 
     // 강의 전체 조회 - 날짜 단위
-    @GetMapping("/date")
+    @GetMapping("/day")
     @Operation(summary = "강의 전체 조회 - 날짜 단위", description = "강의 정보를 날짜 단위로 조회합니다.")
     public ResponseEntity<List<LectureResponse>> getLecturesByDate(@RequestParam LocalDate date) {
         return ResponseEntity.ok(lectureService.getAllLectureByDate(date));
