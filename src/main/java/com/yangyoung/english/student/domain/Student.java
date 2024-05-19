@@ -59,7 +59,7 @@ public class Student extends BaseEntity {
         this.isEnrolled = true;
     }
 
-    public void update(String name, String school, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
+    public void update(String name, String school, String grade, String studentPhoneNumber, String parentPhoneNumber) {
         if (!name.isEmpty() && !name.isBlank()) {
             this.name = name;
         }
@@ -67,7 +67,7 @@ public class Student extends BaseEntity {
             this.school = school;
         }
         if (grade != null) {
-            this.grade = grade;
+            this.grade = Grade.fromGradeName(grade);
         }
         if (!studentPhoneNumber.isEmpty() && !studentPhoneNumber.isBlank()) {
             this.studentPhoneNumber = studentPhoneNumber;

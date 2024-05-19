@@ -3,10 +3,4 @@ springdoc:
     path: /
 spring:
   profiles:
-    include: db, oauth2
-  data:
-    web:
-      pageable:
-        one-indexed-parameters: true
-#logging:
-#  config: classpath:logback-spring.xml
+    include: db, oauth2, synology, mail

@@ -39,3 +39,5 @@ out/
 ### resouces ###
 /src/main/resources/application-db.yaml
 /src/main/resources/application-oauth2.yaml
+/src/main/resources/application-synology.yaml
+/src/main/resources/application-mail.yaml

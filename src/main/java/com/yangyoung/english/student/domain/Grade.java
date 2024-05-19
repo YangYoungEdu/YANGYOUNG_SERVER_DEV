@@ -18,4 +18,14 @@ public enum Grade {
         this.gradeNumber = gradeNumber;
         this.gradeName = gradeName;
     }
+
+    public static Grade fromGradeName(String gradeName) {
+        return switch (gradeName) {
+            case "중3" -> M3;
+            case "고1" -> H1;
+            case "고2" -> H2;
+            case "고3" -> H3;
+            default -> throw new IllegalArgumentException("No enum constant with gradeName: " + gradeName);
+        };
+    }
 }

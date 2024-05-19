@@ -146,7 +146,6 @@ public class StudentService {
         Student student = studentUtilService.findStudentById(request.getId());
 
         student.update(request.getName(), request.getSchool(), request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
-        studentRepository.save(student);
 
         return new StudentResponse(student);
     }
