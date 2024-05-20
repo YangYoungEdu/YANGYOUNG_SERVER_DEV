@@ -206,7 +206,8 @@ public class StudentService {
 
     // 학생 검색(이름, 학교, 학년)
     @Transactional
-    public Page<StudentResponse> searchStudents(List<String> nameList, List<String> schoolList, List<Grade> gradeList, int size, int page) {
+    public Page<StudentResponse> searchStudents(List<String> nameList, List<String> schoolList, List<Grade> gradeList, int page, int size) {
+
         Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
@@ -215,9 +216,15 @@ public class StudentService {
                 .and(StudentSpecifications.schoolIn(schoolList))
                 .and(StudentSpecifications.gradeIn(gradeList));
 
-        Page<Student> searchResult = studentRepository.findAll(searchFilter, oneIndexedPageable);
+        List<Student> studentList = studentRepository.findAll(searchFilter);
+        log.info("search size: {}", studentList.size());
+        studentList.forEach(student -> log.info("List Student name: {}", student.getName()));
 
-        return searchResult.map(StudentResponse::new);
+//        Page<Student> searchResult = studentRepository.findAll(searchFilter, oneIndexedPageable);
+//        log.info("page size: {}", searchResult.getTotalElements());
+//        searchResult.forEach(student -> log.info("Page Student name: {}", student.getName()));
+
+        return studentRepository.findAll(searchFilter, oneIndexedPageable).map(StudentResponse::new);
     }
 
     // 학생 오늘 스케줄 조회
