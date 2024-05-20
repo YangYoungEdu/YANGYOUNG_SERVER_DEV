@@ -80,4 +80,14 @@ public class TaskController {
         taskService.deleteTaskList(taskIdList);
         return ResponseEntity.ok().build();
     }
+
+
+    @GetMapping("/{studentId}")
+    @Operation(summary = "학생별 과제 전체 조회", description = "학생별 과제 전체 조회합니다.")
+    public ResponseEntity<List<StudentTaskResponse>> getAllTaskByStudent(@PathVariable(value = "studentId") Long studentId) {
+
+        List<StudentTaskResponse> responses = taskService.getAllTaskByStudent(studentId);
+
+        return ResponseEntity.ok(responses);
+    }
 }

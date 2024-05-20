@@ -9,7 +9,7 @@ import java.util.List;
 public interface StudentLectureRepository extends JpaRepository<StudentLecture, Long> {
 
     @Query("SELECT sl.student FROM StudentLecture sl WHERE sl.lecture.id = :lectureId")
-    List<Student> findByLectureId(Long lectureId);
+    List<Student> findStudentsByLectureId(Long lectureId);
 
     void deleteByLectureId(Long lectureId);
 }

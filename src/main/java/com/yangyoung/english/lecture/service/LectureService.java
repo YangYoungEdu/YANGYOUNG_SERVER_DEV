@@ -11,7 +11,6 @@ import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
-import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
@@ -25,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
@@ -140,7 +138,7 @@ public class LectureService {
     @Transactional
     public List<Student> findStudentsByLectureId(Long lectureId) {
 
-        return studentLectureRepository.findByLectureId(lectureId);
+        return studentLectureRepository.findStudentsByLectureId(lectureId);
     }
 
     // 강의 정보 수정
@@ -195,6 +193,6 @@ public class LectureService {
     @Transactional
     public List<Student> findStudentByLectureId(Long lectureId) {
 
-        return studentLectureRepository.findByLectureId(lectureId);
+        return studentLectureRepository.findStudentsByLectureId(lectureId);
     }
 }

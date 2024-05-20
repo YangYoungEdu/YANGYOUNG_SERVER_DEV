@@ -241,4 +241,15 @@ public class StudentService {
 
         return new StudentBriefResponse(student);
     }
+
+    // 특정 강의 수강하는 학생 조회
+    @Transactional
+    public List<StudentBriefResponse> getStudentsByLecture(Long lectureId) {
+
+        List<Student> studentList = studentUtilService.findStudentsByLectureId(lectureId);
+        
+        return studentList.stream()
+                .map(StudentBriefResponse::new)
+                .toList();
+    }
 }

@@ -152,4 +152,15 @@ public class TaskService {
 
         taskRepository.deleteAllById(taskIdList);
     }
+
+    // 학생별 과제 전체 조회
+    @Transactional
+    public List<StudentTaskResponse> getAllTaskByStudent(Long studentId) {
+
+        List<StudentTask> taskList = studentTaskRepository.findByStudentId(studentId);
+
+        return taskList.stream()
+                .map(StudentTaskResponse::new)
+                .toList();
+    }
 }

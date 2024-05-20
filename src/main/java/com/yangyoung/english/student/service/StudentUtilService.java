@@ -34,6 +34,6 @@ public class StudentUtilService {
     // 특정 강의 수강하는 학생 조회
     @Transactional
     public List<Student> findStudentsByLectureId(Long lectureId) {
-        return studentLectureRepository.findByLectureId(lectureId);
+        return studentLectureRepository.findStudentsByLectureId(lectureId);
     }
 }

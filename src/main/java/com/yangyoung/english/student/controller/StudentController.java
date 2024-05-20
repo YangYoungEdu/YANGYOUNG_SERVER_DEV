@@ -3,6 +3,7 @@ package com.yangyoung.english.student.controller;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
+import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.service.StudentService;
@@ -142,5 +143,14 @@ public class StudentController {
         StudentScheduleResponse response = studentService.getStudentTodaySchedule(studentId, date);
 
         return ResponseEntity.ok(response);
+    }
+
+    // 특정 강의 수강 학생 조회 컨트롤러
+    @GetMapping("/lecture/{lectureId}")
+    @Operation(summary = "특정 강의 수강 학생 조회", description = "강의별 수강 학생을 조회합니다.")
+    public ResponseEntity<List<StudentBriefResponse>> getStudentsByLecture(@PathVariable(value = "lectureId") Long lectureId) {
+        List<StudentBriefResponse> responses = studentService.getStudentsByLecture(lectureId);
+
+        return ResponseEntity.ok(responses);
     }
 }
