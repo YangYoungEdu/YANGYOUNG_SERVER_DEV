@@ -45,7 +45,7 @@ public class TaskService {
         StudentTask studentTask = new StudentTask(student, newTask);
         studentTaskRepository.save(studentTask);
 
-        return new StudentTaskResponse(student, newTask);
+        return new StudentTaskResponse(newTask);
     }
 
     // 학생 과제 전체 조회
@@ -85,10 +85,10 @@ public class TaskService {
     @Transactional
     public LectureTaskResponse addLectureTask(LectureTaskAddRequest request) {
 
-        Task newTask = request.toEntity();
+        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+        Task newTask = request.toEntity(lecture);
         taskRepository.save(newTask);
 
-        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
         LectureTask newLectureTask = new LectureTask(lecture, newTask);
         lectureTaskRepository.save(newLectureTask);
 
@@ -158,8 +158,7 @@ public class TaskService {
     public List<StudentTaskResponse> getAllTaskByStudent(Long studentId) {
 
         List<StudentTask> studentTaskList = studentTaskRepository.findByStudentId(studentId);
-        List<Lecture> lectureList = lectureUtilService.findLecturesByStudentId(studentId);
-        List<LectureTask> lectureTaskList = lectureTaskRepository.findAllByLectureIn(lectureList);
+
         return studentTaskList.stream()
                 .map(StudentTaskResponse::new)
                 .toList();

@@ -25,7 +25,7 @@ public class StudentTaskResponse {
 
     private String taskProgress;
 
-    public StudentTaskResponse(Student student, Task task) {
+    public StudentTaskResponse(Task task) {
         this.id = task.getId();
         this.content = task.getContent();
         this.taskType = task.getTaskType().name();
@@ -35,17 +35,9 @@ public class StudentTaskResponse {
     public StudentTaskResponse(StudentTask studentTask) {
         this.id = studentTask.getTask().getId();
         this.content = studentTask.getTask().getContent();
+        this.lectureName = studentTask.getTask().getLectureName();
         this.taskType = studentTask.getTask().getTaskType().name();
         this.taskDate = studentTask.getTask().getTaskDate().toString();
         this.taskProgress = studentTask.getTaskProgress().name();
-    }
-
-    public StudentTaskResponse(LectureTask lectureTask) {
-        this.id = lectureTask.getTask().getId();
-        this.content = lectureTask.getTask().getContent();
-        this.lectureName = lectureTask.getLecture().getName();
-        this.taskType = lectureTask.getTask().getTaskType().name();
-        this.taskDate = lectureTask.getTask().getTaskDate().toString();
-//        this.taskProgress = lectureTask.getTaskProgress().name();
     }
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bytebuddy.asm.Advice;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,8 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskType taskType;
 
+    private String lectureName;
+
     private LocalDate taskDate;
 
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -36,10 +39,20 @@ public class Task {
     @JsonBackReference
     private List<LectureTask> lectureTaskList;
 
+    //학생 과제
     @Builder
     public Task(String content, TaskType taskType, LocalDate taskDate) {
         this.content = content;
         this.taskType = taskType;
+        this.taskDate = taskDate;
+    }
+
+    // 강의 과제
+    @Builder
+    public Task(String content, TaskType taskType, String lectureName, LocalDate taskDate) {
+        this.content = content;
+        this.taskType = taskType;
+        this.lectureName = lectureName;
         this.taskDate = taskDate;
     }
 

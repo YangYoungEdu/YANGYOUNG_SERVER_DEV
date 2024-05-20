@@ -1,5 +1,6 @@
 package com.yangyoung.english.task.dto.request;
 
+import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.domain.TaskType;
 import lombok.Getter;
@@ -15,11 +16,7 @@ public class LectureTaskAddRequest {
 
     private LocalDate taskDate;
 
-    public Task toEntity(){
-        return Task.builder()
-                .content(content)
-                .taskType(TaskType.LECTURE)
-                .taskDate(taskDate)
-                .build();
+    public Task toEntity(Lecture lecture) {
+        return new Task(content, TaskType.LECTURE, lecture.getName(), taskDate);
     }
 }
