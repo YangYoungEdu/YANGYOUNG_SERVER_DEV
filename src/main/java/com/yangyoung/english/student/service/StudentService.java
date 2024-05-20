@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -209,9 +210,14 @@ public class StudentService {
         Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
-        Page<Student> students = studentRepository.findByNameInAndSchoolInAndGradeIn(nameList, schoolList, gradeList, oneIndexedPageable);
+        Specification<Student> searchFilter = Specification
+                .where(StudentSpecifications.nameIn(nameList))
+                .and(StudentSpecifications.schoolIn(schoolList))
+                .and(StudentSpecifications.gradeIn(gradeList));
 
-        return students.map(StudentResponse::new);
+        Page<Student> searchResult = studentRepository.findAll(searchFilter, oneIndexedPageable);
+
+        return searchResult.map(StudentResponse::new);
     }
 
     // 학생 오늘 스케줄 조회
@@ -247,7 +253,7 @@ public class StudentService {
     public List<StudentBriefResponse> getStudentsByLecture(Long lectureId) {
 
         List<Student> studentList = studentUtilService.findStudentsByLectureId(lectureId);
-        
+
         return studentList.stream()
                 .map(StudentBriefResponse::new)
                 .toList();

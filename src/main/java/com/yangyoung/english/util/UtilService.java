@@ -62,7 +62,6 @@ public class UtilService {
         return data;
     }
 
-
     public Grade getGrade(String grade) {
         return switch (grade) {
             case "1학년" -> Grade.H1;
