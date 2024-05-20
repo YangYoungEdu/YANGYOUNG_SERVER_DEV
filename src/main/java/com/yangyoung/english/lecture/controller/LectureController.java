@@ -3,6 +3,7 @@ package com.yangyoung.english.lecture.controller;
 import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
 import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
+import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.service.LectureService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -92,5 +93,15 @@ public class LectureController {
     public ResponseEntity<Void> deleteLectures(@RequestParam List<Long> lectureIds) {
         lectureService.deleteLectures(lectureIds);
         return ResponseEntity.ok().build();
+    }
+
+    // 특정 학생이 수강하는 강의 조회 컨트롤러
+    @GetMapping("/studnet/{studentId}")
+    @Operation(summary = "특정 학생이 수강하는 강의 조회", description = "특정 학생이 수강하는 강의 목록을 조회합니다.")
+    public ResponseEntity<List<LectureBriefResponse>> getLectureByStudent(@PathVariable(value = "studentId") Long studentId) {
+
+        List<LectureBriefResponse> responses = lectureService.getLecturesByStudent(studentId);
+
+        return ResponseEntity.ok(responses);
     }
 }

@@ -157,9 +157,10 @@ public class TaskService {
     @Transactional
     public List<StudentTaskResponse> getAllTaskByStudent(Long studentId) {
 
-        List<StudentTask> taskList = studentTaskRepository.findByStudentId(studentId);
-
-        return taskList.stream()
+        List<StudentTask> studentTaskList = studentTaskRepository.findByStudentId(studentId);
+        List<Lecture> lectureList = lectureUtilService.findLecturesByStudentId(studentId);
+        List<LectureTask> lectureTaskList = lectureTaskRepository.findAllByLectureIn(lectureList);
+        return studentTaskList.stream()
                 .map(StudentTaskResponse::new)
                 .toList();
     }

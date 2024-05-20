@@ -5,6 +5,7 @@ import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.exception.LectureErrorCode;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
+import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class LectureUtilService {
 
     private final LectureRepository lectureRepository;
+    private final StudentLectureRepository studentLectureRepository;
 
 
     // 강의 ID로 강의 조회
@@ -35,5 +37,11 @@ public class LectureUtilService {
     @Transactional
     public List<Lecture> getLectureBriefByDay(LocalDate date) {
         return lectureRepository.findLecturesByDate(date);
+    }
+
+    // 특정 학생이 수강하는 강의 조회
+    @Transactional
+    public List<Lecture> findLecturesByStudentId(Long studentId) {
+        return studentLectureRepository.findLecturesByStudentId(studentId);
     }
 }

@@ -1,5 +1,6 @@
 package com.yangyoung.english.task.dto.response;
 
+import com.yangyoung.english.lectureTask.domain.LectureTask;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import com.yangyoung.english.task.domain.Task;
@@ -15,6 +16,8 @@ public class StudentTaskResponse {
     private Long id;
 
     private String content;
+
+    private String lectureName;
 
     private String taskType;
 
@@ -35,5 +38,14 @@ public class StudentTaskResponse {
         this.taskType = studentTask.getTask().getTaskType().name();
         this.taskDate = studentTask.getTask().getTaskDate().toString();
         this.taskProgress = studentTask.getTaskProgress().name();
+    }
+
+    public StudentTaskResponse(LectureTask lectureTask) {
+        this.id = lectureTask.getTask().getId();
+        this.content = lectureTask.getTask().getContent();
+        this.lectureName = lectureTask.getLecture().getName();
+        this.taskType = lectureTask.getTask().getTaskType().name();
+        this.taskDate = lectureTask.getTask().getTaskDate().toString();
+//        this.taskProgress = lectureTask.getTaskProgress().name();
     }
 }
