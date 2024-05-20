@@ -12,6 +12,8 @@ public class LectureTaskResponse {
 
     private String content;
 
+    private String lectureName;
+
     private String taskDate;
 
     private String taskType;
@@ -19,6 +21,7 @@ public class LectureTaskResponse {
     public LectureTaskResponse(Task task) {
         this.id = task.getId();
         this.content = task.getContent();
+        this.lectureName = task.getLectureName();
         this.taskDate = task.getTaskDate().toString();
         this.taskType = task.getTaskType().name();
     }
