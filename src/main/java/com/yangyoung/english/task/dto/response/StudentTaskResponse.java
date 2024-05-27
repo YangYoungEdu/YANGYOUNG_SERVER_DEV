@@ -1,7 +1,5 @@
 package com.yangyoung.english.task.dto.response;
 
-import com.yangyoung.english.lectureTask.domain.LectureTask;
-import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import com.yangyoung.english.task.domain.Task;
 import lombok.AllArgsConstructor;
@@ -38,6 +36,6 @@ public class StudentTaskResponse {
         this.lectureName = studentTask.getTask().getLectureName();
         this.taskType = studentTask.getTask().getTaskType().name();
         this.taskDate = studentTask.getTask().getTaskDate().toString();
-        this.taskProgress = studentTask.getTaskProgress().name();
+        this.taskProgress = studentTask.getTaskProgress().getProgressName();
     }
 }

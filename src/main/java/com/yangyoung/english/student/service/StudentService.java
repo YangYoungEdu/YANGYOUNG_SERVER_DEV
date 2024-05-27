@@ -216,13 +216,9 @@ public class StudentService {
                 .and(StudentSpecifications.schoolIn(schoolList))
                 .and(StudentSpecifications.gradeIn(gradeList));
 
-        List<Student> studentList = studentRepository.findAll(searchFilter);
-        log.info("search size: {}", studentList.size());
-        studentList.forEach(student -> log.info("List Student name: {}", student.getName()));
-
-//        Page<Student> searchResult = studentRepository.findAll(searchFilter, oneIndexedPageable);
-//        log.info("page size: {}", searchResult.getTotalElements());
-//        searchResult.forEach(student -> log.info("Page Student name: {}", student.getName()));
+        log.info("nameList: {}", nameList);
+        log.info("schoolList: {}", schoolList);
+        log.info("gradeList: {}", gradeList);
 
         return studentRepository.findAll(searchFilter, oneIndexedPageable).map(StudentResponse::new);
     }
