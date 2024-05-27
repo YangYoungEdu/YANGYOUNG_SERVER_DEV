@@ -72,7 +72,7 @@ public class StudentService {
 
             Long id = Long.parseLong(studentData.get(0).toString());
             String name = studentData.get(1).toString();
-            Grade grade = utilService.getGrade((String) studentData.get(2));
+            Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
             String school = studentData.get(3).toString();
             String studentPhoneNumber = studentData.get(4).toString();
             String parentPhoneNumber = studentData.get(5).toString();

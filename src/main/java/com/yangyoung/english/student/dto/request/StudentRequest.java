@@ -28,7 +28,7 @@ public class StudentRequest {
                 .id(id)
                 .name(name)
                 .school(school)
-                .grade(Grade.fromGradeName(grade))
+                .grade(Grade.getGradeName(grade))
                 .studentPhoneNumber(studentPhoneNumber)
                 .parentPhoneNumber(parentPhoneNumber)
                 .build();

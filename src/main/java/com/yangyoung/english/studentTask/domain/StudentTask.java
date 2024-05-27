@@ -37,7 +37,7 @@ public class StudentTask {
         this.taskProgress = TaskProgress.NOT_STARTED;
     }
 
-    public void updateTaskProgress(TaskProgress taskProgress) {
-        this.taskProgress = taskProgress;
+    public void updateTaskProgress(String taskProgress) {
+        this.taskProgress = TaskProgress.getTaskProgress(taskProgress);
     }
 }

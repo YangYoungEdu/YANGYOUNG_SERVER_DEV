@@ -12,10 +12,4 @@ public class StudentTaskProgressUpdateRequest {
     private Long taskId;
 
     private String taskProgress;
-
-    public StudentTaskProgressUpdateRequest(Long studentId, Long taskId, String taskProgress) {
-        this.studentId = studentId;
-        this.taskId = taskId;
-        this.taskProgress = taskProgress;
-    }
 }

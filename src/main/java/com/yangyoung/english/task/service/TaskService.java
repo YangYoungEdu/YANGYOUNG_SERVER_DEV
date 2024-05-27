@@ -78,7 +78,7 @@ public class TaskService {
 
         StudentTask studentTask = studentTaskRepository.findByStudentIdAndTaskId(request.getStudentId(), request.getTaskId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 학생과 과제가 존재하지 않습니다."));
-        studentTask.updateTaskProgress(TaskProgress.valueOf(request.getTaskProgress()));
+        studentTask.updateTaskProgress(request.getTaskProgress());
     }
 
     // 수업 과제 추가

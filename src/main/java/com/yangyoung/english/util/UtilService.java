@@ -61,13 +61,4 @@ public class UtilService {
 
         return data;
     }
-
-    public Grade getGrade(String grade) {
-        return switch (grade) {
-            case "1학년" -> Grade.H1;
-            case "2학년" -> Grade.H2;
-            case "3학년" -> Grade.H3;
-            default -> Grade.M3;
-        };
-    }
 }

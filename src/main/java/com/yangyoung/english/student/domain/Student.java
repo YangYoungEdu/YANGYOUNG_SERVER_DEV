@@ -67,7 +67,7 @@ public class Student extends BaseEntity {
             this.school = school;
         }
         if (grade != null) {
-            this.grade = Grade.fromGradeName(grade);
+            this.grade = Grade.getGradeName(grade);
         }
         if (!studentPhoneNumber.isEmpty() && !studentPhoneNumber.isBlank()) {
             this.studentPhoneNumber = studentPhoneNumber;

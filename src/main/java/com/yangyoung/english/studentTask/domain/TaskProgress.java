@@ -16,4 +16,13 @@ public enum TaskProgress {
         this.progressNumber = progressNumber;
         this.progressName = progressName;
     }
+
+    public static TaskProgress getTaskProgress(String progressName) {
+        return switch (progressName) {
+            case "시작전" -> NOT_STARTED;
+            case "진행중" -> IN_PROGRESS;
+            case "완료" -> COMPLETED;
+            default -> null;
+        };
+    }
 }
