@@ -7,7 +7,6 @@ import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.service.StudentService;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +26,7 @@ public class StudentController {
     // 학생 정보 등록 - 폼 입력 컨트롤러
     @PostMapping("")
     @Operation(summary = "학생 정보 등록 - 폼", description = "학생 정보를 등록합니다.")
-    public ResponseEntity<StudentResponse> addStudentByForm(@RequestBody StudentRequest request) {
+    public ResponseEntity<StudentResponse> addStudentByForm(@RequestBody StudentAddRequest request) {
         StudentResponse response = studentService.addStudentByForm(request);
 
         return ResponseEntity.ok(response);
@@ -63,13 +62,13 @@ public class StudentController {
     // 학생 정보 수정 컨트롤러
     @PatchMapping("")
     @Operation(summary = "학생 정보 수정", description = "학생 정보를 수정합니다.")
-    public ResponseEntity<StudentResponse> updateStudent(@RequestBody StudentRequest request) {
+    public ResponseEntity<StudentResponse> updateStudent(@RequestBody StudentAddRequest request) {
         StudentResponse response = studentService.updateStudent(request);
 
         return ResponseEntity.ok(response);
     }
 
-    // 학생 정보 보관 - single 컨트롤러
+    // 학생 숨김 보관 - single 컨트롤러
     @PatchMapping("/hidden/{studentId}")
     @Operation(summary = "학생 숨김 처리 - single", description = "학생 정보를 보관합니다.")
     public ResponseEntity<Void> saveStudent(@PathVariable(value = "studentId") Long studentId) {
@@ -87,7 +86,7 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-    // 학생 정보 보관 - multiple 컨트롤러
+    // 학생 숨김 처리 - multiple 컨트롤러
     @PatchMapping("/hidden")
     @Operation(summary = "학생 숨김 처리 - multiple", description = "학생 정보를 보관합니다.")
     public ResponseEntity<Void> saveStudents(@RequestBody StudentsDischargeRequest request) {

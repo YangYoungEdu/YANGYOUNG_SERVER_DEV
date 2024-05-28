@@ -60,19 +60,19 @@ public class Student extends BaseEntity {
     }
 
     public void update(String name, String school, String grade, String studentPhoneNumber, String parentPhoneNumber) {
-        if (!name.isEmpty() && !name.isBlank()) {
+        if (!name.isBlank()) {
             this.name = name;
         }
-        if (!school.isEmpty() && !school.isBlank()) {
+        if (!school.isBlank()) {
             this.school = school;
         }
         if (grade != null) {
             this.grade = Grade.getGradeName(grade);
         }
-        if (!studentPhoneNumber.isEmpty() && !studentPhoneNumber.isBlank()) {
+        if (!studentPhoneNumber.isBlank()) {
             this.studentPhoneNumber = studentPhoneNumber;
         }
-        if (!parentPhoneNumber.isEmpty() && !parentPhoneNumber.isBlank()) {
+        if (!parentPhoneNumber.isBlank()) {
             this.parentPhoneNumber = parentPhoneNumber;
         }
     }

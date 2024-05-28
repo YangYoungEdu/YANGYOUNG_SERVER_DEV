@@ -7,7 +7,10 @@ import com.yangyoung.english.lecture.service.LectureUtilService;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
-import com.yangyoung.english.student.dto.request.*;
+import com.yangyoung.english.student.dto.request.StudentAddByExcelRequest;
+import com.yangyoung.english.student.dto.request.StudentAddRequest;
+import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
+import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
@@ -41,13 +44,15 @@ public class StudentService {
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
     private final TaskUtilService taskUtilService;
-    private final UtilService utilService;
 
     // 학생 정보 등록 - 폼 입력으로 등록
     @Transactional
-    public StudentResponse addStudentByForm(StudentRequest request) {
+    public StudentResponse addStudentByForm(StudentAddRequest request) {
 
-        checkIdDuplicated(request.getId());
+        if (isIdDuplicated(request.getId())) { // id 중복 검사
+            StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
+            throw new StudentIdDuplicateException(studentErrorCode, request.getId());
+        }
 
         Student newStudent = request.toEntity();
         studentRepository.save(newStudent);
@@ -62,31 +67,20 @@ public class StudentService {
         List<Student> newStudentList = new ArrayList<>();
         List<StudentResponse> newStudentResponseList = new ArrayList<>();
 
-        List<List<Object>> studentListData = utilService.readExcel(request.getFile(), request.getSheetType());
-
+        List<List<Object>> studentListData = UtilService.readExcel(request.getFile(), request.getSheetType());
         for (List<Object> studentData : studentListData) {  // 엑셀 파일에서 읽어온 데이터를 하나씩 확인
 
-            if (isStudentDataEmpty(studentData)) { // 필수항목이 비어있는 경우
+            if (isStudentDataEmpty(studentData)) { // 필수항목 충족 검사
                 continue;
             }
 
             Long id = Long.parseLong(studentData.get(0).toString());
-            String name = studentData.get(1).toString();
-            Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
-            String school = studentData.get(3).toString();
-            String studentPhoneNumber = studentData.get(4).toString();
-            String parentPhoneNumber = studentData.get(5).toString();
+            if (isIdDuplicated(id)) { // id 중복 검사
+                StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
+                throw new StudentIdDuplicateException(studentErrorCode, id);
+            }
 
-            checkIdDuplicated(id);
-
-            Student newStudent = Student.builder()
-                    .id(id)
-                    .name(name)
-                    .school(school)
-                    .grade(grade)
-                    .studentPhoneNumber(studentPhoneNumber)
-                    .parentPhoneNumber(parentPhoneNumber)
-                    .build();
+            Student newStudent = createStudentFromData(id, studentData);
             newStudentList.add(newStudent);
             newStudentResponseList.add(new StudentResponse(newStudent));
         }
@@ -96,25 +90,40 @@ public class StudentService {
     }
 
     // 아이디 중복 검사
-    private void checkIdDuplicated(Long id) {
-
-        boolean isIdDuplicated = studentRepository.existsById(id);
-        if (isIdDuplicated) {  // 아이디 중복 검사
-            StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
-            throw new StudentIdDuplicateException(studentErrorCode, id);
-        }
+    private boolean isIdDuplicated(Long id) {
+        return !studentRepository.existsById(id);
     }
 
     // 필수항목 확인
     private boolean isStudentDataEmpty(List<Object> studentData) {
-        return studentData.get(0).toString().isEmpty() || studentData.get(1).toString().isEmpty() || studentData.get(2).toString().isEmpty();
+        return studentData.get(0).toString().isEmpty() ||
+                studentData.get(1).toString().isEmpty() ||
+                studentData.get(2).toString().isEmpty();
+    }
+
+    // 엑셀 파일에서 읽어온 데이터로 학생 객체 생성
+    private Student createStudentFromData(Long id, List<Object> studentData) {
+        String name = studentData.get(1).toString();
+        Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
+        String school = studentData.get(3).toString();
+        String studentPhoneNumber = studentData.get(4).toString();
+        String parentPhoneNumber = studentData.get(5).toString();
+
+        return Student.builder()
+                .id(id)
+                .name(name)
+                .school(school)
+                .grade(grade)
+                .studentPhoneNumber(studentPhoneNumber)
+                .parentPhoneNumber(parentPhoneNumber)
+                .build();
     }
 
     // 학생 전체 조회 - 페이징 처리
     @Transactional
     public Page<StudentResponse> getAllStudents(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
+
+        OneIndexedPageable oneIndexedPageable = UtilService.setOneIndexedPageable(page, size);
 
         return studentRepository.findByIsEnrolled(oneIndexedPageable, true)
                 .map(StudentResponse::new);
@@ -123,13 +132,12 @@ public class StudentService {
     // 숨김 학생 전체 조회 - 페이징 처리
     @Transactional
     public Page<StudentResponse> getHiddenStudents(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
+
+        OneIndexedPageable oneIndexedPageable = UtilService.setOneIndexedPageable(page, size);
 
         return studentRepository.findByIsEnrolled(oneIndexedPageable, false)
                 .map(StudentResponse::new);
     }
-
 
     // 학생 상세 조회
     @Transactional
@@ -142,7 +150,7 @@ public class StudentService {
 
     // 학생 정보 수정
     @Transactional
-    public StudentResponse updateStudent(StudentRequest request) {
+    public StudentResponse updateStudent(StudentAddRequest request) {
 
         Student student = studentUtilService.findStudentById(request.getId());
 
@@ -215,10 +223,6 @@ public class StudentService {
                 .where(StudentSpecifications.nameIn(nameList))
                 .and(StudentSpecifications.schoolIn(schoolList))
                 .and(StudentSpecifications.gradeIn(gradeList));
-
-        log.info("nameList: {}", nameList);
-        log.info("schoolList: {}", schoolList);
-        log.info("gradeList: {}", gradeList);
 
         return studentRepository.findAll(searchFilter, oneIndexedPageable).map(StudentResponse::new);
     }

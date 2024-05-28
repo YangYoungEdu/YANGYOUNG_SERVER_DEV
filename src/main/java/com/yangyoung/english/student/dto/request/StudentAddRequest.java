@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentRequest {
+public class StudentAddRequest {
 
     private Long id;
 
