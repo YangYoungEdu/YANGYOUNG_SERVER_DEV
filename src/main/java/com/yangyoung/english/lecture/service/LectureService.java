@@ -44,21 +44,23 @@ public class LectureService {
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
 
+    // 강의 종료 여부 확인
+    // second minute hour day-of-month month day-of-week
     @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
     @Transactional
     public void checkLectureStatus() {
         LocalDate today = LocalDate.now();
-        List<Lecture> lectureList = lectureRepository.findByIsFinishedFalse();
 
+        List<Lecture> lectureList = lectureRepository.findByIsFinishedFalse();
         for (Lecture lecture : lectureList) {
-            lecture.getLectureDateList().stream()
+            LocalDate lastDate = lecture.getLectureDateList().stream()
                     .map(LectureDate::getLectureDate)
                     .max(LocalDate::compareTo)
-                    .ifPresent(lastDate -> {
-                        if (lastDate.isBefore(today) || lastDate.isEqual(today)) {
-                            lecture.updateIsFinished();
-                        }
-                    });
+                    .orElse(null);
+
+            if (lastDate != null && lastDate.isAfter(today)) {
+                lecture.updateIsFinished();
+            }
         }
     }
 

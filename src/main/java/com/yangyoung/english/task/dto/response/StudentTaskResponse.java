@@ -26,7 +26,7 @@ public class StudentTaskResponse {
     public StudentTaskResponse(Task task) {
         this.id = task.getId();
         this.content = task.getContent();
-        this.taskType = task.getTaskType().name();
+        this.taskType = task.getTaskType().getTypeName();
         this.taskDate = task.getTaskDate().toString();
     }
 
@@ -34,7 +34,7 @@ public class StudentTaskResponse {
         this.id = studentTask.getTask().getId();
         this.content = studentTask.getTask().getContent();
         this.lectureName = studentTask.getTask().getLectureName();
-        this.taskType = studentTask.getTask().getTaskType().name();
+        this.taskType = studentTask.getTask().getTaskType().getTypeName();
         this.taskDate = studentTask.getTask().getTaskDate().toString();
         this.taskProgress = studentTask.getTaskProgress().getProgressName();
     }

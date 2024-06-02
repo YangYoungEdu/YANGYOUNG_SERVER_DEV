@@ -22,6 +22,8 @@ public class LectureBriefResponse {
 
     private String endTime;
 
+    private boolean isFinished;
+
     public LectureBriefResponse(Lecture lecture) {
         this.id = lecture.getId();
         this.name = lecture.getName();
@@ -29,5 +31,6 @@ public class LectureBriefResponse {
         this.room = lecture.getRoom();
         this.startTime = lecture.getStartTime().toString();
         this.endTime = lecture.getEndTime().toString();
+        this.isFinished = lecture.isFinished();
     }
 }

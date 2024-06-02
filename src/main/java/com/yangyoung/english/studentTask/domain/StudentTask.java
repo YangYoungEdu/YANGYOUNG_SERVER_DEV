@@ -7,10 +7,12 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@Slf4j
 public class StudentTask {
 
     @Id
@@ -38,6 +40,7 @@ public class StudentTask {
     }
 
     public void updateTaskProgress(String taskProgress) {
+        log.info("taskProgress: {}", taskProgress);
         this.taskProgress = TaskProgress.getTaskProgress(taskProgress);
     }
 }

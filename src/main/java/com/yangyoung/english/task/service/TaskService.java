@@ -8,7 +8,6 @@ import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import com.yangyoung.english.studentTask.domain.StudentTaskRepository;
-import com.yangyoung.english.studentTask.domain.TaskProgress;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.domain.TaskRepository;
 import com.yangyoung.english.task.dto.request.*;
