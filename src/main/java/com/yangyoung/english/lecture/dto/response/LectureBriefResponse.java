@@ -2,6 +2,7 @@ package com.yangyoung.english.lecture.dto.response;
 
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
+import com.yangyoung.english.lectureDay.domain.LectureDay;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,9 @@ public class LectureBriefResponse {
 
     private String endTime;
 
-    private List<LocalDate> lectureDateList;
+    private List<String> lectureDateList;
+
+    private List<String> lectureDayList;
 
     private boolean isFinished;
 
@@ -40,6 +43,10 @@ public class LectureBriefResponse {
         this.isFinished = lecture.isFinished();
         this.lectureDateList = lecture.getLectureDateList().stream()
                 .map(LectureDate::getLectureDate)
+                .map(LocalDate::toString)
+                .toList();
+        this.lectureDayList = lecture.getLectureDayList().stream()
+                .map(LectureDay::getLectureDay)
                 .toList();
     }
 }
