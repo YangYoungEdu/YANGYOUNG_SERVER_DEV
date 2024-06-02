@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -28,9 +29,9 @@ public class LectureBriefResponse {
 
     private String endTime;
 
-    private List<String> lectureDateList;
+    private List<String> dateList;
 
-    private List<String> lectureDayList;
+    private List<String> dayList;
 
     private boolean isFinished;
 
@@ -42,13 +43,15 @@ public class LectureBriefResponse {
         this.startTime = lecture.getStartTime().toString();
         this.endTime = lecture.getEndTime().toString();
         this.isFinished = lecture.isFinished();
-        this.lectureDateList = lecture.getLectureDateList().stream()
-                .map(LectureDate::getLectureDate)
-                .map(LocalDate::toString)
-                .toList();
-        this.lectureDayList = lecture.getLectureDayList().stream()
-                .map(LectureDay::getLectureDay)
-                .map(DayOfWeek::name)
-                .toList();
+        if (lecture.getLectureDayList() != null) {
+            this.dayList = lecture.getLectureDayList().stream()
+                    .map(lectureDay -> LectureDay.getLectureDay(lectureDay.getLectureDay()))
+                    .collect(Collectors.toList());
+        }
+        if (lecture.getLectureDateList() != null) {
+            this.dateList = lecture.getLectureDateList().stream()
+                    .map(lectureDate -> lectureDate.getLectureDate().toString())
+                    .collect(Collectors.toList());
+        }
     }
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -41,12 +42,13 @@ public class LectureDetailResponse {
         this.endTime = lecture.getEndTime().toString();
         if (lecture.getLectureDayList() != null) {
             this.dayList = lecture.getLectureDayList().stream()
-                    .map(LectureDay::getLectureDay)
-                    .map(Enum::name)
-                    .toList();
+                    .map(lectureDay -> LectureDay.getLectureDay(lectureDay.getLectureDay()))
+                    .collect(Collectors.toList());
         }
-        this.dateList = lecture.getLectureDateList().stream()
-                .map(lectureDate -> lectureDate.getLectureDate().toString())
-                .toList();
+        if (lecture.getLectureDateList() != null) {
+            this.dateList = lecture.getLectureDateList().stream()
+                    .map(lectureDate -> lectureDate.getLectureDate().toString())
+                    .collect(Collectors.toList());
+        }
     }
 }
