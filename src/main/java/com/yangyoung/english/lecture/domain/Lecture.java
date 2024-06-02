@@ -36,6 +36,8 @@ public class Lecture {
 
     private LocalTime endTime;
 
+    private boolean isFinished;
+
     private boolean dailyRepeat;
 
     private boolean weeklyRepeat;
@@ -74,6 +76,7 @@ public class Lecture {
         this.room = room;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.isFinished = false;
         this.dailyRepeat = dailyRepeat;
         this.weeklyRepeat = weeklyRepeat;
         this.monthlyRepeat = monthlyRepeat;
@@ -103,5 +106,9 @@ public class Lecture {
 
     public void updateSeq(Long seq) {
         this.seq = seq;
+    }
+
+    public void updateIsFinished() {
+        this.isFinished = true;
     }
 }

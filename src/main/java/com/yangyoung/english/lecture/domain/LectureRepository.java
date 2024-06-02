@@ -27,4 +27,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     // 강의 조회 - 주 단위(첫날, 마지막날)
     List<Lecture> findByLectureDateList_LectureDateBetween(LocalDate startDate, LocalDate endDate);
 
+    // 강의 조회 - 종료되지 않은 강의
+    List<Lecture> findByIsFinishedFalse();
 }

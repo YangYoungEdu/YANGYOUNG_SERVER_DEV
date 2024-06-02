@@ -27,6 +27,8 @@ public class LectureResponse {
 
     private String endTime;
 
+    private boolean isFinished;
+
     private List<String> dayList;
 
     private List<String> dateList;
@@ -39,6 +41,7 @@ public class LectureResponse {
         this.room = lecture.getRoom();
         this.startTime = lecture.getStartTime().toString();
         this.endTime = lecture.getEndTime().toString();
+        this.isFinished = lecture.isFinished();
         if (lecture.getLectureDayList() != null) {
             this.dayList = lecture.getLectureDayList().stream()
                     .map(LectureDay::getLectureDay)

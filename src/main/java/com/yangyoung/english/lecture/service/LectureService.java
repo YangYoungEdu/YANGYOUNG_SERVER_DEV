@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -42,6 +43,24 @@ public class LectureService {
     private final StudentLectureRepository studentLectureRepository;
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
+
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
+    @Transactional
+    public void checkLectureStatus() {
+        LocalDate today = LocalDate.now();
+        List<Lecture> lectureList = lectureRepository.findByIsFinishedFalse();
+
+        for (Lecture lecture : lectureList) {
+            lecture.getLectureDateList().stream()
+                    .map(LectureDate::getLectureDate)
+                    .max(LocalDate::compareTo)
+                    .ifPresent(lastDate -> {
+                        if (lastDate.isBefore(today) || lastDate.isEqual(today)) {
+                            lecture.updateIsFinished();
+                        }
+                    });
+        }
+    }
 
     // 강의 정보 등록 - 폼 입력으로 등록
     @Transactional
