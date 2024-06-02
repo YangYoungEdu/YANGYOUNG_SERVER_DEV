@@ -1,9 +1,13 @@
 package com.yangyoung.english.lecture.dto.response;
 
 import com.yangyoung.english.lecture.domain.Lecture;
+import com.yangyoung.english.lectureDate.domain.LectureDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -22,6 +26,8 @@ public class LectureBriefResponse {
 
     private String endTime;
 
+    private List<LocalDate> lectureDateList;
+
     private boolean isFinished;
 
     public LectureBriefResponse(Lecture lecture) {
@@ -32,5 +38,8 @@ public class LectureBriefResponse {
         this.startTime = lecture.getStartTime().toString();
         this.endTime = lecture.getEndTime().toString();
         this.isFinished = lecture.isFinished();
+        this.lectureDateList = lecture.getLectureDateList().stream()
+                .map(LectureDate::getLectureDate)
+                .toList();
     }
 }
