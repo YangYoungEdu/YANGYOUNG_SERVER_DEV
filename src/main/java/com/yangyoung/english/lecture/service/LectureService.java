@@ -12,6 +12,7 @@ import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
+import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
@@ -73,7 +75,8 @@ public class LectureService {
         Lecture newLecture = request.toEntity();
         lectureRepository.save(newLecture); // 강의 저장
 
-        assignLectureDateAndDay(newLecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat()); // 강의 -> 날짜/요일 할당
+        assignLectureDate(newLecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat()); // 강의 -> 날짜/요일 할당
+        assignLectureDay(newLecture, request.getLectureDayList()); // 강의 -> 요일 할당
 
         assignLectureStudents(newLecture, request.getStudentList()); // 강의 -> 학생 할당
 
@@ -90,10 +93,18 @@ public class LectureService {
     }
 
     // 강의 -> 날짜 할당
-    private void assignLectureDateAndDay(Lecture lecture, List<LocalDate> dateList, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
+    private void assignLectureDate(Lecture lecture, List<LocalDate> dateList, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
 
-        for (LocalDate date : dateList) {
+        for (LocalDate date : dateList) { // 날짜 할당
             lectureDateRepository.save(new LectureDate(date, lecture));
+        }
+    }
+
+    // 강의 -> 날짜 할당
+    private void assignLectureDay(Lecture lecture, List<DayOfWeek> dayList) {
+
+        for (DayOfWeek day : dayList) { // 요일 할당
+            lectureDayRepository.save(new LectureDay(day, lecture));
         }
     }
 
@@ -173,7 +184,7 @@ public class LectureService {
 
         lectureDateRepository.deleteByLectureId(lecture.getId());
         lectureDayRepository.deleteByLectureId(lecture.getId());
-        assignLectureDateAndDay(lecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat());
+        assignLectureDate(lecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat());
 
         return new LectureResponse(lecture);
     }

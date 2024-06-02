@@ -39,9 +39,12 @@ public class LectureDetailResponse {
         this.room = lecture.getRoom();
         this.startTime = lecture.getStartTime().toString();
         this.endTime = lecture.getEndTime().toString();
-        this.dayList = lecture.getLectureDayList().stream()
-                .map(LectureDay::getLectureDay)
-                .toList();
+        if (lecture.getLectureDayList() != null) {
+            this.dayList = lecture.getLectureDayList().stream()
+                    .map(LectureDay::getLectureDay)
+                    .map(Enum::name)
+                    .toList();
+        }
         this.dateList = lecture.getLectureDateList().stream()
                 .map(lectureDate -> lectureDate.getLectureDate().toString())
                 .toList();

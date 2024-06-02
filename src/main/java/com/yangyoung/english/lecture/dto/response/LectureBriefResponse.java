@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -47,6 +48,7 @@ public class LectureBriefResponse {
                 .toList();
         this.lectureDayList = lecture.getLectureDayList().stream()
                 .map(LectureDay::getLectureDay)
+                .map(DayOfWeek::name)
                 .toList();
     }
 }

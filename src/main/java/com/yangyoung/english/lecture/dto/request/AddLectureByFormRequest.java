@@ -25,6 +25,8 @@ public class AddLectureByFormRequest {
 
     private List<LocalDate> lectureDateList;
 
+    private List<DayOfWeek> lectureDayList;
+
     private List<Long> studentList;
 
     private boolean dailyRepeat;
