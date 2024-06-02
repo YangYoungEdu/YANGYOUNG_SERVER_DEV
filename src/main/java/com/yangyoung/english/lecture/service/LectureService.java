@@ -3,6 +3,7 @@ package com.yangyoung.english.lecture.service;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
+import com.yangyoung.english.lecture.dto.request.LectureStudentAddRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
 import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
@@ -75,12 +76,20 @@ public class LectureService {
         Lecture newLecture = request.toEntity();
         lectureRepository.save(newLecture); // 강의 저장
 
-        assignLectureDate(newLecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat()); // 강의 -> 날짜/요일 할당
+        assignLectureDate(newLecture, request.getLectureDateList()); // 강의 -> 날짜/요일 할당
         assignLectureDay(newLecture, request.getLectureDayList()); // 강의 -> 요일 할당
 
         assignLectureStudents(newLecture, request.getStudentList()); // 강의 -> 학생 할당
 
         return new LectureResponse(newLecture);
+    }
+
+    // 강의 학생 추가
+    @Transactional
+    public void addStudentToLecture(LectureStudentAddRequest request) {
+
+        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+        assignLectureStudents(lecture, request.getStudentIdList());
     }
 
     // 강의명 중복 검사
@@ -93,7 +102,7 @@ public class LectureService {
     }
 
     // 강의 -> 날짜 할당
-    private void assignLectureDate(Lecture lecture, List<LocalDate> dateList, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
+    private void assignLectureDate(Lecture lecture, List<LocalDate> dateList) {
 
         for (LocalDate date : dateList) { // 날짜 할당
             lectureDateRepository.save(new LectureDate(date, lecture));
@@ -184,7 +193,7 @@ public class LectureService {
 
         lectureDateRepository.deleteByLectureId(lecture.getId());
         lectureDayRepository.deleteByLectureId(lecture.getId());
-        assignLectureDate(lecture, request.getLectureDateList(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat());
+        assignLectureDate(lecture, request.getLectureDateList());
 
         return new LectureResponse(lecture);
     }
@@ -220,13 +229,6 @@ public class LectureService {
         for (Long lectureId : lectureIdList) {
             deleteLecture(lectureId);
         }
-    }
-
-    // 특정 강의 수강하는 학생 조회
-    @Transactional
-    public List<Student> findStudentByLectureId(Long lectureId) {
-
-        return studentLectureRepository.findStudentsByLectureId(lectureId);
     }
 
     // 특정 학생이 수강하는 강의 조회

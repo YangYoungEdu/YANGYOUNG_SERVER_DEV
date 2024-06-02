@@ -86,6 +86,24 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
+    // 학생 복원 - single 컨트롤러
+    @PatchMapping("/restore/{studentId}")
+    @Operation(summary = "학생 복원 - single", description = "학생 정보를 복원합니다.")
+    public ResponseEntity<Void> restoreStudent(@PathVariable(value = "studentId") Long studentId) {
+        studentService.restoreStudent(studentId);
+
+        return ResponseEntity.ok().build();
+    }
+
+    // 학생 복원 - multiple 컨트롤러
+    @PatchMapping("/restore")
+    @Operation(summary = "학생 복원 - multiple", description = "학생 정보를 복원합니다.")
+    public ResponseEntity<Void> restoreStudents(@RequestBody StudentsDischargeRequest request) {
+        studentService.restoreStudents(request);
+
+        return ResponseEntity.ok().build();
+    }
+
     // 학생 숨김 처리 - multiple 컨트롤러
     @PatchMapping("/hidden")
     @Operation(summary = "학생 숨김 처리 - multiple", description = "학생 정보를 보관합니다.")

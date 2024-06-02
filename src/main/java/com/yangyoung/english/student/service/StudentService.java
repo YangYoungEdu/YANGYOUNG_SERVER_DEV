@@ -159,14 +159,14 @@ public class StudentService {
         return new StudentResponse(student);
     }
 
-    // 학생 정보 보관 - single
+    // 학생 퇴원 처리 - single
     @Transactional
     public void dischargeStudent(Long id) {
         Student student = studentUtilService.findStudentById(id);
-        student.updateEnrollStatus();
+        student.updateEnrollStatus(false);
     }
 
-    // 학생 정보 보관 - multiple
+    // 학생 퇴원 처리 - multiple
     @Transactional
     public void dischargeStudents(StudentsDischargeRequest request) {
 
@@ -176,7 +176,28 @@ public class StudentService {
 
         for (Long id : request.getStudentIdList()) { // 보관할 학생이 있는 경우
             Student student = studentUtilService.findStudentById(id);
-            student.updateEnrollStatus();
+            student.updateEnrollStatus(false);
+        }
+    }
+
+    // 학생 복원 처리 - single
+    @Transactional
+    public void restoreStudent(Long id) {
+        Student student = studentUtilService.findStudentById(id);
+        student.updateEnrollStatus(true);
+    }
+
+    // 학생 복원 처리 - multiple
+    @Transactional
+    public void restoreStudents(StudentsDischargeRequest request) {
+
+        if (request.getStudentIdList().isEmpty()) {  // 복원할 학생이 없는 경우
+            return;
+        }
+
+        for (Long id : request.getStudentIdList()) { // 복원할 학생이 있는 경우
+            Student student = studentUtilService.findStudentById(id);
+            student.updateEnrollStatus(true);
         }
     }
 

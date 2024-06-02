@@ -81,7 +81,7 @@ public class Student extends BaseEntity {
         this.id = id;
     }
 
-    public void updateEnrollStatus() {
-        this.isEnrolled = false;
+    public void updateEnrollStatus(boolean isEnrolled) {
+        this.isEnrolled = isEnrolled;
     }
 }
