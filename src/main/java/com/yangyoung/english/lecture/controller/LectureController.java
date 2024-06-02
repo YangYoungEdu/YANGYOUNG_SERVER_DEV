@@ -96,7 +96,7 @@ public class LectureController {
     }
 
     // 특정 학생이 수강하는 강의 조회 컨트롤러
-    @GetMapping("/studnet/{studentId}")
+    @GetMapping("/student/{studentId}")
     @Operation(summary = "특정 학생이 수강하는 강의 조회", description = "특정 학생이 수강하는 강의 목록을 조회합니다.")
     public ResponseEntity<List<LectureBriefResponse>> getLectureByStudent(@PathVariable(value = "studentId") Long studentId) {
 
