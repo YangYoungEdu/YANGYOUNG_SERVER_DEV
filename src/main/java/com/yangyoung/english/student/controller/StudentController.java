@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/student")
+@RequestMapping("/api/v2/student")
 @RequiredArgsConstructor
 public class StudentController {
 
@@ -68,65 +68,38 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-    // 학생 숨김 보관 - single 컨트롤러
-    @PatchMapping("/hidden/{studentId}")
-    @Operation(summary = "학생 숨김 처리 - single", description = "학생 정보를 보관합니다.")
-    public ResponseEntity<Void> saveStudent(@PathVariable(value = "studentId") Long studentId) {
-        studentService.dischargeStudent(studentId);
+    // 학생 정보 삭제 - multiple 컨트롤러
+    @DeleteMapping("")
+    @Operation(summary = "학생 삭제", description = "학생 정보를 삭제합니다.")
+    public ResponseEntity<Void> deleteStudents(@RequestParam List<Long> idList) {
+        studentService.deleteStudents(idList);
 
         return ResponseEntity.ok().build();
     }
 
-    // 숨김 학생 정보 조회 컨트롤러
-    @GetMapping("/hidden")
-    @Operation(summary = "숨김 학생 전체 조회 - 페이징 처리", description = "숨김 학생 정보를 전체 조회합니다.")
-    public ResponseEntity<Page<StudentResponse>> getHiddenStudents(@RequestParam int page, @RequestParam int size) {
-        Page<StudentResponse> response = studentService.getHiddenStudents(page, size);
-
-        return ResponseEntity.ok(response);
-    }
-
-    // 학생 복원 - single 컨트롤러
-    @PatchMapping("/restore/{studentId}")
-    @Operation(summary = "학생 복원 - single", description = "학생 정보를 복원합니다.")
-    public ResponseEntity<Void> restoreStudent(@PathVariable(value = "studentId") Long studentId) {
-        studentService.restoreStudent(studentId);
-
-        return ResponseEntity.ok().build();
-    }
-
-    // 학생 복원 - multiple 컨트롤러
-    @PatchMapping("/restore")
-    @Operation(summary = "학생 복원 - multiple", description = "학생 정보를 복원합니다.")
-    public ResponseEntity<Void> restoreStudents(@RequestBody StudentsDischargeRequest request) {
-        studentService.restoreStudents(request);
-
-        return ResponseEntity.ok().build();
-    }
-
-    // 학생 숨김 처리 - multiple 컨트롤러
+    // 학생 퇴원 처리 - multiple 컨트롤러
     @PatchMapping("/hidden")
-    @Operation(summary = "학생 숨김 처리 - multiple", description = "학생 정보를 보관합니다.")
+    @Operation(summary = "학생 퇴원 처리", description = "학생 정보를 보관합니다.")
     public ResponseEntity<Void> saveStudents(@RequestBody StudentsDischargeRequest request) {
         studentService.dischargeStudents(request);
 
         return ResponseEntity.ok().build();
     }
 
-    // 학생 정보 삭제 - single 컨트롤러
-    @DeleteMapping("/{studentId}")
-    @Operation(summary = "학생 정보 삭제 - single", description = "학생 정보를 삭제합니다.")
-    public ResponseEntity<Void> deleteStudent(@PathVariable(value = "studentId") Long studentId) {
-        studentService.deleteStudent(studentId);
+    // 퇴원 학생 정보 조회 컨트롤러
+    @GetMapping("/hidden")
+    @Operation(summary = "퇴원 학생 전체 조회 - 페이징 처리", description = "숨김 학생 정보를 전체 조회합니다.")
+    public ResponseEntity<Page<StudentResponse>> getHiddenStudents(@RequestParam int page, @RequestParam int size) {
+        Page<StudentResponse> response = studentService.getHiddenStudents(page, size);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
-    // 학생 정보 삭제 - multiple 컨트롤러
-    @DeleteMapping("")
-    @Operation(summary = "학생 정보 삭제 - multiple", description = "학생 정보를 삭제합니다.")
-    public ResponseEntity<Void> deleteStudents(@RequestParam List<Long> idList) {
-        studentService.deleteStudents(idList);
+    // 학생 복원 - multiple 컨트롤러
+    @PatchMapping("/restore")
+    @Operation(summary = "퇴원 학생 복원", description = "학생 정보를 복원합니다.")
+    public ResponseEntity<Void> restoreStudents(@RequestBody StudentsDischargeRequest request) {
+        studentService.restoreStudents(request);
 
         return ResponseEntity.ok().build();
     }
@@ -164,7 +137,7 @@ public class StudentController {
 
     // 특정 강의 수강 학생 조회 컨트롤러
     @GetMapping("/lecture/{lectureId}")
-    @Operation(summary = "특정 강의 수강 학생 조회", description = "강의별 수강 학생을 조회합니다.")
+    @Operation(summary = "강의별 학생 전체 조회", description = "강의별 수강 학생을 조회합니다.")
     public ResponseEntity<List<StudentBriefResponse>> getStudentsByLecture(@PathVariable(value = "lectureId") Long lectureId) {
         List<StudentBriefResponse> responses = studentService.getStudentsByLecture(lectureId);
 

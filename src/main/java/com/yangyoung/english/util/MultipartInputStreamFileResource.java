@@ -1,4 +1,4 @@
-package com.yangyoung.english;
+package com.yangyoung.english.util;
 
 import org.springframework.core.io.InputStreamResource;
 

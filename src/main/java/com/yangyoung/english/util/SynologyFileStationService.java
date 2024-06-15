@@ -1,9 +1,8 @@
-package com.yangyoung.english;
+package com.yangyoung.english.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -13,7 +12,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -22,12 +20,12 @@ import java.util.Map;
 public class SynologyFileStationService {
 
     private final RestTemplate restTemplate;
-    @Value("${synology.url}")
-    private String synologyUrl;
-    @Value("${synology.username}")
-    private String username;
-    @Value("${synology.password}")
-    private String password;
+    //    @Value("${synology.url}")
+    private String synologyUrl = "http://";
+    //    @Value("${synology.username}")
+    private String username = "admin";
+    //    @Value("${synology.password}")
+    private String password = "123456";
 
     @Autowired
     public SynologyFileStationService(RestTemplateBuilder builder) {

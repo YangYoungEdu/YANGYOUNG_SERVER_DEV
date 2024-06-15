@@ -201,14 +201,6 @@ public class StudentService {
         }
     }
 
-    // 학생 정보 삭제 - single
-    @Transactional
-    public void deleteStudent(Long id) {
-        Student student = studentUtilService.findStudentById(id);
-
-        studentRepository.delete(student);
-    }
-
     // 학생 정보 삭제 - multiple
     @Transactional
     public void deleteStudents(List<Long> idList) {
