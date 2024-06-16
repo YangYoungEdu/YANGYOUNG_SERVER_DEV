@@ -1,8 +1,21 @@
 package com.yangyoung.english.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -12,6 +25,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -20,12 +34,13 @@ import java.util.Map;
 public class SynologyFileStationService {
 
     private final RestTemplate restTemplate;
-    //    @Value("${synology.url}")
-    private String synologyUrl = "http://";
-    //    @Value("${synology.username}")
-    private String username = "admin";
-    //    @Value("${synology.password}")
-    private String password = "123456";
+
+    @Value("${synology.url}")
+    private String synologyUrl;
+    @Value("${synology.username}")
+    private String username;
+    @Value("${synology.password}")
+    private String password;
 
     @Autowired
     public SynologyFileStationService(RestTemplateBuilder builder) {
@@ -33,59 +48,53 @@ public class SynologyFileStationService {
     }
 
     public String uploadFile(MultipartFile file) throws IOException {
+
         String sid = authenticate();
         if (sid == null) {
             throw new RuntimeException("Failed to authenticate with Synology");
         }
 
-        String uploadUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Upload&version=2&method=upload&_sid=" + sid;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        String uploadUrl = "http://218.158.95.213:5000/webapi/entry.cgi?api=SYNO.FileStation.Upload&method=upload&version=2&_sid=" + sid;
 
-        // Convert the file's InputStream to a byte array
-        byte[] fileData = IOUtils.toByteArray(file.getInputStream());
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpPost httppost = new HttpPost(uploadUrl);
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("path", "/YangYoung/test/");
-        body.add("create_parents", true);
-//        body.add("overwrite", true);
-        ByteArrayResource byteArrayResource = new ByteArrayResource(fileData) {
-            @Override
-            public String getFilename() {
-                return file.getOriginalFilename();
+            File tempFile = File.createTempFile("upload", file.getOriginalFilename());
+            file.transferTo(tempFile);
+
+            FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, file.getOriginalFilename());
+            System.out.println(fileBody.getFilename());
+
+            HttpEntity reqEntity = MultipartEntityBuilder.create()
+                    .addPart("path", new StringBody("/YangYoung/test", ContentType.TEXT_PLAIN))
+                    .addPart("create_parents", new StringBody("true", ContentType.TEXT_PLAIN))
+                    .addPart("filename", fileBody)
+                    .setLaxMode()
+                    .build();
+
+            httppost.setEntity(reqEntity);
+
+            System.out.println("Executing request " + httppost.getRequestLine());
+            try (CloseableHttpResponse response = httpclient.execute(httppost)) {
+                System.out.println("----------------------------------------");
+                System.out.println(response.getStatusLine());
+                HttpEntity resEntity = response.getEntity();
+                if (resEntity != null) {
+                    System.out.println("Response content length: " + resEntity.getContentLength());
+                    String responseString = EntityUtils.toString(resEntity);
+                    System.out.println(responseString);
+
+                    if (response.getStatusLine().getStatusCode() == 418) {
+                        // Handle 418 Illegal name or path error
+                        throw new RuntimeException("Illegal name or path: " + responseString);
+                    }
+                }
+                EntityUtils.consume(resEntity);
             }
-        };
-        log.info("byteArrayResource: {}", byteArrayResource);
-        body.add("file", byteArrayResource);
+        }
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
-
-        return response.getBody();
+        return "success";
     }
-
-//    public String uploadFile(MultipartFile file) throws IOException {
-//        String sid = authenticate();
-//        if (sid == null) {
-//            throw new RuntimeException("Failed to authenticate with Synology");
-//        }
-//
-//        String uploadUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Upload&version=2&method=upload&_sid=" + sid;
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//
-//        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//        body.add("folder_path", "/YangYoung/test/");
-//        body.add("overwrite", "true");
-//        body.add("file", new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
-//
-//        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-//
-//        ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
-//
-//        return response.getBody();
-//    }
 
     private String authenticate() {
         String loginUrl = synologyUrl + "/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=" + username + "&passwd=" + password + "&session=FileStation&format=cookie";
