@@ -1,4 +1,4 @@
-package com.yangyoung.english.util;
+package com.yangyoung.english.util.synology;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 
 @RestController

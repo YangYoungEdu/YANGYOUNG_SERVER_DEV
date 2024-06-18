@@ -1,5 +1,6 @@
 package com.yangyoung.english.student.dto.request;
 
+import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ public class StudentAddRequest {
 
     private String parentPhoneNumber;
 
-    public Student toEntity() {
+    public Student toEntity(School school) {
         return Student.builder()
                 .id(id)
                 .name(name)
