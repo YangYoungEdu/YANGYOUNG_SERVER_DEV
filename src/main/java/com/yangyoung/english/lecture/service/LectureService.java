@@ -189,7 +189,7 @@ public class LectureService {
 
         Lecture lecture = lectureUtilService.findLectureById(request.getId());
 
-        lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime(), request.isDailyRepeat(), request.isWeeklyRepeat(), request.isMonthlyRepeat(), request.isYearlyRepeat());
+        lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
 
         lectureDateRepository.deleteByLectureId(lecture.getId());
         lectureDayRepository.deleteByLectureId(lecture.getId());

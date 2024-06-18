@@ -27,12 +27,4 @@ public class LectureUpdateRequest {
     private List<LocalDate> lectureDateList;
 
     private List<Long> studentList;
-
-    private boolean dailyRepeat;
-
-    private boolean weeklyRepeat;
-
-    private boolean monthlyRepeat;
-
-    private boolean yearlyRepeat;
 }

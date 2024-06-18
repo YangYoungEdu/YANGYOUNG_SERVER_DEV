@@ -27,6 +27,9 @@ public class Lecture {
     @Column(unique = true)
     private Long seq;
 
+    @Enumerated(EnumType.STRING)
+    private LectureType lectureType;
+
     private String name;
 
     private String teacher;
@@ -38,14 +41,6 @@ public class Lecture {
     private LocalTime endTime;
 
     private boolean isFinished;
-
-    private boolean dailyRepeat;
-
-    private boolean weeklyRepeat;
-
-    private boolean monthlyRepeat;
-
-    private boolean yearlyRepeat;
 
     @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
@@ -69,22 +64,19 @@ public class Lecture {
 
 
     @Builder
-    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
+    public Lecture(Long id, LectureType lectureType, String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
         this.id = id;
         this.seq = id;
+        this.lectureType = lectureType;
         this.name = name;
         this.teacher = teacher;
         this.room = room;
         this.startTime = startTime;
         this.endTime = endTime;
         this.isFinished = false;
-        this.dailyRepeat = dailyRepeat;
-        this.weeklyRepeat = weeklyRepeat;
-        this.monthlyRepeat = monthlyRepeat;
-        this.yearlyRepeat = yearlyRepeat;
     }
 
-    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime, boolean dailyRepeat, boolean weeklyRepeat, boolean monthlyRepeat, boolean yearlyRepeat) {
+    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
         if (!name.isBlank()) {
             this.name = name;
         }
@@ -100,9 +92,6 @@ public class Lecture {
         if (endTime != null) {
             this.endTime = endTime;
         }
-        this.dailyRepeat = dailyRepeat;
-        this.weeklyRepeat = weeklyRepeat;
-        this.monthlyRepeat = monthlyRepeat;
     }
 
     public void updateSeq(Long seq) {

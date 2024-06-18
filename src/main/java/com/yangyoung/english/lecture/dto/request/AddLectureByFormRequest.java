@@ -1,6 +1,7 @@
 package com.yangyoung.english.lecture.dto.request;
 
 import com.yangyoung.english.lecture.domain.Lecture;
+import com.yangyoung.english.lecture.domain.LectureType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,8 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class AddLectureByFormRequest {
+
+    private String lectureType;
 
     private String name;
 
@@ -29,25 +32,14 @@ public class AddLectureByFormRequest {
 
     private List<Long> studentList;
 
-    private boolean dailyRepeat;
-
-    private boolean weeklyRepeat;
-
-    private boolean monthlyRepeat;
-
-    private boolean yearlyRepeat;
-
     public Lecture toEntity() {
         return Lecture.builder()
+                .lectureType(LectureType.getLectureTypeName(lectureType))
                 .name(name)
                 .teacher(teacher)
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
-                .dailyRepeat(dailyRepeat)
-                .weeklyRepeat(weeklyRepeat)
-                .monthlyRepeat(monthlyRepeat)
-                .yearlyRepeat(yearlyRepeat)
                 .build();
     }
 }
