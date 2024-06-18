@@ -20,9 +20,16 @@ public class School {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Student> studentList;
 
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Exam> examList;
+
+    public void updateStatus(String status) {
+        this.status = Status.getStatusName(status);
+    }
 }
