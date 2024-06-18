@@ -17,8 +17,8 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("양영학원")
-                .description("api 명세서")
-                .version("0.0.0");
+                .title("양영학원 고등부 영어와 관리 프로그램")
+                .description("API 명세서")
+                .version("2.0.0");
     }
 }
