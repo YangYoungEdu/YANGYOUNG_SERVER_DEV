@@ -23,20 +23,29 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    // 학생 정보 등록 - 폼 입력 컨트롤러
+    // 학생 등록 - 폼 입력 컨트롤러
     @PostMapping("")
-    @Operation(summary = "학생 정보 등록 - 폼", description = "학생 정보를 등록합니다.")
+    @Operation(summary = "학생 등록 - 폼", description = "학생 정보를 등록합니다.")
     public ResponseEntity<StudentResponse> addStudentByForm(@RequestBody StudentAddRequest request) {
         StudentResponse response = studentService.addStudentByForm(request);
 
         return ResponseEntity.ok(response);
     }
 
-    // 학생 정보 등록 - 엑셀 파일 읽기 컨트롤러
-    @PostMapping("/excel")
-    @Operation(summary = "학생 정보 등록 - 엑셀", description = "엑셀 파일을 읽어 학생 정보를 등록합니다.")
-    public ResponseEntity<StudentAddByExcelResponse> addStudentByExcel(@ModelAttribute StudentAddByExcelRequest request) throws Exception {
-        StudentAddByExcelResponse response = studentService.addStudentsByExcel(request);
+    // 학생 등록 - 엑셀 파일 읽기 컨트롤러
+//    @PostMapping("/excel")
+//    @Operation(summary = "학생 등록 - 엑셀", description = "엑셀 파일을 읽어 학생 정보를 등록합니다.")
+//    public ResponseEntity<StudentAddByExcelResponse> addStudentByExcel(@ModelAttribute StudentAddByExcelRequest request) throws Exception {
+//        StudentAddByExcelResponse response = studentService.addStudentsByExcel(request);
+//
+//        return ResponseEntity.ok(response);
+//    }
+
+    // 학생 등록 - 스프레드시 읽기 컨트롤러
+    @PostMapping("/spreadsheet")
+    @Operation(summary = "학생 등록 - 스프레드시트", description = "스프레드시트 읽어 학생 정보를 등록합니다.")
+    public ResponseEntity<StudentAddByExcelResponse> addStudentByExcel(@RequestBody StudentAddBySpreadSheetRequest request) throws Exception {
+        StudentAddByExcelResponse response = studentService.addStudentsBySpreadsheet(request);
 
         return ResponseEntity.ok(response);
     }
@@ -116,11 +125,7 @@ public class StudentController {
     // 학생 검색(이름, 학교, 학년) 컨트롤러
     @GetMapping("/search")
     @Operation(summary = "학생 검색", description = "학생 정보를 검색합니다.")
-    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestParam(required = false) List<String> nameList,
-                                                                @RequestParam(required = false) List<String> schoolList,
-                                                                @RequestParam(required = false) List<Grade> gradeList,
-                                                                @RequestParam(defaultValue = "1") int page,
-                                                                @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestParam(required = false) List<String> nameList, @RequestParam(required = false) List<String> schoolList, @RequestParam(required = false) List<Grade> gradeList, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
         Page<StudentResponse> response = studentService.searchStudents(nameList, schoolList, gradeList, page, size);
 
         return ResponseEntity.ok(response);

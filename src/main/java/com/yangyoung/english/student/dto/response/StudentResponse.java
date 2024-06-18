@@ -25,7 +25,7 @@ public class StudentResponse {
     public StudentResponse(Student student) {
         this.id = student.getId();
         this.name = student.getName();
-        this.school = student.getSchool();
+        this.school = student.getSchool().getName();
         this.grade = student.getGrade().getGradeName();
         this.studentPhoneNumber = student.getStudentPhoneNumber();
         this.parentPhoneNumber = student.getParentPhoneNumber();

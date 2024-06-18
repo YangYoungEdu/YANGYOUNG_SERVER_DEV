@@ -4,6 +4,7 @@ import com.yangyoung.english.exam.domain.Exam;
 import com.yangyoung.english.student.domain.Student;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,6 +29,12 @@ public class School {
 
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Exam> examList;
+
+    @Builder
+    public School(String name) {
+        this.name = name;
+        this.status = Status.NON_EXAM;
+    }
 
     public void updateStatus(String status) {
         this.status = Status.getStatusName(status);

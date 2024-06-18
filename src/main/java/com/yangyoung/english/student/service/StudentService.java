@@ -4,13 +4,12 @@ import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
+import com.yangyoung.english.school.domain.School;
+import com.yangyoung.english.school.domain.SchoolRepository;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
-import com.yangyoung.english.student.dto.request.StudentAddByExcelRequest;
-import com.yangyoung.english.student.dto.request.StudentAddRequest;
-import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
-import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
+import com.yangyoung.english.student.dto.request.*;
 import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
@@ -21,6 +20,7 @@ import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
 import com.yangyoung.english.util.UtilService;
+import com.yangyoung.english.util.spreasheet.SpreadSheetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +34,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ import java.util.Map;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final SchoolRepository schoolRepository;
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
     private final TaskUtilService taskUtilService;
@@ -54,28 +56,42 @@ public class StudentService {
             throw new StudentIdDuplicateException(studentErrorCode, request.getId());
         }
 
-        Student newStudent = request.toEntity();
+        Optional<School> school = schoolRepository.findByName(request.getSchool());
+        if (school.isEmpty()) { // 학교 정보가 없는 경우
+            School newSchool = new School(request.getSchool());
+            schoolRepository.save(newSchool);
+            school = Optional.of(newSchool);
+        }
+
+        Student newStudent = request.toEntity(school.get());
         studentRepository.save(newStudent);
 
         return new StudentResponse(newStudent);
     }
 
-    // 학생 정보 등록 - 엑셀 파일로 등록
+    // 학생 정보 등록 - 스프레드시트로 등록
     @Transactional
-    public StudentAddByExcelResponse addStudentsByExcel(StudentAddByExcelRequest request) throws Exception {
+    public StudentAddByExcelResponse addStudentsBySpreadsheet(StudentAddBySpreadSheetRequest request) throws Exception {
 
         List<Student> newStudentList = new ArrayList<>();
         List<StudentResponse> newStudentResponseList = new ArrayList<>();
 
-        List<List<Object>> studentListData = UtilService.readExcel(request.getFile(), request.getSheetType());
-        for (List<Object> studentData : studentListData) {  // 엑셀 파일에서 읽어온 데이터를 하나씩 확인
+        List<List<Object>> studentListData = SpreadSheetService.fetchDataFromSpreadsheet(request.getLink(), request.getSheetName());
 
-            if (isStudentDataEmpty(studentData)) { // 필수항목 충족 검사
+        for (int i = 0; i < studentListData.size(); i++) {
+
+            if (i == 0) {
+                continue;
+            }
+
+            List<Object> studentData = studentListData.get(i);
+
+            if (isStudentDataEmpty(studentData)) {
                 continue;
             }
 
             Long id = Long.parseLong(studentData.get(0).toString());
-            if (isIdDuplicated(id)) { // id 중복 검사
+            if (isIdDuplicated(id)) {
                 StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
                 throw new StudentIdDuplicateException(studentErrorCode, id);
             }
@@ -89,30 +105,39 @@ public class StudentService {
         return new StudentAddByExcelResponse(newStudentResponseList, newStudentList.size());
     }
 
-    // 아이디 중복 검사
+    // 아이디 중복 검사(없을 시 true)
     private boolean isIdDuplicated(Long id) {
-        return !studentRepository.existsById(id);
+        return studentRepository.existsById(id);
     }
 
     // 필수항목 확인
+    // ToDo : 필수항목 정의
     private boolean isStudentDataEmpty(List<Object> studentData) {
-        return studentData.get(0).toString().isEmpty() ||
-                studentData.get(1).toString().isEmpty() ||
-                studentData.get(2).toString().isEmpty();
+        for (Object data : studentData) {
+            System.out.println(data);
+        }
+        return studentData.get(0).toString().isEmpty() || // id
+                studentData.get(1).toString().isEmpty() || // 이름
+                studentData.get(2).toString().isEmpty(); // 학년
     }
 
     // 엑셀 파일에서 읽어온 데이터로 학생 객체 생성
     private Student createStudentFromData(Long id, List<Object> studentData) {
         String name = studentData.get(1).toString();
         Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
-        String school = studentData.get(3).toString();
+        Optional<School> school = schoolRepository.findByName(studentData.get(3).toString());
+        if (school.isEmpty()) { // 학교 정보가 없는 경우
+            School newSchool = new School(studentData.get(3).toString());
+            schoolRepository.save(newSchool);
+            school = Optional.of(newSchool);
+        }
         String studentPhoneNumber = studentData.get(4).toString();
         String parentPhoneNumber = studentData.get(5).toString();
 
         return Student.builder()
                 .id(id)
                 .name(name)
-                .school(school)
+                .school(school.get())
                 .grade(grade)
                 .studentPhoneNumber(studentPhoneNumber)
                 .parentPhoneNumber(parentPhoneNumber)
@@ -153,8 +178,9 @@ public class StudentService {
     public StudentResponse updateStudent(StudentAddRequest request) {
 
         Student student = studentUtilService.findStudentById(request.getId());
+        School school = schoolRepository.findByName(request.getSchool()).orElse(null);
 
-        student.update(request.getName(), request.getSchool(), request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
+        student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
 
         return new StudentResponse(student);
     }

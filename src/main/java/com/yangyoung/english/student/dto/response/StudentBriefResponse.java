@@ -21,7 +21,7 @@ public class StudentBriefResponse {
     public StudentBriefResponse(Student student) {
         this.id = student.getId();
         this.name = student.getName();
-        this.school = student.getSchool();
+        this.school = student.getSchool().getName();
         this.grade = student.getGrade().getGradeName();
     }
 }
