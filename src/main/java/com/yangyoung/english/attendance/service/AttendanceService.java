@@ -3,7 +3,6 @@ package com.yangyoung.english.attendance.service;
 import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.attendance.domain.AttendanceRepository;
 import com.yangyoung.english.attendance.domain.AttendanceType;
-import com.yangyoung.english.attendance.dto.request.AttendRequest;
 import com.yangyoung.english.attendance.dto.request.AttendanceUpdateRequest;
 import com.yangyoung.english.attendance.dto.response.AttendanceResponse;
 import com.yangyoung.english.lecture.domain.Lecture;
@@ -32,19 +31,19 @@ public class AttendanceService {
     private final LectureUtilService lectureUtilService;
 
     // 출석 - 학생
-    public AttendanceResponse attend(AttendRequest request) {
-        Student attendStudent = studentUtilService.findStudentById(request.getStudentId());
+    public AttendanceResponse attend(Long studentId) {
+        Student attendStudent = studentUtilService.findStudentById(studentId);
 
-        LocalDateTime attendDateTime = request.getAttendTime();
+        LocalDateTime attendDateTime = LocalDateTime.now(); // ToDo : 프론트와의 시간 동기화 문제 해결 필요
         LocalDate date = attendDateTime.toLocalDate();
         LocalTime time = attendDateTime.toLocalTime();
-        LocalDateTime startOfDay = attendDateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime endOfDay = attendDateTime.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        LocalDateTime startDateTime = date.atStartOfDay();
+        LocalDateTime endDateTime = date.atTime(LocalTime.MAX);
 
         // 먼저 출석 기록이 있는지 확인
-        boolean isAlreadyAttended = attendanceRepository.existsByStudentAndAttendedDateTimeBetween(attendStudent, startOfDay, endOfDay);
+        boolean isAlreadyAttended = attendanceRepository.existsByStudentAndAttendedDateTimeBetween(attendStudent, startDateTime, endDateTime);
         if (isAlreadyAttended) {
-            Optional<Attendance> attendance = attendanceRepository.findByStudentAndAttendedDateTimeBetween(attendStudent, startOfDay, endOfDay);
+            Optional<Attendance> attendance = attendanceRepository.findByStudentAndAttendedDateTimeBetween(attendStudent, startDateTime, endDateTime);
             if (attendance.isPresent()) {
                 attendance.get().updateAttendance(AttendanceType.ATTENDANCE, null);
             }
@@ -62,7 +61,7 @@ public class AttendanceService {
 
             if (i == 0) {
                 if (time.isAfter(lecture.getEndTime())) {
-                    attendanceType = AttendanceType.ABSENCE; // Todo: 지각 or 결석 처리
+                    attendanceType = AttendanceType.ABSENCE; // Todo: 지각 or 결석 처리 여부 확인 필요
                 }
             }
 
@@ -79,7 +78,10 @@ public class AttendanceService {
     }
 
     // 강의별 출석 조회
-    public List<AttendanceResponse> getAttendanceByLecture(Long lectureId) {
+    public List<AttendanceResponse> getAttendanceByLecture(Long lectureId, LocalDate date) {
+
+        LocalDateTime startDateTime = date.atStartOfDay();
+        LocalDateTime endDateTime = date.atTime(LocalTime.MAX);
 
         Lecture lecture = lectureUtilService.findLectureById(lectureId);
         List<Student> studentList = lecture.getStudentLectureList().stream()
@@ -90,7 +92,7 @@ public class AttendanceService {
                 .map(Student::getId)
                 .toList();
         // 한 번의 쿼리로 모든 출석 정보 가져오기
-        Map<Long, Attendance> attendanceMap = attendanceRepository.findByStudentIdIn(studentIdList)
+        Map<Long, Attendance> attendanceMap = attendanceRepository.findByStudentIdInAndAttendedDateTimeBetween(studentIdList, startDateTime, endDateTime)
                 .stream().collect(Collectors.toMap(attendance -> attendance.getStudent().getId(), attendance -> attendance));
 
         // 출석 정보를 포함한 응답 리스트 생성
