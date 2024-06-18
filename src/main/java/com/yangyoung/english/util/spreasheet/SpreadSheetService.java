@@ -30,14 +30,27 @@ public class SpreadSheetService {
     private static final List<String> SCOPES =
             Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
 
-    public static List<List<Object>> fetchDataFromSpreadsheet(String tempSpreadsheetId, String tempRange) {
+    public static List<List<Object>> fetchDataFromSpreadsheet(String sheetName) {
+
+        String range = "";
+
+        switch (sheetName) {
+            case "학생":
+                range = "학생!A:G";
+                break;
+            case "강의":
+                range = "강의!A:L";
+            case "분반":
+                range = "분반!A:G";
+            default:
+                break;
+        }
 
         List<List<Object>> result = null;
 
         try {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             final String spreadsheetId = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU"; // ToDo : 스프레드시트 링크 사용자가 유동적으로 변경 할 수 있도록
-            final String range = "학생!A:G"; // ToDo : 시트명 사용자가 유동적으로 변경 할 수 있도록
 
             Sheets service = getService(HTTP_TRANSPORT);
             ValueRange response = service.spreadsheets().values()

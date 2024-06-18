@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -70,20 +71,15 @@ public class StudentService {
     }
 
     // 학생 정보 등록 - 스프레드시트로 등록
+    @Scheduled(cron = "0 0 0 ? * FRI") // 매주 금요일 자정에 실행 // ToDo : cron 설정 변경
     @Transactional
-    public StudentAddByExcelResponse addStudentsBySpreadsheet(StudentAddBySpreadSheetRequest request) throws Exception {
-
+    public void addStudentsBySpreadsheet() {
         List<Student> newStudentList = new ArrayList<>();
         List<StudentResponse> newStudentResponseList = new ArrayList<>();
 
-        List<List<Object>> studentListData = SpreadSheetService.fetchDataFromSpreadsheet(request.getLink(), request.getSheetName());
+        List<List<Object>> studentListData = SpreadSheetService.fetchDataFromSpreadsheet("학생");
 
-        for (int i = 0; i < studentListData.size(); i++) {
-
-            if (i == 0) {
-                continue;
-            }
-
+        for (int i = 1; i < studentListData.size(); i++) {
             List<Object> studentData = studentListData.get(i);
 
             if (isStudentDataEmpty(studentData)) {
@@ -92,20 +88,23 @@ public class StudentService {
 
             Long id = Long.parseLong(studentData.get(0).toString());
             if (isIdDuplicated(id)) {
-                StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
-                throw new StudentIdDuplicateException(studentErrorCode, id);
+                continue;
             }
 
             Student newStudent = createStudentFromData(id, studentData);
             newStudentList.add(newStudent);
             newStudentResponseList.add(new StudentResponse(newStudent));
         }
-        studentRepository.saveAll(newStudentList);
 
-        return new StudentAddByExcelResponse(newStudentResponseList, newStudentList.size());
+        if (!newStudentList.isEmpty()) {
+            studentRepository.saveAll(newStudentList);
+        }
+
+        new StudentAddByExcelResponse(newStudentResponseList, newStudentList.size());
     }
 
-    // 아이디 중복 검사(없을 시 true)
+
+    // 아이디 중복 검사
     private boolean isIdDuplicated(Long id) {
         return studentRepository.existsById(id);
     }

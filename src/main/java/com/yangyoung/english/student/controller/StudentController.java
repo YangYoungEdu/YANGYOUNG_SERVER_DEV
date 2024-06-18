@@ -44,10 +44,10 @@ public class StudentController {
     // 학생 등록 - 스프레드시 읽기 컨트롤러
     @PostMapping("/spreadsheet")
     @Operation(summary = "학생 등록 - 스프레드시트", description = "스프레드시트 읽어 학생 정보를 등록합니다.")
-    public ResponseEntity<StudentAddByExcelResponse> addStudentByExcel(@RequestBody StudentAddBySpreadSheetRequest request) throws Exception {
-        StudentAddByExcelResponse response = studentService.addStudentsBySpreadsheet(request);
+    public ResponseEntity<StudentAddByExcelResponse> addStudentByExcel() throws Exception {
+        studentService.addStudentsBySpreadsheet();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     // 학생 전체 조회 - 페이징 처리 컨트롤러
