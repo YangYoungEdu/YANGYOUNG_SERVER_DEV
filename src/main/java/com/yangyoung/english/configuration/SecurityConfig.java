@@ -31,7 +31,8 @@ public class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 기반 인증 비활성화
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
-                                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/api/v2/appUser/sign-in").permitAll()// 특정 경로 허용
+                                .requestMatchers("/**").permitAll()
+//                                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/api/v2/appUser/sign-in").permitAll()// 특정 경로 허용
                                 .requestMatchers("/api/v2/appUser/test").hasRole("ADMIN")
                                 .anyRequest().authenticated()); // 나머지 요청은 인증 필요
 
