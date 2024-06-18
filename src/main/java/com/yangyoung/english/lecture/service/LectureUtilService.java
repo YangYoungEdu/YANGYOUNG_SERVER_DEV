@@ -2,7 +2,6 @@ package com.yangyoung.english.lecture.service;
 
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
-import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.exception.LectureErrorCode;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
@@ -35,7 +34,7 @@ public class LectureUtilService {
 
     // 강의 간단 조회 - 일단위
     @Transactional
-    public List<Lecture> getLectureBriefByDay(LocalDate date) {
+    public List<Lecture> getLectureByDay(LocalDate date) {
         return lectureRepository.findLecturesByDate(date);
     }
 

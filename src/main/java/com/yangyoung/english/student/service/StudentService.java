@@ -246,7 +246,7 @@ public class StudentService {
 
         StudentBriefResponse studentBrief = getStudentBrief(studentId);
 
-        List<Lecture> lectureList = lectureUtilService.getLectureBriefByDay(today);
+        List<Lecture> lectureList = lectureUtilService.getLectureByDay(today);
         List<LectureBriefResponse> lectureBriefResponseList = lectureList.stream()
                 .map(LectureBriefResponse::new)
                 .toList();

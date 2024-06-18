@@ -17,4 +17,13 @@ public enum AttendanceType {
         this.typeNumber = typeNumber;
         this.typeName = typeName;
     }
+
+    public static AttendanceType getAttendanceType(String typeName) {
+        return switch (typeName) {
+            case "출석" -> ATTENDANCE;
+            case "결석" -> ABSENCE;
+            case "지각" -> LATE;
+            default -> throw new IllegalArgumentException("No enum constant with typeName: " + typeName);
+        };
+    }
 }

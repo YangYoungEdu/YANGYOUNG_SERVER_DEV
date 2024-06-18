@@ -1,6 +1,7 @@
 package com.yangyoung.english.attendance.domain;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.student.domain.Student;
 import jakarta.persistence.*;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Attendance {
+public class Attendance extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,5 +47,12 @@ public class Attendance {
         this.lecture = lecture;
     }
 
-
+    public void updateAttendance(AttendanceType attendanceType, String note) {
+        if (attendanceType != null) {
+            this.attendanceType = attendanceType;
+        }
+        if (!note.isBlank()) {
+            this.note = note;
+        }
+    }
 }
