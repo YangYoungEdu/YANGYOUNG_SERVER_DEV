@@ -6,6 +6,7 @@ import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Student extends BaseEntity {
 
     @Id
