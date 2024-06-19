@@ -23,9 +23,9 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    // 학생 정보 등록 - 폼 입력 컨트롤러
+    // 학생 등록 - 폼 입력 컨트롤러
     @PostMapping("")
-    @Operation(summary = "학생 정보 등록 - 폼", description = "학생 정보를 등록합니다.")
+    @Operation(summary = "학생 등록 - 폼", description = "학생 정보를 등록합니다.")
     public ResponseEntity<StudentResponse> addStudentByForm(@RequestBody StudentAddRequest request) {
         StudentResponse response = studentService.addStudentByForm(request);
 
@@ -116,11 +116,7 @@ public class StudentController {
     // 학생 검색(이름, 학교, 학년) 컨트롤러
     @GetMapping("/search")
     @Operation(summary = "학생 검색", description = "학생 정보를 검색합니다.")
-    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestParam(required = false) List<String> nameList,
-                                                                @RequestParam(required = false) List<String> schoolList,
-                                                                @RequestParam(required = false) List<Grade> gradeList,
-                                                                @RequestParam(defaultValue = "1") int page,
-                                                                @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<Page<StudentResponse>> searchStudents(@RequestParam(required = false) List<String> nameList, @RequestParam(required = false) List<String> schoolList, @RequestParam(required = false) List<Grade> gradeList, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
         Page<StudentResponse> response = studentService.searchStudents(nameList, schoolList, gradeList, page, size);
 
         return ResponseEntity.ok(response);

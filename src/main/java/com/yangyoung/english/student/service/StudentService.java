@@ -23,6 +23,7 @@ import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
 import com.yangyoung.english.util.SheetsService;
 import com.yangyoung.english.util.UtilService;
+import com.yangyoung.english.util.spreasheet.SpreadSheetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Optional;
 
 @Service
@@ -103,9 +105,10 @@ public class StudentService {
         studentRepository.saveAll(newStudentList);
     }
 
+
     // 아이디 중복 검사
     private boolean isIdDuplicated(Long id) {
-        return !studentRepository.existsById(id);
+        return studentRepository.existsById(id);
     }
 
     // 필수항목 확인
@@ -170,6 +173,7 @@ public class StudentService {
         Student student = studentUtilService.findStudentById(request.getId());
         School school = schoolUtilService.getSchool(request.getSchool());
 
+        student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
         student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
 
         return new StudentResponse(student);

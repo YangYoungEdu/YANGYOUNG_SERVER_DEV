@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.school.domain.School;
+import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
