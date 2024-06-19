@@ -32,13 +32,13 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-    // 학생 정보 등록 - 엑셀 파일 읽기 컨트롤러
-    @PostMapping("/excel")
-    @Operation(summary = "학생 정보 등록 - 엑셀", description = "엑셀 파일을 읽어 학생 정보를 등록합니다.")
-    public ResponseEntity<StudentAddByExcelResponse> addStudentByExcel(@ModelAttribute StudentAddByExcelRequest request) throws Exception {
-        StudentAddByExcelResponse response = studentService.addStudentsByExcel(request);
+    // 학생 정보 등록 - 스프레드시트 읽기 컨트롤러
+    @PostMapping("/sheet")
+    @Operation(summary = "학생 정보 등록 - 스프레드시트", description = "스프레드시트를 읽어 학생 정보를 등록합니다.")
+    public ResponseEntity<Void> addStudentByExcel() throws Exception {
+        studentService.addStudentsBySheet();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     // 학생 전체 조회 - 페이징 처리 컨트롤러
@@ -135,7 +135,7 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-    // 특정 강의 수강 학생 조회 컨트롤러
+    // 강의별 학생 전체 조회 컨트롤러
     @GetMapping("/lecture/{lectureId}")
     @Operation(summary = "강의별 학생 전체 조회", description = "강의별 수강 학생을 조회합니다.")
     public ResponseEntity<List<StudentBriefResponse>> getStudentsByLecture(@PathVariable(value = "lectureId") Long lectureId) {

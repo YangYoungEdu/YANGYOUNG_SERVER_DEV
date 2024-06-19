@@ -4,14 +4,15 @@ import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
+import com.yangyoung.english.school.domain.School;
+import com.yangyoung.english.school.domain.SchoolRepository;
+import com.yangyoung.english.school.service.SchoolUtilService;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
-import com.yangyoung.english.student.dto.request.StudentAddByExcelRequest;
 import com.yangyoung.english.student.dto.request.StudentAddRequest;
 import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
 import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
-import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
@@ -20,6 +21,7 @@ import com.yangyoung.english.student.exception.StudentIdDuplicateException;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
+import com.yangyoung.english.util.SheetsService;
 import com.yangyoung.english.util.UtilService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +30,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +46,7 @@ import java.util.Map;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final SchoolUtilService schoolUtilService;
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
     private final TaskUtilService taskUtilService;
@@ -54,27 +60,37 @@ public class StudentService {
             throw new StudentIdDuplicateException(studentErrorCode, request.getId());
         }
 
-        Student newStudent = request.toEntity();
+        School school = schoolUtilService.getSchool(request.getSchool());
+        Student newStudent = request.toEntity(school);
         studentRepository.save(newStudent);
 
         return new StudentResponse(newStudent);
     }
 
-    // 학생 정보 등록 - 엑셀 파일로 등록
+    // 학생 정보 등록 - 스프레드시트로 등록
+    // 매주 금요일 자정마다 실행 ToDo : cron 설정 변경
+    @Scheduled(cron = "0 0 0 * * FRI")
     @Transactional
-    public StudentAddByExcelResponse addStudentsByExcel(StudentAddByExcelRequest request) throws Exception {
+    public void addStudentsBySheet() throws Exception {
 
         List<Student> newStudentList = new ArrayList<>();
-        List<StudentResponse> newStudentResponseList = new ArrayList<>();
 
-        List<List<Object>> studentListData = UtilService.readExcel(request.getFile(), request.getSheetType());
-        for (List<Object> studentData : studentListData) {  // 엑셀 파일에서 읽어온 데이터를 하나씩 확인
+        List<List<Object>> studentListData = SheetsService.readSpreadSheet("학생");
+        for (int i = 1; i < studentListData.size(); i++) {
+            List<Object> studentData = studentListData.get(i);
 
-            if (isStudentDataEmpty(studentData)) { // 필수항목 충족 검사
+            if (isStudentDataEmpty(studentData)) {
                 continue;
             }
 
-            Long id = Long.parseLong(studentData.get(0).toString());
+            Long id;
+            try {
+                id = Long.parseLong(studentData.get(0).toString());
+            } catch (NumberFormatException e) {
+                System.err.printf("Invalid ID format at index %d: %s\n", i, studentData.get(0));
+                continue;
+            }
+
             if (isIdDuplicated(id)) { // id 중복 검사
                 StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
                 throw new StudentIdDuplicateException(studentErrorCode, id);
@@ -82,11 +98,9 @@ public class StudentService {
 
             Student newStudent = createStudentFromData(id, studentData);
             newStudentList.add(newStudent);
-            newStudentResponseList.add(new StudentResponse(newStudent));
         }
-        studentRepository.saveAll(newStudentList);
 
-        return new StudentAddByExcelResponse(newStudentResponseList, newStudentList.size());
+        studentRepository.saveAll(newStudentList);
     }
 
     // 아이디 중복 검사
@@ -95,7 +109,7 @@ public class StudentService {
     }
 
     // 필수항목 확인
-    private boolean isStudentDataEmpty(List<Object> studentData) {
+    private boolean isStudentDataEmpty(List<Object> studentData) { // ToDo : 필수 데이터 기준 수정
         return studentData.get(0).toString().isEmpty() ||
                 studentData.get(1).toString().isEmpty() ||
                 studentData.get(2).toString().isEmpty();
@@ -105,7 +119,8 @@ public class StudentService {
     private Student createStudentFromData(Long id, List<Object> studentData) {
         String name = studentData.get(1).toString();
         Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
-        String school = studentData.get(3).toString();
+        School school = schoolUtilService.getSchool(studentData.get(3).toString());
+
         String studentPhoneNumber = studentData.get(4).toString();
         String parentPhoneNumber = studentData.get(5).toString();
 
@@ -153,8 +168,9 @@ public class StudentService {
     public StudentResponse updateStudent(StudentAddRequest request) {
 
         Student student = studentUtilService.findStudentById(request.getId());
+        School school = schoolUtilService.getSchool(request.getSchool());
 
-        student.update(request.getName(), request.getSchool(), request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
+        student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
 
         return new StudentResponse(student);
     }
@@ -268,7 +284,7 @@ public class StudentService {
         return new StudentBriefResponse(student);
     }
 
-    // 특정 강의 수강하는 학생 조회
+    // 수업별 학생 조회
     @Transactional
     public List<StudentBriefResponse> getStudentsByLecture(Long lectureId) {
 

@@ -1,8 +1,10 @@
 package com.yangyoung.english.student.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.configuration.BaseEntity;
+import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
@@ -27,7 +29,10 @@ public class Student extends BaseEntity {
 
     private String name;
 
-    private String school;
+    @ManyToOne()
+    @JoinColumn(name = "school_id")
+    @JsonManagedReference
+    private School school;
 
     @Enumerated(EnumType.STRING)
     private Grade grade;
@@ -49,7 +54,7 @@ public class Student extends BaseEntity {
     private List<Attendance> attendanceList;
 
     @Builder
-    public Student(Long id, String name, String school, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
+    public Student(Long id, String name, School school, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
         this.id = id;
         this.seq = id;
         this.name = name;
@@ -60,11 +65,11 @@ public class Student extends BaseEntity {
         this.isEnrolled = true;
     }
 
-    public void update(String name, String school, String grade, String studentPhoneNumber, String parentPhoneNumber) {
+    public void update(String name, School school, String grade, String studentPhoneNumber, String parentPhoneNumber) {
         if (!name.isBlank()) {
             this.name = name;
         }
-        if (!school.isBlank()) {
+        if (school != null) {
             this.school = school;
         }
         if (grade != null) {
