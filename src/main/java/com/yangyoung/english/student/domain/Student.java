@@ -6,6 +6,7 @@ import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.school.domain.School;
+import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
@@ -35,6 +36,11 @@ public class Student extends BaseEntity {
     @JsonManagedReference
     private School school;
 
+    @ManyToOne()
+    @JoinColumn(name = "section_id")
+    @JsonManagedReference
+    private Section section;
+
     @Enumerated(EnumType.STRING)
     private Grade grade;
 
@@ -55,11 +61,12 @@ public class Student extends BaseEntity {
     private List<Attendance> attendanceList;
 
     @Builder
-    public Student(Long id, String name, School school, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
+    public Student(Long id, String name, School school, Section section, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
         this.id = id;
         this.seq = id;
         this.name = name;
         this.school = school;
+        this.section = section;
         this.grade = grade;
         this.studentPhoneNumber = studentPhoneNumber;
         this.parentPhoneNumber = parentPhoneNumber;

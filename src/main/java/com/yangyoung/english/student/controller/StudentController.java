@@ -139,4 +139,13 @@ public class StudentController {
 
         return ResponseEntity.ok(responses);
     }
+
+    // 수업 미등록 학생 조회 컨트롤러
+    @GetMapping("/lecture/unregistered")
+    @Operation(summary = "수업 미등록 학생 조회", description = "수업에 미등록된 학생을 조회합니다.")
+    public ResponseEntity<List<StudentResponse>> getUnregisteredStudents() {
+        List<StudentResponse> responses = studentService.getUnregisteredStudents();
+
+        return ResponseEntity.ok(responses);
+    }
 }

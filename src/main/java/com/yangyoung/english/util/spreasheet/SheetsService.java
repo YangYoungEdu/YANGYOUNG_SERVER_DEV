@@ -1,4 +1,4 @@
-package com.yangyoung.english.util;
+package com.yangyoung.english.util.spreasheet;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -28,8 +28,8 @@ public class SheetsService {
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
     private static final String SPREADSHEET_ID = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU";
-    private static final String STUDENT_RANGE = "학생!A:H";
-    private static final String LECTURE_RANGE = "강의!A:H";
+    private static final String STUDENT_RANGE = "학생!A2:H"; // 1행은 헤더부분이기 때문에 제외
+    private static final String LECTURE_RANGE = "강의!A2:J";
 
     /**
      * Creates an authorized Credential object.

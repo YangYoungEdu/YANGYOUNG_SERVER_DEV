@@ -2,6 +2,7 @@ package com.yangyoung.english.lecture.service;
 
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
+import com.yangyoung.english.lecture.domain.LectureType;
 import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentAddRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
@@ -19,6 +20,7 @@ import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
+import com.yangyoung.english.util.spreasheet.SheetsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +30,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +87,59 @@ public class LectureService {
         assignLectureStudents(newLecture, request.getStudentList()); // 강의 -> 학생 할당
 
         return new LectureResponse(newLecture);
+    }
+
+    @Scheduled(cron = "0 0 0 * * FRI") // 매일 자정에 실행
+    @Transactional
+    public void addLectureBySheet() throws GeneralSecurityException, IOException {
+
+        List<Lecture> lectureList = new ArrayList<>();
+
+        List<List<Object>> lectureDateList = SheetsService.readSpreadSheet("강의");
+        for (List<Object> lectureDate : lectureDateList) {
+            if (isLectureDateEmpty(lectureDate)) {
+                continue;
+            }
+
+            if (isLectureNameDuplicate(lectureDate.get(1).toString())) {
+                continue;
+            }
+
+            Lecture newLecture = createLectureFromDate(lectureDate);
+            lectureList.add(newLecture);
+        }
+    }
+
+    private boolean isLectureDateEmpty(List<Object> lectureDate) {
+        for (Object object : lectureDate) {
+            if (object.toString().isBlank()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isLectureNameDuplicate(String name) {
+        return lectureRepository.existsByName(name);
+    }
+
+    private Lecture createLectureFromDate(List<Object> lectureData) {
+        LectureType lectureType = LectureType.getLectureTypeName(lectureData.get(0).toString());
+        String name = lectureData.get(1).toString();
+        String teacher = lectureData.get(2).toString();
+        String room = lectureData.get(3).toString();
+        LocalTime startTime = LocalTime.parse(lectureData.get(5).toString());
+        LocalTime endTime = LocalTime.parse(lectureData.get(6).toString());
+
+        return Lecture.builder()
+                .lectureType(lectureType)
+                .name(name)
+                .teacher(teacher)
+                .room(room)
+                .startTime(startTime)
+                .endTime(endTime)
+                .build();
     }
 
     // 강의 학생 추가

@@ -9,6 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -64,5 +67,13 @@ public class UtilService {
     public static OneIndexedPageable setOneIndexedPageable(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return new OneIndexedPageable(pageable);
+    }
+
+    public static LocalDate getStartOfWeek(LocalDate date) {
+        return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    }
+
+    public static LocalDate getEndOfWeek(LocalDate date) {
+        return date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
     }
 }

@@ -6,7 +6,10 @@ import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
 import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.school.domain.SchoolRepository;
+import com.yangyoung.english.school.domain.Status;
 import com.yangyoung.english.school.service.SchoolUtilService;
+import com.yangyoung.english.section.domain.Section;
+import com.yangyoung.english.section.service.SectionUtilService;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
@@ -18,12 +21,12 @@ import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
+import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
-import com.yangyoung.english.util.SheetsService;
+import com.yangyoung.english.util.spreasheet.SheetsService;
 import com.yangyoung.english.util.UtilService;
-import com.yangyoung.english.util.spreasheet.SpreadSheetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,13 +37,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,8 @@ public class StudentService {
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
     private final TaskUtilService taskUtilService;
+    private final SchoolRepository schoolRepository;
+    private final SectionUtilService sectionUtilService;
 
     // 학생 정보 등록 - 폼 입력으로 등록
     @Transactional
@@ -62,15 +65,16 @@ public class StudentService {
             throw new StudentIdDuplicateException(studentErrorCode, request.getId());
         }
 
-        School school = schoolUtilService.getSchool(request.getSchool());
-        Student newStudent = request.toEntity(school);
+        School school = schoolUtilService.getSchoolByName(request.getSchool());
+        Section section = sectionUtilService.getSectionByName(request.getSection());
+        Student newStudent = request.toEntity(school, section);
         studentRepository.save(newStudent);
 
         return new StudentResponse(newStudent);
     }
 
     // 학생 정보 등록 - 스프레드시트로 등록
-    // 매주 금요일 자정마다 실행 ToDo : cron 설정 변경
+    // 매주 금요일 자정마다 실행 ToDo : 실행시간 설정 변경
     @Scheduled(cron = "0 0 0 * * FRI")
     @Transactional
     public void addStudentsBySheet() throws Exception {
@@ -78,24 +82,14 @@ public class StudentService {
         List<Student> newStudentList = new ArrayList<>();
 
         List<List<Object>> studentListData = SheetsService.readSpreadSheet("학생");
-        for (int i = 1; i < studentListData.size(); i++) {
-            List<Object> studentData = studentListData.get(i);
-
-            if (isStudentDataEmpty(studentData)) {
+        for (List<Object> studentData : studentListData) {
+            if (isStudentDataEmpty(studentData)) { // 필수 데이터 확인
                 continue;
             }
 
-            Long id;
-            try {
-                id = Long.parseLong(studentData.get(0).toString());
-            } catch (NumberFormatException e) {
-                System.err.printf("Invalid ID format at index %d: %s\n", i, studentData.get(0));
-                continue;
-            }
-
+            Long id = Long.parseLong(studentData.get(0).toString());
             if (isIdDuplicated(id)) { // id 중복 검사
-                StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
-                throw new StudentIdDuplicateException(studentErrorCode, id);
+                continue;
             }
 
             Student newStudent = createStudentFromData(id, studentData);
@@ -122,7 +116,7 @@ public class StudentService {
     private Student createStudentFromData(Long id, List<Object> studentData) {
         String name = studentData.get(1).toString();
         Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
-        School school = schoolUtilService.getSchool(studentData.get(3).toString());
+        School school = schoolUtilService.getSchoolByName(studentData.get(3).toString());
 
         String studentPhoneNumber = studentData.get(4).toString();
         String parentPhoneNumber = studentData.get(5).toString();
@@ -171,7 +165,7 @@ public class StudentService {
     public StudentResponse updateStudent(StudentAddRequest request) {
 
         Student student = studentUtilService.findStudentById(request.getId());
-        School school = schoolUtilService.getSchool(request.getSchool());
+        School school = schoolUtilService.getSchoolByName(request.getSchool());
 
         student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
         student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
@@ -247,7 +241,8 @@ public class StudentService {
 
     // 학생 검색(이름, 학교, 학년)
     @Transactional
-    public Page<StudentResponse> searchStudents(List<String> nameList, List<String> schoolList, List<Grade> gradeList, int page, int size) {
+    public Page<StudentResponse> searchStudents
+    (List<String> nameList, List<String> schoolList, List<Grade> gradeList, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
@@ -298,4 +293,49 @@ public class StudentService {
                 .map(StudentBriefResponse::new)
                 .toList();
     }
+
+    // 수업 미등록 학생 조회
+    @Transactional
+    public List<StudentResponse> getUnregisteredStudents() {
+
+        LocalDate mon = UtilService.getStartOfWeek(LocalDate.now());
+        LocalDate sun = UtilService.getEndOfWeek(LocalDate.now());
+
+        List<School> schoolList = schoolRepository.findByStatus(Status.NON_EXAM);
+
+        List<Student> unregisteredStudents = schoolList.stream()
+                .flatMap(school -> school.getStudentList().stream())
+                .filter(student -> isStudentUnregistered(student, mon, sun, Status.NON_EXAM))
+                .toList();
+
+        return unregisteredStudents.stream()
+                .map(StudentResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isStudentUnregistered(Student student, LocalDate mon, LocalDate sun, Status status) {
+        List<Lecture> lectureList = student.getStudentLectureList().stream()
+                .map(StudentLecture::getLecture)
+                .filter(lecture -> isLectureInCurrentWeek(lecture, mon, sun))
+                .toList();
+
+        if (status.equals(Status.NON_EXAM)) {
+            boolean isPre = lectureList.stream().anyMatch(lecture -> lecture.getLectureType().getLectureTypeName().equals("PRE"));
+            boolean isClass = lectureList.stream().anyMatch(lecture -> lecture.getLectureType().getLectureTypeName().equals("CLASS"));
+
+            return !isPre && !isClass;
+        }
+
+        return false;
+    }
+
+    private boolean isLectureInCurrentWeek(Lecture lecture, LocalDate mon, LocalDate sun) {
+        return lecture.getLectureDateList().stream()
+                .anyMatch(lectureDate -> !isDateBeforeOrAfter(lectureDate.getLectureDate(), mon, sun));
+    }
+
+    private boolean isDateBeforeOrAfter(LocalDate date, LocalDate start, LocalDate end) {
+        return date.isBefore(start) || date.isAfter(end);
+    }
+
 }
