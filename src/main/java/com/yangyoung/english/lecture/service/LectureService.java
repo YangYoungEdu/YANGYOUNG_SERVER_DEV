@@ -16,6 +16,7 @@ import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
+import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.section.domain.SectionRepository;
 import com.yangyoung.english.section.service.SectionUtilService;
@@ -38,8 +39,10 @@ import java.security.GeneralSecurityException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.WeekFields;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -127,49 +130,46 @@ public class LectureService {
     @Scheduled(cron = "0 0 0 * * FRI") // 매주 금요일 자정에 실행
     @Transactional
     public void addLectureBySheet() throws GeneralSecurityException, IOException {
+
         List<List<Object>> lectureDataList = SheetsService.readSpreadSheet("강의");
-        List<Lecture> lectureList = new ArrayList<>();
 
+        Lecture tempLecture = null;
+        String tempSchool = null;
         for (List<Object> lectureData : lectureDataList) {
-            log.info("size: {}", lectureData.size());
 
-            if (!isLectureDataValid(lectureData)) {
+            Lecture newLecture = null;
+
+            if (!isLectureDataValid(lectureData) && tempLecture == null) { // 강의 필수 정보가 없고 이전 강의가 없을 경우
                 continue;
             }
 
-            Lecture newLecture = createLectureFromData(lectureData);
-            lectureRepository.save(newLecture);
+            if (isLectureDataValid(lectureData)) { // 강의 필수 정보가 없고 이전 강의가 없을 경우
+                newLecture = createLectureFromData(lectureData);
+                tempLecture = newLecture;
+                lectureRepository.save(newLecture);
+            }
+
 
             String preset = lectureData.get(7).toString();
             if (!preset.isBlank()) { // 프리셋이 존재할 경우
-                assignLectureStudents(newLecture, preset);
+                assignLectureStudents(tempLecture, preset);
             }
 
             String school = lectureData.get(8).toString();
-            if (!school.isBlank()) { // 학교가 존재할 경우
+            if (!school.isBlank() || tempSchool != null) { // 학교가 존재할 경우
+                tempSchool = school;
                 String studentName = lectureData.get(9).toString();
                 if (!studentName.isBlank()) {
-                    Student student = studentUtilService.findStudentByNameAndSchool(studentName, school);
-                    if (student != null) {
-                        assignLectureStudents(newLecture, student);
+                    Optional<Student> student = studentUtilService.findStudentByNameAndSchoolOptional(studentName, tempSchool);
+                    if (student.isPresent()) {
+                        assignLectureStudents(tempLecture, student.get());
                     }
                 }
             }
         }
-
-//        lectureRepository.saveAll(lectureList);
-
-        log.info("Newly added lectures: {}", lectureList.size());
     }
 
-    private List<Lecture> extractLectures(List<Map<Lecture, List<Student>>> lectureStudentList) {
-        List<Lecture> lectureList = new ArrayList<>();
-        for (Map<Lecture, List<Student>> map : lectureStudentList) {
-            lectureList.addAll(map.keySet());
-        }
-        return lectureList;
-    }
-
+    // 강의 -> 학생 할당 - 스프레드시트
     private void assignLectureStudents(Lecture lecture, String preset) {
         List<String> presetList = Arrays.asList(preset.split(","));
         List<Section> sections = sectionRepository.findByNameIn(presetList);
@@ -185,6 +185,7 @@ public class LectureService {
         }
     }
 
+    // 강의 -> 학생 할당 - 스프레드시트
     private void assignLectureStudents(Lecture lecture, Student student) {
         studentLectureRepository.save(new StudentLecture(student, lecture));
     }
@@ -212,6 +213,10 @@ public class LectureService {
 
     // 강의 정보 생성
     private Lecture createLectureFromData(List<Object> lectureData) {
+        if (lectureData == null || lectureData.size() < 7) {
+            throw new IllegalArgumentException("Invalid lecture data");
+        }
+
         LectureType lectureType = LectureType.getLectureTypeName(lectureData.get(0).toString());
         String name = lectureData.get(1).toString();
         String teacher = lectureData.get(2).toString();
@@ -219,7 +224,16 @@ public class LectureService {
         LocalTime startTime = LocalTime.parse(lectureData.get(5).toString());
         LocalTime endTime = LocalTime.parse(lectureData.get(6).toString());
 
-        return Lecture.builder()
+        List<LocalDate> lectureDateList;
+        try {
+            lectureDateList = Arrays.stream(lectureData.get(4).toString().split(","))
+                    .map(LocalDate::parse)
+                    .toList();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format", e);
+        }
+
+        Lecture newLecture = Lecture.builder()
                 .lectureType(lectureType)
                 .name(name)
                 .teacher(teacher)
@@ -227,7 +241,12 @@ public class LectureService {
                 .startTime(startTime)
                 .endTime(endTime)
                 .build();
+
+        lectureDateList.forEach(date -> lectureDateRepository.save(new LectureDate(date, newLecture)));
+
+        return newLecture;
     }
+
 
     // 강의 학생 할당 - 스프레드시트 - 프리셋
     @Transactional

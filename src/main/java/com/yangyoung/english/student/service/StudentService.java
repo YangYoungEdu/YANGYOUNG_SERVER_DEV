@@ -66,7 +66,7 @@ public class StudentService {
         }
 
         School school = schoolUtilService.getSchoolByName(request.getSchool());
-        Section section = sectionUtilService.getSectionByName(request.getSection());
+        Section section = sectionUtilService.findSectionByName(request.getSection());
         Student newStudent = request.toEntity(school, section);
         studentRepository.save(newStudent);
 
@@ -74,7 +74,8 @@ public class StudentService {
     }
 
     // 학생 정보 등록 - 스프레드시트로 등록
-    // 매주 금요일 자정마다 실행 ToDo : 실행시간 설정 변경
+    // 매주 금요일 자정마다 실행
+    // ToDo : 실행시간 설정 변경
     @Scheduled(cron = "0 0 0 * * FRI")
     @Transactional
     public void addStudentsBySheet() throws Exception {
@@ -99,7 +100,6 @@ public class StudentService {
         studentRepository.saveAll(newStudentList);
     }
 
-
     // 아이디 중복 검사
     private boolean isIdDuplicated(Long id) {
         return studentRepository.existsById(id);
@@ -117,6 +117,7 @@ public class StudentService {
         String name = studentData.get(1).toString();
         Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
         School school = schoolUtilService.getSchoolByName(studentData.get(3).toString());
+        Section section = sectionUtilService.findSectionByName(studentData.get(6).toString());
 
         String studentPhoneNumber = studentData.get(4).toString();
         String parentPhoneNumber = studentData.get(5).toString();
@@ -126,6 +127,7 @@ public class StudentService {
                 .name(name)
                 .school(school)
                 .grade(grade)
+                .section(section)
                 .studentPhoneNumber(studentPhoneNumber)
                 .parentPhoneNumber(parentPhoneNumber)
                 .build();
