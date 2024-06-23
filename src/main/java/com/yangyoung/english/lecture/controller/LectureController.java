@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/lecture")
+@RequestMapping("/api/v2/lecture")
 public class LectureController {
 
     private final LectureService lectureService;
@@ -28,6 +28,14 @@ public class LectureController {
     @Operation(summary = "강의 정보 등록 - 폼", description = "강의 정보를 등록합니다.")
     public ResponseEntity<LectureResponse> addLectureByForm(@RequestBody final AddLectureByFormRequest request) {
         return ResponseEntity.ok(lectureService.addLectureByForm(request));
+    }
+
+    // 강의 정보 등록 - 스프레드시트 읽기 컨트롤러
+    @PostMapping("/sheet")
+    @Operation(summary = "강의 정보 등록 - 스프레드시트", description = "스프레드시트를 읽어 강의 정보를 등록합니다.")
+    public ResponseEntity<Void> addLecturesBySheet() throws Exception {
+        lectureService.addLectureBySheet();
+        return ResponseEntity.ok().build();
     }
 
     // 강의 학생 추가 컨트롤러

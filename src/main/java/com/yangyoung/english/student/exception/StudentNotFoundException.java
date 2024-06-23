@@ -11,4 +11,9 @@ public class StudentNotFoundException extends RuntimeException {
         super(String.format(studentErrorCode.getMessage(), id));
         this.studentErrorCode = studentErrorCode;
     }
+
+    public StudentNotFoundException(StudentErrorCode studentErrorCode, String name) {
+        super(String.format(studentErrorCode.getMessage(), name));
+        this.studentErrorCode = studentErrorCode;
+    }
 }

@@ -42,3 +42,4 @@ out/
 /src/main/resources/application-synology.yaml
 /src/main/resources/application-mail.yaml
 /src/main/resources/credentials.json
+/src/main/resources/crenentials_ysh.json

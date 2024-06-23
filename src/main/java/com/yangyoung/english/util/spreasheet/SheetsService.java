@@ -13,22 +13,27 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
 
 public class SheetsService {
-    private static final String APPLICATION_NAME = "YYHSEng";
+    private static final String APPLICATION_NAME = "양영학원 고등부 영어과 관리 프로그램";
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    //    private static final String SPREADSHEET_ID = "1B17_vfXVo_3kHz3NBYqriR6aTwCywmHNj9Zxjk-Lg4M";
     private static final String SPREADSHEET_ID = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU";
-    private static final String STUDENT_RANGE = "학생!A2:H"; // 1행은 헤더부분이기 때문에 제외
+    private static final String STUDENT_RANGE = "학생!A2:H";
     private static final String LECTURE_RANGE = "강의!A2:J";
 
     /**
@@ -38,24 +43,50 @@ public class SheetsService {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        try (InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH)) {
-            if (in == null) {
-                throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-            }
-            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
-            // Build flow and trigger user authorization request.
-            GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                    HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                    .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                    .setAccessType("offline")
-                    .build();
-            LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8080).setCallbackPath("/CallBack").build();
-            return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+        InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        if (in == null) {
+            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+
+        // Check if tokens directory exists and delete it if it does.
+        Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
+        if (Files.exists(tokenPath)) {
+            Files.walk(tokenPath)
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+            Files.delete(tokenPath);
+        }
+
+        // Build flow and trigger user authorization request.
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                .setAccessType("offline")
+                .build();
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).setCallbackPath("/CallBack").build();
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
+
+//    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+//        // Load client secrets.
+//        InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+//        if (in == null) {
+//            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+//        }
+//        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+//
+//        // Build flow and trigger user authorization request.
+//        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+//                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+//                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+//                .setAccessType("offline")
+//                .build();
+//        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8080).setCallbackPath("/CallBack").build();
+//        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+//    }
 
     /**
      * Creates a new Sheets service client.
@@ -87,10 +118,21 @@ public class SheetsService {
         };
 
         Sheets service = createSheetsService();
+
         ValueRange response = service.spreadsheets().values()
                 .get(SPREADSHEET_ID, range)
                 .execute();
 
-        return response.getValues();
+        List<List<Object>> values = response.getValues();
+
+        // Ensure each row has a fixed length
+        int maxColumns = 11; // Set the desired fixed length
+        for (List<Object> row : values) {
+            while (row.size() < maxColumns) {
+                row.add("");
+            }
+        }
+
+        return values;
     }
 }

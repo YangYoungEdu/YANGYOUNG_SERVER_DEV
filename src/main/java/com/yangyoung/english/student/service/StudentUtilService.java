@@ -31,6 +31,30 @@ public class StudentUtilService {
         return student.get();
     }
 
+    // 이름으로 학생 정보 조회
+    @Transactional
+    public Student findStudentByName(String name) {
+        Optional<Student> student = studentRepository.findByName(name);
+        if (student.isEmpty()) {
+            StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_NOT_FOUND;
+            throw new StudentNotFoundException(studentErrorCode, name);
+        }
+
+        return student.get();
+    }
+
+    // 이름, 학교로 학생 정보 조회
+    @Transactional
+    public Student findStudentByNameAndSchool(String name, String school) {
+        Optional<Student> student = studentRepository.findByNameAndSchoolName(name, school);
+        if (student.isEmpty()) {
+            StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_NOT_FOUND;
+            throw new StudentNotFoundException(studentErrorCode, name);
+        }
+
+        return student.get();
+    }
+
     // 특정 강의 수강하는 학생 조회
     @Transactional
     public List<Student> findStudentsByLectureId(Long lectureId) {

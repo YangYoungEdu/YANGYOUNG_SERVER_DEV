@@ -16,6 +16,9 @@ import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
+import com.yangyoung.english.section.domain.Section;
+import com.yangyoung.english.section.domain.SectionRepository;
+import com.yangyoung.english.section.service.SectionUtilService;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
@@ -36,14 +39,15 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class LectureService {
+
+    private static final int REQUIRED_FIELDS = 7;
+    private static final int LECTURE_NAME_INDEX = 1;
 
     private final LectureRepository lectureRepository;
     private final LectureDateRepository lectureDateRepository;
@@ -51,6 +55,8 @@ public class LectureService {
     private final StudentLectureRepository studentLectureRepository;
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
+    private final SectionRepository sectionRepository;
+    private final SectionUtilService sectionUtilService;
 
     // 강의 종료 여부 확인
     // second minute hour day-of-month month day-of-week
@@ -84,47 +90,128 @@ public class LectureService {
         assignLectureDate(newLecture, request.getLectureDateList()); // 강의 -> 날짜/요일 할당
         assignLectureDay(newLecture, request.getLectureDayList()); // 강의 -> 요일 할당
 
-        assignLectureStudents(newLecture, request.getStudentList()); // 강의 -> 학생 할당
+        this.assignLectureStudentsWithId(newLecture, request.getStudentList()); // 강의 -> 학생 할당
 
         return new LectureResponse(newLecture);
     }
 
-    @Scheduled(cron = "0 0 0 * * FRI") // 매일 자정에 실행
+    // 강의 학생 추가 - 폼
+    @Transactional
+    public void addStudentToLecture(LectureStudentAddRequest request) {
+
+        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+        this.assignLectureStudentsWithId(lecture, request.getStudentIdList());
+    }
+
+    // 강의명 중복 검사 - 폼
+    private void isNameDuplicated(String name) {
+        boolean isDuplicated = lectureRepository.existsByName(name);
+        if (isDuplicated) {
+            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NAME_DUPLICATED;
+            throw new LectureNameDuplicateException(lectureErrorCode, name);
+        }
+    }
+
+    // 강의 -> 학생 할당 - 폼
+    private void assignLectureStudentsWithId(Lecture lecture, List<Long> studentIdList) {
+
+        List<StudentLecture> studentLectureList = new ArrayList<>();
+
+        for (Long studentId : studentIdList) {
+            Student student = studentUtilService.findStudentById(studentId);
+            studentLectureList.add(new StudentLecture(student, lecture));
+        }
+        studentLectureRepository.saveAll(studentLectureList);
+    }
+
+    @Scheduled(cron = "0 0 0 * * FRI") // 매주 금요일 자정에 실행
     @Transactional
     public void addLectureBySheet() throws GeneralSecurityException, IOException {
-
+        List<List<Object>> lectureDataList = SheetsService.readSpreadSheet("강의");
         List<Lecture> lectureList = new ArrayList<>();
 
-        List<List<Object>> lectureDateList = SheetsService.readSpreadSheet("강의");
-        for (List<Object> lectureDate : lectureDateList) {
-            if (isLectureDateEmpty(lectureDate)) {
+        for (List<Object> lectureData : lectureDataList) {
+            log.info("size: {}", lectureData.size());
+
+            if (!isLectureDataValid(lectureData)) {
                 continue;
             }
 
-            if (isLectureNameDuplicate(lectureDate.get(1).toString())) {
-                continue;
+            Lecture newLecture = createLectureFromData(lectureData);
+            lectureRepository.save(newLecture);
+
+            String preset = lectureData.get(7).toString();
+            if (!preset.isBlank()) { // 프리셋이 존재할 경우
+                assignLectureStudents(newLecture, preset);
             }
 
-            Lecture newLecture = createLectureFromDate(lectureDate);
-            lectureList.add(newLecture);
+            String school = lectureData.get(8).toString();
+            if (!school.isBlank()) { // 학교가 존재할 경우
+                String studentName = lectureData.get(9).toString();
+                if (!studentName.isBlank()) {
+                    Student student = studentUtilService.findStudentByNameAndSchool(studentName, school);
+                    if (student != null) {
+                        assignLectureStudents(newLecture, student);
+                    }
+                }
+            }
+        }
+
+//        lectureRepository.saveAll(lectureList);
+
+        log.info("Newly added lectures: {}", lectureList.size());
+    }
+
+    private List<Lecture> extractLectures(List<Map<Lecture, List<Student>>> lectureStudentList) {
+        List<Lecture> lectureList = new ArrayList<>();
+        for (Map<Lecture, List<Student>> map : lectureStudentList) {
+            lectureList.addAll(map.keySet());
+        }
+        return lectureList;
+    }
+
+    private void assignLectureStudents(Lecture lecture, String preset) {
+        List<String> presetList = Arrays.asList(preset.split(","));
+        List<Section> sections = sectionRepository.findByNameIn(presetList);
+
+        if (!sections.isEmpty()) {
+            List<StudentLecture> studentLectureList = new ArrayList<>();
+            for (Section section : sections) {
+                for (Student student : section.getStudentList()) {
+                    studentLectureList.add(new StudentLecture(student, lecture));
+                }
+            }
+            studentLectureRepository.saveAll(studentLectureList);
         }
     }
 
-    private boolean isLectureDateEmpty(List<Object> lectureDate) {
-        for (Object object : lectureDate) {
-            if (object.toString().isBlank()) {
-                return true;
+    private void assignLectureStudents(Lecture lecture, Student student) {
+        studentLectureRepository.save(new StudentLecture(student, lecture));
+    }
+
+    // 강의 필수 정보 확인(강의 유형, 강의명, 강사, 강의실, 날짜, 시작 시간, 종료 시간)
+    private boolean isLectureDataValid(List<Object> lectureData) {
+        if (lectureData == null || lectureData.size() < REQUIRED_FIELDS) {
+            return false;
+        }
+
+        for (int i = 0; i < REQUIRED_FIELDS; i++) {
+            if (lectureData.get(i) == null || lectureData.get(i).toString().isBlank()) {
+                return false;
             }
         }
 
-        return false;
+        String lectureName = lectureData.get(LECTURE_NAME_INDEX).toString();
+        if (lectureRepository.existsByName(lectureName)) {
+            return false;
+        }
+
+        return true;
     }
 
-    private boolean isLectureNameDuplicate(String name) {
-        return lectureRepository.existsByName(name);
-    }
 
-    private Lecture createLectureFromDate(List<Object> lectureData) {
+    // 강의 정보 생성
+    private Lecture createLectureFromData(List<Object> lectureData) {
         LectureType lectureType = LectureType.getLectureTypeName(lectureData.get(0).toString());
         String name = lectureData.get(1).toString();
         String teacher = lectureData.get(2).toString();
@@ -142,21 +229,34 @@ public class LectureService {
                 .build();
     }
 
-    // 강의 학생 추가
+    // 강의 학생 할당 - 스프레드시트 - 프리셋
     @Transactional
-    public void addStudentToLecture(LectureStudentAddRequest request) {
+    public void assignLectureStudentsWithId(Lecture lecture, String preset) {
+        List<String> presetList = Arrays.asList(preset.split(","));
+        List<Section> sectionList = sectionRepository.findByNameIn(presetList);
 
-        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
-        assignLectureStudents(lecture, request.getStudentIdList());
+        if (sectionList.isEmpty()) {
+            return;
+        }
+
+        List<StudentLecture> studentLectureList = new ArrayList<>();
+        for (Section section : sectionList) {
+            for (Student student : section.getStudentList()) {
+                studentLectureList.add(new StudentLecture(student, lecture));
+            }
+        }
+
+        studentLectureRepository.saveAll(studentLectureList);
     }
 
-    // 강의명 중복 검사
-    private void isNameDuplicated(String name) {
-        boolean isDuplicated = lectureRepository.existsByName(name);
-        if (isDuplicated) {
-            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NAME_DUPLICATED;
-            throw new LectureNameDuplicateException(lectureErrorCode, name);
+    // 강의 학생 할당 - 스프레드시트 - 학교
+    @Transactional
+    public void assignLectureStudentsWithStudent(Lecture lecture, List<Student> studentList) {
+        List<StudentLecture> studentLectureList = new ArrayList<>();
+        for (Student student : studentList) {
+            studentLectureList.add(new StudentLecture(student, lecture));
         }
+        studentLectureRepository.saveAll(studentLectureList);
     }
 
     // 강의 -> 날짜 할당
@@ -173,18 +273,6 @@ public class LectureService {
         for (DayOfWeek day : dayList) { // 요일 할당
             lectureDayRepository.save(new LectureDay(day, lecture));
         }
-    }
-
-    // 강의 -> 학생 할당
-    private void assignLectureStudents(Lecture lecture, List<Long> studentList) {
-
-        List<StudentLecture> studentLectureList = new ArrayList<>();
-
-        for (Long studentId : studentList) {
-            Student student = studentUtilService.findStudentById(studentId);
-            studentLectureList.add(new StudentLecture(student, lecture));
-        }
-        studentLectureRepository.saveAll(studentLectureList);
     }
 
     // 강의 전체 조회 - 페이징 처리
@@ -263,7 +351,7 @@ public class LectureService {
         Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
 
         studentLectureRepository.deleteByLectureId(lecture.getId());
-        assignLectureStudents(lecture, request.getStudentIdList());
+        this.assignLectureStudentsWithId(lecture, request.getStudentIdList());
 
         return new LectureResponse(lecture);
     }
