@@ -91,6 +91,24 @@ public class Student extends BaseEntity {
         }
     }
 
+    public void update(List<Object> updateData) {
+        if (updateData.get(0) != null) {
+            this.name = (String) updateData.get(0);
+        }
+        if (updateData.get(1) != null) {
+            this.school = (School) updateData.get(1);
+        }
+        if (updateData.get(2) != null) {
+            this.grade = (Grade) updateData.get(2);
+        }
+        if (updateData.get(3) != null) {
+            this.studentPhoneNumber = (String) updateData.get(3);
+        }
+        if (updateData.get(4) != null) {
+            this.parentPhoneNumber = (String) updateData.get(4);
+        }
+    }
+
     public void updateSequence(Long id) {
         this.id = id;
     }

@@ -155,22 +155,22 @@ public class LectureService {
                 newLecture = createLectureFromData(lectureData);
                 tempLecture = newLecture;
                 lectureRepository.save(newLecture);
-                List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(4).toString().split(","))
+                List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
                         .map(LocalDate::parse)
                         .toList();
                 assignLectureDate(newLecture, lectureDateList);
             }
 
 
-            String preset = lectureData.get(7).toString();
+            String preset = lectureData.get(LECTURE_PRESET_INDEX).toString();
             if (!preset.isBlank()) { // 프리셋이 존재할 경우
                 assignLectureStudents(tempLecture, preset);
             }
 
-            String school = lectureData.get(8).toString();
+            String school = lectureData.get(LECTURE_SCHOOL_INDEX).toString();
             if (!school.isBlank() || tempSchool != null) { // 학교가 존재할 경우
                 tempSchool = school;
-                String studentName = lectureData.get(9).toString();
+                String studentName = lectureData.get(LECTURE_STUDENT_INDEX).toString();
                 if (!studentName.isBlank()) {
                     Optional<Student> student = studentUtilService.findStudentByNameAndSchoolOptional(studentName, tempSchool);
                     if (student.isPresent()) {
@@ -225,20 +225,20 @@ public class LectureService {
 
     // 강의 정보 생성
     private Lecture createLectureFromData(List<Object> lectureData) {
-        if (lectureData == null || lectureData.size() < 7) {
+        if (lectureData == null || lectureData.size() < REQUIRED_FIELDS) {
             throw new IllegalArgumentException("Invalid lecture data");
         }
 
-        LectureType lectureType = LectureType.getLectureTypeName(lectureData.get(0).toString());
-        String name = lectureData.get(1).toString();
-        String teacher = lectureData.get(2).toString();
-        String room = lectureData.get(3).toString();
-        LocalTime startTime = LocalTime.parse(lectureData.get(5).toString());
-        LocalTime endTime = LocalTime.parse(lectureData.get(6).toString());
+        LectureType lectureType = LectureType.getLectureTypeName(lectureData.get(LECTURE_TYPE_INDEX).toString());
+        String name = lectureData.get(LECTURE_NAME_INDEX).toString();
+        String teacher = lectureData.get(LECTURE_TEACHER_INDEX).toString();
+        String room = lectureData.get(LECTURE_ROOM_INDEX).toString();
+        LocalTime startTime = LocalTime.parse(lectureData.get(LECTURE_START_TIME_INDEX).toString());
+        LocalTime endTime = LocalTime.parse(lectureData.get(LECTURE_END_TIME_INDEX).toString());
 
         List<LocalDate> lectureDateList;
         try {
-            lectureDateList = Arrays.stream(lectureData.get(4).toString().split(","))
+            lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
                     .map(LocalDate::parse)
                     .toList();
         } catch (DateTimeParseException e) {
@@ -292,7 +292,6 @@ public class LectureService {
 
     // 강의 -> 날짜 할당
     private void assignLectureDate(Lecture lecture, List<LocalDate> dateList) {
-
         for (LocalDate date : dateList) { // 날짜 할당
             lectureDateRepository.save(new LectureDate(date, lecture));
         }
@@ -300,7 +299,6 @@ public class LectureService {
 
     // 강의 -> 날짜 할당
     private void assignLectureDay(Lecture lecture, List<DayOfWeek> dayList) {
-
         for (DayOfWeek day : dayList) { // 요일 할당
             lectureDayRepository.save(new LectureDay(day, lecture));
         }
@@ -351,13 +349,6 @@ public class LectureService {
     public LectureResponse getLecture(Long lectureId) {
         Lecture lecture = lectureRepository.findById(lectureId).orElseThrow();
         return new LectureResponse(lecture);
-    }
-
-    // 강의 수강 학생 조회
-    @Transactional
-    public List<Student> findStudentsByLectureId(Long lectureId) {
-
-        return studentLectureRepository.findStudentsByLectureId(lectureId);
     }
 
     // 강의 정보 수정

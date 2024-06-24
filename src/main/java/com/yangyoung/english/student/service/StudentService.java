@@ -89,8 +89,11 @@ public class StudentService {
             }
 
             Long id = Long.parseLong(studentData.get(0).toString());
-            if (isIdDuplicated(id)) { // id 중복 검사
-                continue;
+            if (isIdDuplicated(id)) { // 이미 있는 학생일 경우 업데이트할 정보 있는지 확인 후 업데이트
+                Student existingStudent = studentUtilService.findStudentById(id);
+                if (isNeedToUpdate(existingStudent, studentData)) {
+                    existingStudent.update(studentData);
+                }
             }
 
             Student newStudent = createStudentFromData(id, studentData);
@@ -110,6 +113,15 @@ public class StudentService {
         return studentData.get(0).toString().isEmpty() ||
                 studentData.get(1).toString().isEmpty() ||
                 studentData.get(2).toString().isEmpty();
+    }
+
+    // 업데이트 필요 여부 확인
+    private boolean isNeedToUpdate(Student existringStudent, List<Object> studentData) {
+        return !existringStudent.getName().equals(studentData.get(1).toString()) ||
+                !existringStudent.getSchool().getName().equals(studentData.get(3).toString()) ||
+                !existringStudent.getGrade().getGradeName().equals(studentData.get(2).toString()) ||
+                !existringStudent.getStudentPhoneNumber().equals(studentData.get(4).toString()) ||
+                !existringStudent.getParentPhoneNumber().equals(studentData.get(5).toString());
     }
 
     // 엑셀 파일에서 읽어온 데이터로 학생 객체 생성
@@ -315,6 +327,7 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
+    // 수업 미등록 학생 확인
     private boolean isStudentUnregistered(Student student, LocalDate mon, LocalDate sun, Status status) {
         List<Lecture> lectureList = student.getStudentLectureList().stream()
                 .map(StudentLecture::getLecture)
@@ -331,11 +344,13 @@ public class StudentService {
         return false;
     }
 
+    // 수업이 현재 주에 있는지 확인
     private boolean isLectureInCurrentWeek(Lecture lecture, LocalDate mon, LocalDate sun) {
         return lecture.getLectureDateList().stream()
                 .anyMatch(lectureDate -> !isDateBeforeOrAfter(lectureDate.getLectureDate(), mon, sun));
     }
 
+    // 날짜 비교
     private boolean isDateBeforeOrAfter(LocalDate date, LocalDate start, LocalDate end) {
         return date.isBefore(start) || date.isAfter(end);
     }
