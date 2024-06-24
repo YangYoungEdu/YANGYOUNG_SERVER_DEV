@@ -43,7 +43,7 @@ public class JwtTokenProvider {
         long now = (new Date()).getTime();
 
         // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + 86400000);
+        Date accessTokenExpiresIn = new Date(now + 10);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
@@ -53,7 +53,7 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + 86400000))
+                .setExpiration(new Date(now + 10))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
@@ -118,5 +118,10 @@ public class JwtTokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public Long getExpiration(String accessToken) {
+        Claims claims = parseClaims(accessToken);
+        return claims.getExpiration().getTime();
     }
 }

@@ -16,7 +16,6 @@ import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
-import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.section.domain.SectionRepository;
 import com.yangyoung.english.section.service.SectionUtilService;
@@ -42,7 +41,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.WeekFields;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +48,16 @@ import java.util.stream.Collectors;
 public class LectureService {
 
     private static final int REQUIRED_FIELDS = 7;
+    private static final int LECTURE_TYPE_INDEX = 0;
     private static final int LECTURE_NAME_INDEX = 1;
+    private static final int LECTURE_TEACHER_INDEX = 2;
+    private static final int LECTURE_ROOM_INDEX = 3;
+    private static final int LECTURE_DATE_INDEX = 4;
+    private static final int LECTURE_START_TIME_INDEX = 5;
+    private static final int LECTURE_END_TIME_INDEX = 6;
+    private static final int LECTURE_PRESET_INDEX = 7;
+    private static final int LECTURE_SCHOOL_INDEX = 8;
+    private static final int LECTURE_STUDENT_INDEX = 9;
 
     private final LectureRepository lectureRepository;
     private final LectureDateRepository lectureDateRepository;
@@ -129,6 +136,7 @@ public class LectureService {
 
     @Scheduled(cron = "0 0 0 * * FRI") // 매주 금요일 자정에 실행
     @Transactional
+    // ToDo : 날짜 중복 할당 수정
     public void addLectureBySheet() throws GeneralSecurityException, IOException {
 
         List<List<Object>> lectureDataList = SheetsService.readSpreadSheet("강의");
@@ -147,6 +155,10 @@ public class LectureService {
                 newLecture = createLectureFromData(lectureData);
                 tempLecture = newLecture;
                 lectureRepository.save(newLecture);
+                List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(4).toString().split(","))
+                        .map(LocalDate::parse)
+                        .toList();
+                assignLectureDate(newLecture, lectureDateList);
             }
 
 

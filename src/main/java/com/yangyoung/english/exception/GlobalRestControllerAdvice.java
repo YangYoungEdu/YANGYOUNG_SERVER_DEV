@@ -1,5 +1,8 @@
 package com.yangyoung.english.exception;
 
+import com.yangyoung.english.appUser.exception.InvalidTokenException;
+import com.yangyoung.english.appUser.exception.PasswordNotMatchException;
+import com.yangyoung.english.appUser.exception.UserNotFoundException;
 import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
@@ -54,5 +57,29 @@ public class GlobalRestControllerAdvice {
         ErrorResponse errorresponse = new ErrorResponse(e.getTaskErrorCode().name(), e.getTaskErrorCode().getHttpStatus(), e.getMessage());
         logger.error("TaskNotFoundException: {}", errorresponse.getMessage());
         return ResponseEntity.status(e.getTaskErrorCode().getHttpStatus()).body(errorresponse);
+    }
+
+    // 로그인 - 사용자가 존재하지 않을 때
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
+        ErrorResponse errorresponse = new ErrorResponse(e.appUserErrorCode.name(), e.appUserErrorCode.getHttpStatus(), e.getMessage());
+        logger.error("UserNotFoundException: {}", errorresponse.getMessage());
+        return ResponseEntity.status(e.appUserErrorCode.getHttpStatus()).body(errorresponse);
+    }
+
+    // 로그인 - 비밀번호 불일치
+    @ExceptionHandler(PasswordNotMatchException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordNotMatchException(PasswordNotMatchException e) {
+        ErrorResponse errorresponse = new ErrorResponse(e.appUserErrorCode.name(), e.appUserErrorCode.getHttpStatus(), e.getMessage());
+        logger.error("PasswordNotMatchException: {}", errorresponse.getMessage());
+        return ResponseEntity.status(e.appUserErrorCode.getHttpStatus()).body(errorresponse);
+    }
+
+    // 로그아웃 - 토큰이 유효하지 않을 때
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException e) {
+        ErrorResponse errorresponse = new ErrorResponse(e.appUserErrorCode.name(), e.appUserErrorCode.getHttpStatus(), e.getMessage());
+        logger.error("InvalidTokenException: {}", errorresponse.getMessage());
+        return ResponseEntity.status(e.appUserErrorCode.getHttpStatus()).body(errorresponse);
     }
 }
