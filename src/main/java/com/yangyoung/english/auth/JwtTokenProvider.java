@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
+    private final static String TWO_HOURS = "7200000";
+    private final static String TWO_WEEKS = "1209600000";
     private final Key key;
 
     // application.yaml에서 secret 값 가져와서 key에 저장
@@ -43,7 +45,7 @@ public class JwtTokenProvider {
         long now = (new Date()).getTime();
 
         // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + 10);
+        Date accessTokenExpiresIn = new Date(now + TWO_HOURS);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
@@ -53,7 +55,7 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + 10))
+                .setExpiration(new Date(now + TWO_WEEKS))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 

@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/task")
+@RequestMapping("/api/v2/task")
 public class TaskController {
 
     private final TaskService taskService;
@@ -54,7 +54,7 @@ public class TaskController {
     }
 
     @GetMapping("/lecture")
-    @Operation(summary = "강의 과제 전체 조회", description = "강의 과제를 전체 조회합니다.")
+    @Operation(summary = "강의별 과제 전체 조회", description = "강의 과제를 전체 조회합니다.")
     public ResponseEntity<List<LectureTaskResponse>> getAllLectureTask(@RequestParam Long lectureId) {
         List<LectureTaskResponse> response = taskService.getAllLectureTask(lectureId);
         return ResponseEntity.ok(response);
