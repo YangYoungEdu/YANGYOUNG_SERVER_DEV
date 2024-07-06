@@ -30,11 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -54,9 +52,15 @@ public class SynologyFileStationService {
         restTemplate = builder.build();
     }
 
+    /*
+     * Root directory can not be created, so the path should start with /YangYoung/
+     * 408 Error: No such file or directory
+     * 418 Error: Illegal name or path
+     * ToDo: need to handle the file name with Korean
+     * */
     public String uploadFile(MultipartFile file, String lecture, LocalDate date) throws IOException {
 
-        String path = "/" + lecture + "/" + date.toString();
+        String path = "/YangYoung/" + lecture + "/" + date.toString();
 
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
@@ -71,11 +75,13 @@ public class SynologyFileStationService {
             File tempFile = File.createTempFile("upload", file.getOriginalFilename());
             file.transferTo(tempFile);
 
-            FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, file.getOriginalFilename());
+//            String fileName = new String(Objects.requireNonNull(file.getOriginalFilename()).getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            String fileName = file.getOriginalFilename();
+            FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, fileName);
 
             HttpEntity reqEntity = MultipartEntityBuilder.create()
-                    .addPart("path", new StringBody(path, ContentType.TEXT_PLAIN))
-                    .addPart("create_parents", new StringBody("true", ContentType.TEXT_PLAIN))
+                    .addPart("path", new StringBody(path, ContentType.create("text/plain", StandardCharsets.UTF_8)))
+                    .addPart("create_parents", new StringBody("true", ContentType.create("text/plain", StandardCharsets.UTF_8)))
                     .addPart("filename", fileBody)
                     .setLaxMode()
                     .build();
