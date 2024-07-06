@@ -1,5 +1,6 @@
 package com.yangyoung.english.util.synology;
 
+import com.yangyoung.english.material.dto.request.FileUploadRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -9,9 +10,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api/v2/file")
 public class FileUploadController {
 
     private final SynologyFileStationService fileStationService;
@@ -22,9 +24,9 @@ public class FileUploadController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("lecture") String lecture, @RequestParam("date") LocalDate date) {
+    public ResponseEntity<String> uploadFile(@ModelAttribute FileUploadRequest request) {
         try {
-            String response = fileStationService.uploadFile(file, lecture, date);
+            String response = fileStationService.uploadFile(request);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
@@ -52,12 +54,12 @@ public class FileUploadController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<String> getFile() {
+    public ResponseEntity<List<String>> getFile() {
         try {
-            String response = fileStationService.getFile();
+            List<String> response = fileStationService.getFile();
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("File Get failed: " + e.getMessage());
+            return ResponseEntity.status(500).body(List.of("File Get failed: " + e.getMessage()));
         }
     }
 

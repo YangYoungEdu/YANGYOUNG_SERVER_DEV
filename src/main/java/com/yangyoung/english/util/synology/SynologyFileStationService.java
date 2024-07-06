@@ -3,6 +3,7 @@ package com.yangyoung.english.util.synology;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yangyoung.english.material.dto.request.FileUploadRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -58,9 +59,13 @@ public class SynologyFileStationService {
      * 418 Error: Illegal name or path
      * ToDo: need to handle the file name with Korean
      * */
-    public String uploadFile(MultipartFile file, String lecture, LocalDate date) throws IOException {
+    public String uploadFile(FileUploadRequest request) throws IOException {
 
-        String path = "/YangYoung/" + lecture + "/" + date.toString();
+        String lecture = request.getLecture();
+        String date = request.getDate();
+        List<MultipartFile> fileList = request.getFileList();
+
+        String path = "/YangYoung/" + lecture + "/" + date;
 
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
@@ -70,39 +75,43 @@ public class SynologyFileStationService {
         String uploadUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Upload&method=upload&version=2&_sid=" + sid.get();
 
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpPost httppost = new HttpPost(uploadUrl);
+            for (MultipartFile file : fileList) {
+                HttpPost httppost = new HttpPost(uploadUrl);
 
-            File tempFile = File.createTempFile("upload", file.getOriginalFilename());
-            file.transferTo(tempFile);
+                File tempFile = File.createTempFile("upload", file.getOriginalFilename());
+                file.transferTo(tempFile);
 
-//            String fileName = new String(Objects.requireNonNull(file.getOriginalFilename()).getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-            String fileName = file.getOriginalFilename();
-            FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, fileName);
+                // 파일명을 UTF-8로 인코딩하여 사용
+//                String fileName = new String(Objects.requireNonNull(file.getOriginalFilename()).getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+                String fileName = file.getOriginalFilename();
+                FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, fileName);
 
-            HttpEntity reqEntity = MultipartEntityBuilder.create()
-                    .addPart("path", new StringBody(path, ContentType.create("text/plain", StandardCharsets.UTF_8)))
-                    .addPart("create_parents", new StringBody("true", ContentType.create("text/plain", StandardCharsets.UTF_8)))
-                    .addPart("filename", fileBody)
-                    .setLaxMode()
-                    .build();
+                HttpEntity reqEntity = MultipartEntityBuilder.create()
+                        .addPart("path", new StringBody(path, ContentType.create("text/plain", StandardCharsets.UTF_8)))
+                        .addPart("create_parents", new StringBody("true", ContentType.create("text/plain", StandardCharsets.UTF_8)))
+                        .addPart("filename", fileBody)
+                        .setLaxMode()
+                        .build();
 
-            httppost.setEntity(reqEntity);
+                httppost.setEntity(reqEntity);
 
-            try (CloseableHttpResponse response = httpclient.execute(httppost)) {
-                HttpEntity resEntity = response.getEntity();
-                if (resEntity != null) {
-                    String responseString = EntityUtils.toString(resEntity);
-                    EntityUtils.consume(resEntity);
+                try (CloseableHttpResponse response = httpclient.execute(httppost)) {
+                    HttpEntity resEntity = response.getEntity();
+                    if (resEntity != null) {
+                        String responseString = EntityUtils.toString(resEntity);
+                        EntityUtils.consume(resEntity);
 
-                    return responseString;
+                        System.out.println("Upload response: " + responseString);
+                    }
                 }
-            }
 
-            tempFile.delete();
+                tempFile.delete();
+            }
         }
 
         return "success";
     }
+
 
     public String listFile() {
 
@@ -171,8 +180,9 @@ public class SynologyFileStationService {
         return "success";
     }
 
-    public String getFile() {
+    public List<String> getFile() {
 
+        List<String> fileList = new ArrayList<>();
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
             throw new RuntimeException("Failed to authenticate with Synology");
@@ -182,7 +192,7 @@ public class SynologyFileStationService {
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             URIBuilder uriBuilder = new URIBuilder(searchUrl);
-            uriBuilder.addParameter("folder_path", "/YangYoung/test");
+            uriBuilder.addParameter("folder_path", "/YangYoung/test/2024-07-07");
 //            uriBuilder.addParameter("taskid", "17185419194B5BB52");
             URI uri = uriBuilder.build();
 
@@ -195,7 +205,8 @@ public class SynologyFileStationService {
                 if (entity != null) {
                     String responseContent = EntityUtils.toString(entity);
                     System.out.println(responseContent);
-                    List<String> fileList = getFileNames(responseContent);
+                    fileList = getFileNames(responseContent);
+
                 }
 
                 EntityUtils.consume(entity);
@@ -204,7 +215,7 @@ public class SynologyFileStationService {
             e.printStackTrace();
         }
 
-        return "success";
+        return fileList;
     }
 
     public byte[] downloadFile() {
