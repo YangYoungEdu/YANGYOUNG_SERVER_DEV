@@ -15,9 +15,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +33,7 @@ public class JwtTokenProvider {
 
     // application.yaml에서 secret 값 가져와서 key에 저장
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+        log.info("secretKey: {}", secretKey);
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -38,32 +42,51 @@ public class JwtTokenProvider {
     public JwtToken generateToken(Authentication authentication) {
 
         // 권한 가져오기
-        String authorities = authentication.getAuthorities().stream()
+        Optional<String> authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(",")).describeConstable();
+        if (authorities.isEmpty()) {
+            throw new RuntimeException("권한 정보가 없습니다.");
+        } else {
+            log.info("authorities: {}", authorities.get());
+        }
 
-        long now = (new Date()).getTime();
+        // 현재 시각 가져오기
+        Instant now = Instant.now();
+        // Access Token 만료 시각 계산
+        Instant accessTokenExpiresIn = now.plus(2, ChronoUnit.HOURS);
+        Instant refreshTokenExpiresIn = now.plus(2, ChronoUnit.WEEKS);
+        // Date 객체로 변환 (예시로 Date 객체로 변환하는 경우)
+        Date accessTokenExpiresInDate = Date.from(accessTokenExpiresIn);
+        Date refreshTokenExpiresInDate = Date.from(refreshTokenExpiresIn);
 
         // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + TWO_HOURS);
-        String accessToken = Jwts.builder()
+        Optional<String> accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
-                .setExpiration(accessTokenExpiresIn)
+                .setExpiration(accessTokenExpiresInDate)
                 .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+                .compact().describeConstable();
+        if (accessToken.isEmpty()) {
+            throw new RuntimeException("Access Token 생성 실패");
+        }
 
         // Refresh Token 생성
-        String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + TWO_WEEKS))
+        Optional<String> refreshToken = Jwts.builder()
+                .setExpiration(refreshTokenExpiresInDate)
                 .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+                .compact().describeConstable();
+        if (refreshToken.isEmpty()) {
+            throw new RuntimeException("Refresh Token 생성 실패");
+        }
 
-        return JwtToken.builder()
+        Optional<JwtToken> jwtToken = Optional.of(JwtToken.builder()
                 .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+                .accessToken(accessToken.get())
+                .refreshToken(refreshToken.get())
+                .build());
+
+        return jwtToken.get();
     }
 
     // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
