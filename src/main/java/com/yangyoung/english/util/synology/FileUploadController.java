@@ -54,9 +54,9 @@ public class FileUploadController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<List<String>> getFile() {
+    public ResponseEntity<List<String>> getFile(@RequestParam String lecture, @RequestParam String date) {
         try {
-            List<String> response = fileStationService.getFile();
+            List<String> response = fileStationService.getFile(lecture, date);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(List.of("File Get failed: " + e.getMessage()));
@@ -64,9 +64,9 @@ public class FileUploadController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<byte[]> downloadFile() {
+    public ResponseEntity<byte[]> downloadFile(@RequestParam String lecture, @RequestParam String date, @RequestParam String fileName) {
         try {
-            byte[] fileContent = fileStationService.downloadFile();
+            byte[] fileContent = fileStationService.downloadFile(lecture, date, fileName);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=GIT-FLOW.pdf");

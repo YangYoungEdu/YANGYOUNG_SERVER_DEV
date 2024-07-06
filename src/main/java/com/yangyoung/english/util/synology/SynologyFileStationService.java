@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -180,20 +179,24 @@ public class SynologyFileStationService {
         return "success";
     }
 
-    public List<String> getFile() {
+    /*
+     * Get the file list of the lecture on the date
+     * */
+    public List<String> getFile(String lecture, String date) {
 
         List<String> fileList = new ArrayList<>();
+
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
             throw new RuntimeException("Failed to authenticate with Synology");
         }
 
         String searchUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.List&method=list&version=2&_sid=" + sid.get();
+        String folder_path = buildPath(lecture, date);
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             URIBuilder uriBuilder = new URIBuilder(searchUrl);
-            uriBuilder.addParameter("folder_path", "/YangYoung/test/2024-07-07");
-//            uriBuilder.addParameter("taskid", "17185419194B5BB52");
+            uriBuilder.addParameter("folder_path", folder_path);
             URI uri = uriBuilder.build();
 
             HttpGet request = new HttpGet(uri);
@@ -218,17 +221,19 @@ public class SynologyFileStationService {
         return fileList;
     }
 
-    public byte[] downloadFile() {
+    public byte[] downloadFile(String lecture, String date, String fileName) {
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
             throw new RuntimeException("Failed to authenticate with Synology");
         }
 
+        String path = buildPath(lecture, date) + "/" + fileName;
+
         String searchUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Download&method=download&version=2&_sid=" + sid.get();
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             URIBuilder uriBuilder = new URIBuilder(searchUrl);
-            uriBuilder.addParameter("path", "[\"/YangYoung/test/GIT-FLOW.pdf\"]");
+            uriBuilder.addParameter("path", path);
             uriBuilder.addParameter("mode", "download");
             URI uri = uriBuilder.build();
 
@@ -292,5 +297,9 @@ public class SynologyFileStationService {
         }
 
         return fileList;
+    }
+
+    private String buildPath(String lecture, String date) {
+        return "/YangYoung/" + lecture + "/" + date;
     }
 }
