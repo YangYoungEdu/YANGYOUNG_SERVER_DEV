@@ -18,8 +18,8 @@ public enum TaskType {
 
     public static TaskType getTaskType(String typeName) {
         return switch (typeName) {
-            case "개인 과제" -> STUDENT;
-            case "강의 과제" -> LECTURE;
+            case "개인과제" -> STUDENT;
+            case "전체과제" -> LECTURE;
             default -> null;
         };
     }

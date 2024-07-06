@@ -13,10 +13,12 @@ import com.yangyoung.english.task.domain.TaskRepository;
 import com.yangyoung.english.task.dto.request.*;
 import com.yangyoung.english.task.dto.response.LectureTaskResponse;
 import com.yangyoung.english.task.dto.response.StudentTaskResponse;
+import com.yangyoung.english.task.dto.response.TaskResponse;
 import com.yangyoung.english.task.exception.TaskErrorCode;
 import com.yangyoung.english.task.exception.TaskNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepository;
@@ -32,6 +35,28 @@ public class TaskService {
 
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
+
+    @Transactional
+    public TaskResponse addTask(TaskAddRequest request) {
+
+        log.info("taskType: {}", request.getTaskType());
+
+        Task newTask = request.toEntity();
+        taskRepository.save(newTask);
+
+        Student student = studentUtilService.findStudentById(request.getStudentId());
+        StudentTask studentTask = new StudentTask(student, newTask);
+        studentTaskRepository.save(studentTask);
+
+        // ToDo: 수업이 필수인지 아닌지 확인
+        if (request.getLectureId() != null) {
+            Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+            LectureTask lectureTask = new LectureTask(lecture, newTask);
+            lectureTaskRepository.save(lectureTask);
+        }
+
+        return new TaskResponse(newTask);
+    }
 
     // 학생 과제 추가
     @Transactional

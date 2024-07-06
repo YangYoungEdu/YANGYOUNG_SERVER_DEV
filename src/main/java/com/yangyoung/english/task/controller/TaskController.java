@@ -1,8 +1,9 @@
 package com.yangyoung.english.task.controller;
 
-import  com.yangyoung.english.task.dto.request.*;
+import com.yangyoung.english.task.dto.request.*;
 import com.yangyoung.english.task.dto.response.LectureTaskResponse;
 import com.yangyoung.english.task.dto.response.StudentTaskResponse;
+import com.yangyoung.english.task.dto.response.TaskResponse;
 import com.yangyoung.english.task.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,13 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
+
+    @PostMapping("")
+    @Operation(summary = "과제 추가", description = "과제를 추가합니다.")
+    public ResponseEntity<TaskResponse> addTask(@RequestBody TaskAddRequest request) {
+        TaskResponse response = taskService.addTask(request);
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/student")
     @Operation(summary = "학생 과제 추가", description = "학생 과제를 추가합니다.")
