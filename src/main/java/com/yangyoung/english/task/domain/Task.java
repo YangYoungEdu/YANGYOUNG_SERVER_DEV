@@ -1,6 +1,7 @@
 package com.yangyoung.english.task.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.lectureTask.domain.LectureTask;
 import com.yangyoung.english.studentTask.domain.TaskProgress;
 import com.yangyoung.english.studentTask.domain.StudentTask;
@@ -17,7 +18,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Task {
+public class Task extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
