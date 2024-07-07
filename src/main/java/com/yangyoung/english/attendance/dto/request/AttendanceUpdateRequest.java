@@ -9,6 +9,10 @@ public class AttendanceUpdateRequest {
 
     private Long id;
 
+    private Long studentId;
+
+    private Long lectureId;
+
     private String attendanceType;
 
     private String note;

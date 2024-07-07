@@ -39,6 +39,16 @@ public class Attendance extends BaseEntity {
     private Lecture lecture;
 
     @Builder
+    public Attendance(AttendanceType attendanceType, LocalDateTime attendedDateTime, Student student, Lecture lecture, String note) {
+        this.attendanceType = attendanceType;
+        this.note = "";
+        this.attendedDateTime = attendedDateTime;
+        this.student = student;
+        this.lecture = lecture;
+        this.note = note;
+    }
+
+    @Builder
     public Attendance(AttendanceType attendanceType, LocalDateTime attendedDateTime, Student student, Lecture lecture) {
         this.attendanceType = attendanceType;
         this.note = "";
@@ -53,6 +63,12 @@ public class Attendance extends BaseEntity {
         }
         if (!note.isBlank()) {
             this.note = note;
+        }
+    }
+
+    public void updateAttendanceType(AttendanceType attendanceType) {
+        if (attendanceType != null) {
+            this.attendanceType = attendanceType;
         }
     }
 }

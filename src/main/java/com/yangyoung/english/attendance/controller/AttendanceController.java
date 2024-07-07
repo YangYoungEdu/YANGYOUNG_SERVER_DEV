@@ -19,7 +19,7 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
 
     // 출석 - 학생
-    @PostMapping("/attend/{studentId}")
+    @PostMapping("/{studentId}")
     @Operation(summary = "출석 - 학생", description = "학생의 출석을 처리합니다.")
     public ResponseEntity<AttendanceResponse> attend(@PathVariable(value = "studentId") Long studentId) {
 
@@ -40,9 +40,9 @@ public class AttendanceController {
     }
 
     // 출석 정보 수정
-    @PatchMapping("/update")
+    @PatchMapping("")
     @Operation(summary = "출석 정보 수정", description = "출석 정보를 수정합니다.")
-    public ResponseEntity<Void> updateAttendance(List<AttendanceUpdateRequest> requestList) {
+    public ResponseEntity<Void> updateAttendance(@RequestBody List<AttendanceUpdateRequest> requestList) {
 
         attendanceService.updateAttendance(requestList);
 

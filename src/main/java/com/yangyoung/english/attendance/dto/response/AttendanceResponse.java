@@ -15,6 +15,8 @@ public class AttendanceResponse {
 
     private Long id;
 
+    private Long studentId;
+
     private String name;
 
     private String studentPhoneNumber;
@@ -30,6 +32,7 @@ public class AttendanceResponse {
     // 출석 정보 있는 경우
     public AttendanceResponse(Student student, Attendance attendance) {
         this.id = attendance.getId();
+        this.studentId = student.getId();
         this.name = student.getName();
         this.studentPhoneNumber = student.getStudentPhoneNumber();
         this.parentPhoneNumber = student.getParentPhoneNumber();
@@ -41,6 +44,7 @@ public class AttendanceResponse {
     // 출석 정보 없는 경우
     public AttendanceResponse(Student student) {
         this.id = null;
+        this.studentId = student.getId();
         this.name = student.getName();
         this.studentPhoneNumber = student.getStudentPhoneNumber();
         this.parentPhoneNumber = student.getParentPhoneNumber();

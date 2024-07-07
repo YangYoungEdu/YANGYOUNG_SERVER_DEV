@@ -20,9 +20,9 @@ public enum AttendanceType {
 
     public static AttendanceType getAttendanceType(String typeName) {
         return switch (typeName) {
-            case "출석" -> ATTENDANCE;
-            case "결석" -> ABSENCE;
-            case "지각" -> LATE;
+            case "ATTENDANCE" -> ATTENDANCE;
+            case "ABSENCE" -> ABSENCE;
+            case "LATE" -> LATE;
             default -> throw new IllegalArgumentException("No enum constant with typeName: " + typeName);
         };
     }

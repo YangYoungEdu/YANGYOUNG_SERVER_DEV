@@ -110,15 +110,33 @@ public class AttendanceService {
 
     // 출석 정보 수정
     public void updateAttendance(List<AttendanceUpdateRequest> requestList) {
+        LocalDateTime now = LocalDateTime.now();
 
         for (AttendanceUpdateRequest request : requestList) {
-            Optional<Attendance> optionalAttendance = attendanceRepository.findById(request.getId());
-            if (optionalAttendance.isEmpty()) {
-                return;
+            Optional<Long> id = Optional.ofNullable(request.getId());
+            Optional<Attendance> pastAttendance = Optional.empty();
+
+            if (id.isPresent()) {
+                pastAttendance = attendanceRepository.findById(id.get());
             }
 
-            Attendance attendance = optionalAttendance.get();
-            attendance.updateAttendance(AttendanceType.getAttendanceType(request.getAttendanceType()), request.getNote());
+            if (pastAttendance.isEmpty()) {
+                Student student = studentUtilService.findStudentById(request.getStudentId());
+                Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+                AttendanceType attendanceType = AttendanceType.getAttendanceType(request.getAttendanceType());
+
+                Attendance newAttendance = Attendance.builder()
+                        .student(student)
+                        .lecture(lecture)
+                        .attendanceType(attendanceType)
+                        .attendedDateTime(now)
+                        .build();
+
+                attendanceRepository.save(newAttendance);
+            } else {
+                Attendance attendance = pastAttendance.get();
+                attendance.updateAttendanceType(AttendanceType.getAttendanceType(request.getAttendanceType()));
+            }
         }
     }
 }
