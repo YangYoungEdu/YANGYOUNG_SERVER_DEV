@@ -55,7 +55,7 @@ public class JwtTokenProvider {
         Instant now = Instant.now();
         // Access Token 만료 시각 계산
         Instant accessTokenExpiresIn = now.plus(2, ChronoUnit.HOURS);
-        Instant refreshTokenExpiresIn = now.plus(2, ChronoUnit.WEEKS);
+        Instant refreshTokenExpiresIn = now.plus(2, ChronoUnit.DAYS);
         // Date 객체로 변환 (예시로 Date 객체로 변환하는 경우)
         Date accessTokenExpiresInDate = Date.from(accessTokenExpiresIn);
         Date refreshTokenExpiresInDate = Date.from(refreshTokenExpiresIn);

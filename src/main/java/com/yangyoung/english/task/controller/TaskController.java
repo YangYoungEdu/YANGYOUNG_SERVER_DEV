@@ -61,9 +61,9 @@ public class TaskController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/lecture")
+    @GetMapping("/lecture/{lectureId}")
     @Operation(summary = "강의별 과제 전체 조회", description = "강의 과제를 전체 조회합니다.")
-    public ResponseEntity<List<LectureTaskResponse>> getAllLectureTask(@RequestParam Long lectureId) {
+    public ResponseEntity<List<LectureTaskResponse>> getAllLectureTask(@PathVariable Long lectureId) {
         List<LectureTaskResponse> response = taskService.getAllLectureTask(lectureId);
         return ResponseEntity.ok(response);
     }

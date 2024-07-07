@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yangyoung.english.material.dto.request.FileUploadRequest;
+import com.yangyoung.english.material.dto.response.MaterialResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -59,6 +60,10 @@ public class SynologyFileStationService {
      * ToDo: need to handle the file name with Korean
      * */
     public String uploadFile(FileUploadRequest request) throws IOException {
+
+        log.info("File upload request: {}", request.getFileList());
+        log.info("Lecture: {}", request.getLecture());
+        log.info("Date: {}", request.getDate());
 
         String lecture = request.getLecture();
         String date = request.getDate();
@@ -182,7 +187,7 @@ public class SynologyFileStationService {
     /*
      * Get the file list of the lecture on the date
      * */
-    public List<String> getFile(String lecture, String date) {
+    public List<MaterialResponse> getFile(String lecture, String date) {
 
         List<String> fileList = new ArrayList<>();
 
@@ -209,7 +214,6 @@ public class SynologyFileStationService {
                     String responseContent = EntityUtils.toString(entity);
                     System.out.println(responseContent);
                     fileList = getFileNames(responseContent);
-
                 }
 
                 EntityUtils.consume(entity);
@@ -218,7 +222,9 @@ public class SynologyFileStationService {
             e.printStackTrace();
         }
 
-        return fileList;
+        return fileList.stream()
+                .map(fileName -> new MaterialResponse(fileName, date))
+                .toList();
     }
 
     public byte[] downloadFile(String lecture, String date, String fileName) {
@@ -297,6 +303,39 @@ public class SynologyFileStationService {
         }
 
         return fileList;
+    }
+
+    public void deleteFile(String lecture, String date, String fileName) {
+        Optional<String> sid = authenticate();
+        if (sid.isEmpty()) {
+            throw new RuntimeException("Failed to authenticate with Synology");
+        }
+
+        String path = buildPath(lecture, date) + "/" + fileName;
+
+        String deleteUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Delete&method=start&version=2&_sid=" + sid.get();
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            URIBuilder uriBuilder = new URIBuilder(deleteUrl);
+            uriBuilder.addParameter("path", path);
+            URI uri = uriBuilder.build();
+
+            HttpGet request = new HttpGet(uri);
+
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
+
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    String responseContent = EntityUtils.toString(entity);
+                    System.out.println(responseContent);
+                }
+
+                EntityUtils.consume(entity);
+            }
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     private String buildPath(String lecture, String date) {

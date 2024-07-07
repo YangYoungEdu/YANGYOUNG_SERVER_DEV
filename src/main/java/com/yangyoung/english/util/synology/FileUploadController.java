@@ -1,6 +1,7 @@
 package com.yangyoung.english.util.synology;
 
 import com.yangyoung.english.material.dto.request.FileUploadRequest;
+import com.yangyoung.english.material.dto.response.MaterialResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,42 +25,50 @@ public class FileUploadController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@ModelAttribute FileUploadRequest request) {
+    public ResponseEntity<String> uploadFile(
+            @RequestPart("files") List<MultipartFile> fileList,
+            @RequestPart("lecture") String lecture,
+            @RequestPart("date") String date) {
         try {
+            FileUploadRequest request = new FileUploadRequest();
+            request.setFileList(fileList);
+            request.setLecture(lecture);
+            request.setDate(date);
+
             String response = fileStationService.uploadFile(request);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed: " + e.getMessage());
         }
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<String> listFile() {
-        try {
-            String response = fileStationService.listFile();
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("File List failed: " + e.getMessage());
-        }
-    }
+//    @GetMapping("/get")
+//    public ResponseEntity<String> listFile() {
+//        try {
+//            String response = fileStationService.listFile();
+//            return ResponseEntity.ok(response);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(500).body("File List failed: " + e.getMessage());
+//        }
+//    }
 
-    @GetMapping("/search")
-    public ResponseEntity<String> searchFile() {
-        try {
-            String response = fileStationService.searchFile();
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("File Search failed: " + e.getMessage());
-        }
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<String> searchFile() {
+//        try {
+//            String response = fileStationService.searchFile();
+//            return ResponseEntity.ok(response);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(500).body("File Search failed: " + e.getMessage());
+//        }
+//    }
 
-    @GetMapping("/get")
-    public ResponseEntity<List<String>> getFile(@RequestParam String lecture, @RequestParam String date) {
+    @GetMapping("")
+    public ResponseEntity<List<MaterialResponse>> getFile(@RequestParam String lecture, @RequestParam String date) {
         try {
-            List<String> response = fileStationService.getFile(lecture, date);
+            List<MaterialResponse> response = fileStationService.getFile(lecture, date);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(List.of("File Get failed: " + e.getMessage()));
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -75,6 +84,16 @@ public class FileUploadController {
             return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(("File Download failed: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @GetMapping("/delete")
+    public ResponseEntity<Void> deleteFile(@RequestParam String lecture, @RequestParam String date, @RequestParam String fileName) {
+        try {
+            fileStationService.deleteFile(lecture, date, fileName);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).build();
         }
     }
 }
