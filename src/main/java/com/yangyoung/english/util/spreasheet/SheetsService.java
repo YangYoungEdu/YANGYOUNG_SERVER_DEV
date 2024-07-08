@@ -34,7 +34,7 @@ public class SheetsService {
     //    private static final String SPREADSHEET_ID = "1B17_vfXVo_3kHz3NBYqriR6aTwCywmHNj9Zxjk-Lg4M";
     private static final String SPREADSHEET_ID = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU";
     private static final String STUDENT_RANGE = "학생!A2:H";
-    private static final String LECTURE_RANGE = "강의!A2:J";
+    private static final String LECTURE_RANGE = "24년7월강의!A2:L";
 
     /**
      * Creates an authorized Credential object.

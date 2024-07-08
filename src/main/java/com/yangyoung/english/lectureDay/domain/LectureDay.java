@@ -43,4 +43,17 @@ public class LectureDay {
             case SUNDAY -> "일요일";
         };
     }
+
+    public static DayOfWeek convertLectureDay(String dayOfWeek) {
+        return switch (dayOfWeek) {
+            case "월요일" -> DayOfWeek.MONDAY;
+            case "화요일" -> DayOfWeek.TUESDAY;
+            case "수요일" -> DayOfWeek.WEDNESDAY;
+            case "목요일" -> DayOfWeek.THURSDAY;
+            case "금요일" -> DayOfWeek.FRIDAY;
+            case "토요일" -> DayOfWeek.SATURDAY;
+            case "일요일" -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalStateException("Unexpected value: " + dayOfWeek);
+        };
+    }
 }

@@ -38,9 +38,9 @@ import java.security.GeneralSecurityException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.WeekFields;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,12 +52,13 @@ public class LectureService {
     private static final int LECTURE_NAME_INDEX = 1;
     private static final int LECTURE_TEACHER_INDEX = 2;
     private static final int LECTURE_ROOM_INDEX = 3;
-    private static final int LECTURE_DATE_INDEX = 4;
-    private static final int LECTURE_START_TIME_INDEX = 5;
-    private static final int LECTURE_END_TIME_INDEX = 6;
-    private static final int LECTURE_PRESET_INDEX = 7;
-    private static final int LECTURE_SCHOOL_INDEX = 8;
-    private static final int LECTURE_STUDENT_INDEX = 9;
+    private static final int LECTURE_DAY_INDEX = 4;
+    private static final int LECTURE_DATE_INDEX = 5;
+    private static final int LECTURE_START_TIME_INDEX = 6;
+    private static final int LECTURE_END_TIME_INDEX = 7;
+    private static final int LECTURE_PRESET_INDEX = 8;
+    private static final int LECTURE_SCHOOL_INDEX = 9;
+    private static final int LECTURE_STUDENT_INDEX = 10;
 
     private final LectureRepository lectureRepository;
     private final LectureDateRepository lectureDateRepository;
@@ -134,7 +135,7 @@ public class LectureService {
         studentLectureRepository.saveAll(studentLectureList);
     }
 
-    @Scheduled(cron = "0 0 0 * * FRI") // 매주 금요일 자정에 실행
+    @Scheduled(cron = "0 0 0 * * SUN") // 매주 일요일 자정에 실행
     @Transactional
     // ToDo : 날짜 중복 할당 수정
     public void addLectureBySheet() throws GeneralSecurityException, IOException {
@@ -155,12 +156,30 @@ public class LectureService {
                 newLecture = createLectureFromData(lectureData);
                 tempLecture = newLecture;
                 lectureRepository.save(newLecture);
-                List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
+
+                List<DayOfWeek> dayList = Arrays.stream(lectureData.get(LECTURE_DAY_INDEX).toString().split(","))
+                        .map(LectureDay::convertLectureDay)
+                        .toList();
+                List<LocalDate> dateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
                         .map(LocalDate::parse)
                         .toList();
-                assignLectureDate(newLecture, lectureDateList);
-            }
+                assignLectureDayAndDate(newLecture, dayList, dateList);
 
+                // ToDo: 케이스 고려 필요
+//                if (!lectureData.get(LECTURE_DAY_INDEX).toString().isBlank()) {
+//                    List<DayOfWeek> lectureDayList = Arrays.stream(lectureData.get(LECTURE_DAY_INDEX).toString().split(","))
+//                            .map(LectureDay::convertLectureDay)
+//                            .collect(Collectors.toList());
+//                    assignLectureDay(newLecture, lectureDayList);
+//                }
+//
+//                if (!lectureData.get(LECTURE_DATE_INDEX).toString().isBlank()) {
+//                    List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
+//                            .map(LocalDate::parse)
+//                            .toList();
+//                    assignLectureDate(newLecture, lectureDateList);
+//                }
+            }
 
             String preset = lectureData.get(LECTURE_PRESET_INDEX).toString();
             if (!preset.isBlank()) { // 프리셋이 존재할 경우
@@ -208,17 +227,16 @@ public class LectureService {
             return false;
         }
 
-        for (int i = 0; i < REQUIRED_FIELDS; i++) {
-            if (lectureData.get(i) == null || lectureData.get(i).toString().isBlank()) {
-                return false;
-            }
-        }
+//        for (int i = 0; i < REQUIRED_FIELDS; i++) {
+//            if (lectureData.get(i) == null || lectureData.get(i).toString().isBlank()) {
+//                return false;
+//            }
+//        }
 
-        String lectureName = lectureData.get(LECTURE_NAME_INDEX).toString();
-        if (lectureRepository.existsByName(lectureName)) {
-            return false;
-        }
-
+//        String lectureName = lectureData.get(LECTURE_NAME_INDEX).toString();
+//        if (lectureRepository.existsByName(lectureName)) {
+//            return false;
+//        }
         return true;
     }
 
@@ -236,14 +254,9 @@ public class LectureService {
         LocalTime startTime = LocalTime.parse(lectureData.get(LECTURE_START_TIME_INDEX).toString());
         LocalTime endTime = LocalTime.parse(lectureData.get(LECTURE_END_TIME_INDEX).toString());
 
-        List<LocalDate> lectureDateList;
-        try {
-            lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
-                    .map(LocalDate::parse)
-                    .toList();
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format", e);
-        }
+//        List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
+//                .map(LocalDate::parse)
+//                .toList();
 
         Lecture newLecture = Lecture.builder()
                 .lectureType(lectureType)
@@ -254,7 +267,7 @@ public class LectureService {
                 .endTime(endTime)
                 .build();
 
-        lectureDateList.forEach(date -> lectureDateRepository.save(new LectureDate(date, newLecture)));
+//        lectureDateList.forEach(date -> lectureDateRepository.save(new LectureDate(date, newLecture)));
 
         return newLecture;
     }
@@ -288,6 +301,32 @@ public class LectureService {
             studentLectureList.add(new StudentLecture(student, lecture));
         }
         studentLectureRepository.saveAll(studentLectureList);
+    }
+
+    private void assignLectureDayAndDate(Lecture lecture, List<DayOfWeek> dayList, List<LocalDate> dateList) {
+
+        List<LocalDate> dateListByDay = new ArrayList<>();
+
+        if (!dayList.isEmpty()) {
+            LocalDate date = dateList.get(0);
+            int year = date.getYear();
+            int month = date.getMonthValue();
+            for (DayOfWeek dayOfWeek : dayList) {
+                while (date.getMonthValue() == month) {
+                    if (date.getDayOfWeek() == dayOfWeek) {
+                        dateListByDay.add(date); // 주어진 요일과 일치하는 날짜를 리스트에 추가
+                    }
+                    date = date.plusDays(1); // 다음 날짜로 이동
+                }
+            }
+        } else {
+            dateListByDay = dateList;
+        }
+
+        for (LocalDate date : dateListByDay) {
+            log.info("date: {}", date);
+        }
+        assignLectureDate(lecture, dateListByDay);
     }
 
     // 강의 -> 날짜 할당

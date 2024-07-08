@@ -22,14 +22,18 @@ public enum LectureType {
     }
 
     public static LectureType getLectureTypeName(String lectureTypeName) {
+
+        if (lectureTypeName.isBlank()) {
+            return CLASS;
+        }
+
         return switch (lectureTypeName) {
             case "PRE" -> PRE;
-            case "CLASS" -> CLASS;
             case "교과서" -> TEXTBOOK;
             case "모의고사" -> MOCK;
             case "보충교재" -> SUPPLEMENT;
             case "확인학습" -> CHECK;
-            default -> throw new IllegalArgumentException("No enum constant with lectureTypeName: " + lectureTypeName);
+            default -> CLASS;
         };
     }
 }

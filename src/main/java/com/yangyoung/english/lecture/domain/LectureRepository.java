@@ -12,7 +12,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     // 강의명 중복 검사
     boolean existsByName(String name);
 
-    // 강의 조회 - 월 단위
+    // 강의 조회 - 월 단위(Date)
     @Query("SELECT l FROM Lecture l JOIN l.lectureDateList ld WHERE FUNCTION('YEAR', ld.lectureDate) = :year AND FUNCTION('MONTH', ld.lectureDate) = :month")
     List<Lecture> findLecturesByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
