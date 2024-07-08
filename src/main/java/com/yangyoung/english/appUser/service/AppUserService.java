@@ -1,6 +1,8 @@
 package com.yangyoung.english.appUser.service;
 
+import com.yangyoung.english.appUser.domain.AppUser;
 import com.yangyoung.english.appUser.domain.AppUserRepository;
+import com.yangyoung.english.appUser.dto.response.SignInResponse;
 import com.yangyoung.english.appUser.exception.AppUserErrorCode;
 import com.yangyoung.english.appUser.exception.InvalidTokenException;
 import com.yangyoung.english.appUser.exception.PasswordNotMatchException;
@@ -19,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Service
@@ -33,19 +36,20 @@ public class AppUserService {
     private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
-    public JwtToken signIn(String username, String password) {
+    public SignInResponse signIn(String username, String password) {
 
-        log.info("username: " + username);
-        log.info("password: " + password);
+        log.info("username: {}", username);
+        log.info("password: {}", password);
 
-        if (!appUserRepository.existsByUsername(username)) {
+        Optional<AppUser> appUser = appUserRepository.findByUsername(username);
+        if (appUser.isEmpty()) {
             AppUserErrorCode appUserErrorCode = AppUserErrorCode.USERNAME_NOT_FOUND;
             throw new UserNotFoundException(appUserErrorCode, username);
         }
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        log.info("authenticationToken: " + authenticationToken.toString());
+        log.info("authenticationToken: {}", authenticationToken.toString());
 
         try {
             // 2. 실제 검증. authenticate() 메서드를 통해 요청된 Member 에 대한 검증 진행
@@ -55,9 +59,8 @@ public class AppUserService {
 
             // 3. 인증 정보를 기반으로 JWT 토큰 생성
             JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
-            log.info("jwtToken: " + jwtToken.toString());
 
-            return jwtToken;
+            return new SignInResponse(appUser.get().getId(), appUser.get().getUsername(), jwtToken.getAccessToken(), jwtToken.getRefreshToken());
         } catch (BadCredentialsException e) {
             AppUserErrorCode appUserErrorCode = AppUserErrorCode.PASSWORD_NOT_MATCH;
             throw new PasswordNotMatchException(appUserErrorCode, password);

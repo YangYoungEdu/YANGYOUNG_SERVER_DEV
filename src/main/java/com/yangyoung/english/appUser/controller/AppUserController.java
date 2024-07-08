@@ -1,5 +1,6 @@
 package com.yangyoung.english.appUser.controller;
 
+import com.yangyoung.english.appUser.dto.response.SignInResponse;
 import com.yangyoung.english.appUser.service.AppUserService;
 import com.yangyoung.english.auth.dto.JwtToken;
 import com.yangyoung.english.auth.dto.SignInDto;
@@ -19,13 +20,13 @@ public class AppUserController {
     private final AppUserService appUserService;
 
     @PostMapping("/sign-in")
-    public JwtToken signIn(@RequestBody SignInDto signInDto) {
+    public ResponseEntity<SignInResponse> signIn(@RequestBody SignInDto signInDto) {
         String username = signInDto.getUsername();
         String password = signInDto.getPassword();
-        JwtToken jwtToken = appUserService.signIn(username, password);
+        SignInResponse response = appUserService.signIn(username, password);
         log.info("request username = {}, password = {}", username, password);
-        log.info("jwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
-        return jwtToken;
+        log.info("jwtToken accessToken = {}, refreshToken = {}", response.getAccessToken(), response.getRefreshToken());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/sign-out")
