@@ -24,8 +24,8 @@ public class StudentController {
     private final StudentService studentService;
 
     // 학생 등록 - 폼 입력 컨트롤러
-    @PostMapping("")
-    @Operation(summary = "학생 등록 - 폼", description = "학생 정보를 등록합니다.")
+    @PostMapping("/form")
+    @Operation(summary = "학생 등록 - 폼", description = "폼의 정보를 통해 학생 정보를 등록합니다.")
     public ResponseEntity<StudentResponse> addStudentByForm(@RequestBody StudentAddRequest request) {
         StudentResponse response = studentService.addStudentByForm(request);
 
@@ -33,7 +33,7 @@ public class StudentController {
     }
 
     // 학생 정보 등록 - 스프레드시트 읽기 컨트롤러
-    @PostMapping("/sheet")
+    @PostMapping("/spreadsheet")
     @Operation(summary = "학생 정보 등록 - 스프레드시트", description = "스프레드시트를 읽어 학생 정보를 등록합니다.")
     public ResponseEntity<Void> addStudentByExcel() throws Exception {
         studentService.addStudentsBySheet();
@@ -104,15 +104,6 @@ public class StudentController {
         return ResponseEntity.ok().build();
     }
 
-    // 학생 목록 순서 변경 컨트롤러
-    @PatchMapping("/seq")
-    @Operation(summary = "학생 목록 순서 변경", description = "학생 목록의 순서를 변경합니다.")
-    public ResponseEntity<Void> updateStudentSeq(@RequestBody StudentsSeqUpdateRequest request) {
-        studentService.updateStudentSequence(request);
-
-        return ResponseEntity.ok().build();
-    }
-
     // 학생 검색(이름, 학교, 학년) 컨트롤러
     @GetMapping("/search")
     @Operation(summary = "학생 검색", description = "학생 정보를 검색합니다.")
@@ -141,6 +132,7 @@ public class StudentController {
     }
 
     // 수업 미등록 학생 조회 컨트롤러
+    // ToDo: 로직 수정 및 최적화 필요
     @GetMapping("/lecture/unregistered")
     @Operation(summary = "수업 미등록 학생 조회", description = "수업에 미등록된 학생을 조회합니다.")
     public ResponseEntity<List<StudentResponse>> getUnregisteredStudents() {

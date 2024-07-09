@@ -25,8 +25,6 @@ public class Student extends BaseEntity {
     @Id
     private Long id;
 
-    private Long seq;
-
     private boolean isEnrolled;
 
     private String name;
@@ -63,7 +61,6 @@ public class Student extends BaseEntity {
     @Builder
     public Student(Long id, String name, School school, Section section, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
         this.id = id;
-        this.seq = id;
         this.name = name;
         this.school = school;
         this.section = section;
@@ -107,10 +104,6 @@ public class Student extends BaseEntity {
         if (updateData.get(4) != null) {
             this.parentPhoneNumber = (String) updateData.get(4);
         }
-    }
-
-    public void updateSequence(Long id) {
-        this.id = id;
     }
 
     public void updateEnrollStatus(boolean isEnrolled) {

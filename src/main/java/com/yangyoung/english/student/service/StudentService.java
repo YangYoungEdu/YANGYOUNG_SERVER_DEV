@@ -239,20 +239,6 @@ public class StudentService {
         studentRepository.deleteAllById(idList);
     }
 
-    // 학생 목록 순서 수정
-    @Transactional
-    public void updateStudentSequence(StudentsSeqUpdateRequest request) {
-
-        List<Map<Long, Long>> studentIdSeqList = request.getStudentIdSeqList();
-
-        for (Map<Long, Long> studentIdSeq : studentIdSeqList) {
-            for (Map.Entry<Long, Long> student : studentIdSeq.entrySet()) {
-                Student studentToUpdate = studentUtilService.findStudentById(student.getKey());
-                studentToUpdate.updateSequence(student.getValue());
-            }
-        }
-    }
-
     // 학생 검색(이름, 학교, 학년)
     @Transactional
     public Page<StudentResponse> searchStudents
