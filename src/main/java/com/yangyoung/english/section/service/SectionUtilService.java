@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class SectionUtilService {
@@ -18,7 +20,12 @@ public class SectionUtilService {
             return null;
         }
 
-        return sectionRepository.findByName(sectionName)
-                .orElseGet(() -> sectionRepository.save(Section.builder().name(sectionName).build()));
+        Optional<Section> section = sectionRepository.findByName(sectionName);
+        if (section.isEmpty()) {
+            Section newSection = Section.builder().name(sectionName).build();
+            return sectionRepository.save(newSection);
+        }
+
+        return section.get();
     }
 }

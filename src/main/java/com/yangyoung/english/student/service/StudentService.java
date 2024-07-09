@@ -1,6 +1,7 @@
 package com.yangyoung.english.student.service;
 
 import com.yangyoung.english.configuration.OneIndexedPageable;
+import com.yangyoung.english.exception.general.EmptyFieldException;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
@@ -15,7 +16,6 @@ import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
 import com.yangyoung.english.student.dto.request.StudentAddRequest;
 import com.yangyoung.english.student.dto.request.StudentsDischargeRequest;
-import com.yangyoung.english.student.dto.request.StudentsSeqUpdateRequest;
 import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +47,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StudentService {
 
+    private final static int STUDENT_ID_INDEX = 0;
+    private final static int STUDENT_NAME_INDEX = 1;
+    private final static int STUDENT_GRADE_INDEX = 2;
+    private final static int STUDENT_SCHOOL_INDEX = 3;
+    private final static int STUDENT_STUDENT_PHONE_NUMBER_INDEX = 4;
+    private final static int STUDENT_PARENT_PHONE_NUMBER_INDEX = 5;
+    private final static int STUDENT_SECTION_INDEX = 6;
     private final StudentRepository studentRepository;
     private final SchoolUtilService schoolUtilService;
     private final StudentUtilService studentUtilService;
@@ -74,7 +80,6 @@ public class StudentService {
     }
 
     // 학생 정보 등록 - 스프레드시트로 등록
-    // 매주 금요일 자정마다 실행
     // ToDo : 실행시간 설정 변경
     @Scheduled(cron = "0 0 0 * * FRI")
     @Transactional
@@ -88,15 +93,15 @@ public class StudentService {
                 continue;
             }
 
-            Long id = Long.parseLong(studentData.get(0).toString());
-            if (isIdDuplicated(id)) { // 이미 있는 학생일 경우 업데이트할 정보 있는지 확인 후 업데이트
-                Student existingStudent = studentUtilService.findStudentById(id);
+            Long studentId = Long.parseLong(studentData.get(STUDENT_ID_INDEX).toString());
+            if (isIdDuplicated(studentId)) { // 이미 있는 학생일 경우 업데이트할 정보 있는지 확인 후 업데이트
+                Student existingStudent = studentUtilService.findStudentById(studentId);
                 if (isNeedToUpdate(existingStudent, studentData)) {
                     existingStudent.update(studentData);
                 }
             }
 
-            Student newStudent = createStudentFromData(id, studentData);
+            Student newStudent = new Student(studentData);
             newStudentList.add(newStudent);
         }
 
@@ -109,40 +114,40 @@ public class StudentService {
     }
 
     // 필수항목 확인
-    private boolean isStudentDataEmpty(List<Object> studentData) { // ToDo : 필수 데이터 기준 수정
-        return studentData.get(0).toString().isEmpty() ||
-                studentData.get(1).toString().isEmpty() ||
-                studentData.get(2).toString().isEmpty();
+    // ToDo : 필수 데이터 기준 수정 필요
+    private boolean isStudentDataEmpty(List<Object> studentData) {
+
+        String studentId = studentData.get(STUDENT_ID_INDEX).toString();
+        String name = studentData.get(STUDENT_NAME_INDEX).toString();
+        String grade = studentData.get(STUDENT_GRADE_INDEX).toString();
+        String school = studentData.get(STUDENT_SCHOOL_INDEX).toString();
+        String section = studentData.get(STUDENT_SECTION_INDEX).toString();
+
+        boolean isDataEmpty = studentId.isBlank() ||
+                name.isBlank() || grade.isBlank() || school.isBlank() || section.isBlank();
+        if (!isDataEmpty) {
+            log.error("학생 정보 누락 : 학생 ID : {}, 이름 : {}, 학년 : {}, 학교 : {}, 반 : {}",
+                    studentId, name, grade, school, section);
+        }
+
+        return isDataEmpty;
     }
 
     // 업데이트 필요 여부 확인
     private boolean isNeedToUpdate(Student existringStudent, List<Object> studentData) {
-        return !existringStudent.getName().equals(studentData.get(1).toString()) ||
-                !existringStudent.getSchool().getName().equals(studentData.get(3).toString()) ||
-                !existringStudent.getGrade().getGradeName().equals(studentData.get(2).toString()) ||
-                !existringStudent.getStudentPhoneNumber().equals(studentData.get(4).toString()) ||
-                !existringStudent.getParentPhoneNumber().equals(studentData.get(5).toString());
-    }
 
-    // 엑셀 파일에서 읽어온 데이터로 학생 객체 생성
-    private Student createStudentFromData(Long id, List<Object> studentData) {
-        String name = studentData.get(1).toString();
-        Grade grade = Grade.getSecondGradeName((String) studentData.get(2));
-        School school = schoolUtilService.getSchoolByName(studentData.get(3).toString());
-        Section section = sectionUtilService.findSectionByName(studentData.get(6).toString());
+        String name = studentData.get(STUDENT_NAME_INDEX).toString();
+        String school = studentData.get(STUDENT_SCHOOL_INDEX).toString();
+        String grade = studentData.get(STUDENT_GRADE_INDEX).toString();
+        String studentPhoneNumber = studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX).toString();
+        String parentPhoneNumber = studentData.get(STUDENT_PARENT_PHONE_NUMBER_INDEX).toString();
 
-        String studentPhoneNumber = studentData.get(4).toString();
-        String parentPhoneNumber = studentData.get(5).toString();
-
-        return Student.builder()
-                .id(id)
-                .name(name)
-                .school(school)
-                .grade(grade)
-                .section(section)
-                .studentPhoneNumber(studentPhoneNumber)
-                .parentPhoneNumber(parentPhoneNumber)
-                .build();
+        return
+                !existringStudent.getName().equals(name) ||
+                        !existringStudent.getSchool().getName().equals(school) ||
+                        !existringStudent.getGrade().getGradeName().equals(grade) ||
+                        !existringStudent.getStudentPhoneNumber().equals(studentPhoneNumber) ||
+                        !existringStudent.getParentPhoneNumber().equals(parentPhoneNumber);
     }
 
     // 학생 전체 조회 - 페이징 처리
@@ -182,19 +187,11 @@ public class StudentService {
         School school = schoolUtilService.getSchoolByName(request.getSchool());
 
         student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
-        student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
 
         return new StudentResponse(student);
     }
 
-    // 학생 퇴원 처리 - single
-    @Transactional
-    public void dischargeStudent(Long id) {
-        Student student = studentUtilService.findStudentById(id);
-        student.updateEnrollStatus(false);
-    }
-
-    // 학생 퇴원 처리 - multiple
+    // 학생 퇴원 처리
     @Transactional
     public void dischargeStudents(StudentsDischargeRequest request) {
 
@@ -208,14 +205,7 @@ public class StudentService {
         }
     }
 
-    // 학생 복원 처리 - single
-    @Transactional
-    public void restoreStudent(Long id) {
-        Student student = studentUtilService.findStudentById(id);
-        student.updateEnrollStatus(true);
-    }
-
-    // 학생 복원 처리 - multiple
+    // 학생 복원 처리
     @Transactional
     public void restoreStudents(StudentsDischargeRequest request) {
 
@@ -256,6 +246,7 @@ public class StudentService {
     }
 
     // 학생 오늘 스케줄 조회
+    // ToDo: 클라이언트에 맞춰서 수정 필요
     @Transactional
     public StudentScheduleResponse getStudentTodaySchedule(Long studentId, LocalDate today) {
 
@@ -295,6 +286,7 @@ public class StudentService {
     }
 
     // 수업 미등록 학생 조회
+    // ToDo: 로직 수정 및 최적화 필요
     @Transactional
     public List<StudentResponse> getUnregisteredStudents() {
 
@@ -340,5 +332,4 @@ public class StudentService {
     private boolean isDateBeforeOrAfter(LocalDate date, LocalDate start, LocalDate end) {
         return date.isBefore(start) || date.isAfter(end);
     }
-
 }

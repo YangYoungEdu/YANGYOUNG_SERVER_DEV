@@ -31,7 +31,8 @@ public class SheetsService {
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-    //    private static final String SPREADSHEET_ID = "1B17_vfXVo_3kHz3NBYqriR6aTwCywmHNj9Zxjk-Lg4M";
+
+    // ToDo: 사용자에게 받아서 유동적으로 사용 할 수 있도록 수정 필요
     private static final String SPREADSHEET_ID = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU";
     private static final String STUDENT_RANGE = "학생!A2:H";
     private static final String LECTURE_RANGE = "24년7월강의!A2:L";
@@ -69,24 +70,6 @@ public class SheetsService {
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).setCallbackPath("/CallBack").build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
-
-//    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-//        // Load client secrets.
-//        InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-//        if (in == null) {
-//            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-//        }
-//        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-//
-//        // Build flow and trigger user authorization request.
-//        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-//                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-//                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-//                .setAccessType("offline")
-//                .build();
-//        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8080).setCallbackPath("/CallBack").build();
-//        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-//    }
 
     /**
      * Creates a new Sheets service client.

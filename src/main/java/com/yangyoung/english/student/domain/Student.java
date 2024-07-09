@@ -70,6 +70,18 @@ public class Student extends BaseEntity {
         this.isEnrolled = true;
     }
 
+    @Builder
+    public Student(List<Object> studentData) {
+        this.id = (Long) studentData.get(0);
+        this.name = (String) studentData.get(1);
+        this.school = (School) studentData.get(2);
+        this.section = (Section) studentData.get(3);
+        this.grade = (Grade) studentData.get(4);
+        this.studentPhoneNumber = (String) studentData.get(5);
+        this.parentPhoneNumber = (String) studentData.get(6);
+        this.isEnrolled = true;
+    }
+
     public void update(String name, School school, String grade, String studentPhoneNumber, String parentPhoneNumber) {
         if (!name.isBlank()) {
             this.name = name;

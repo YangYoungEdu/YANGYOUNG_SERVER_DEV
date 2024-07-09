@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class SchoolUtilService {
@@ -17,7 +19,13 @@ public class SchoolUtilService {
         if (schoolName.isBlank()) {
             return null;
         }
-        return schoolRepository.findByName(schoolName)
-                .orElseGet(() -> schoolRepository.save(School.builder().name(schoolName).build()));
+
+        Optional<School> school = schoolRepository.findByName(schoolName);
+        if (school.isEmpty()) {
+            School newSchool = School.builder().name(schoolName).build();
+            return schoolRepository.save(newSchool);
+        }
+
+        return school.get();
     }
 }
