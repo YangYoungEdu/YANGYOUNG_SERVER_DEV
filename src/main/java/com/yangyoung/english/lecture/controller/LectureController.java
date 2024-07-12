@@ -98,12 +98,12 @@ public class LectureController {
     }
 
     // 강의 정보 삭제 - single 컨트롤러
-    @DeleteMapping("/{lectureId}")
-    @Operation(summary = "강의 정보 삭제 - single", description = "강의 정보를 삭제합니다.")
-    public ResponseEntity<Void> deleteLecture(@PathVariable final Long lectureId) {
-        lectureService.deleteLecture(lectureId);
-        return ResponseEntity.ok().build();
-    }
+//    @DeleteMapping("/{lectureId}")
+//    @Operation(summary = "강의 정보 삭제 - single", description = "강의 정보를 삭제합니다.")
+//    public ResponseEntity<Void> deleteLecture(@PathVariable final Long lectureId) {
+//        lectureService.deleteLecture(lectureId);
+//        return ResponseEntity.ok().build();
+//    }
 
     // 강의 정보 삭제 - multiple 컨트롤러
     @DeleteMapping("")

@@ -1,5 +1,6 @@
 package com.yangyoung.english.appUser.dto.response;
 
+import com.yangyoung.english.auth.dto.JwtToken;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,5 @@ public class SignInResponse {
 
     private String username;
 
-    private String accessToken;
-
-    private String refreshToken;
+    private JwtToken jwtToken;
 }

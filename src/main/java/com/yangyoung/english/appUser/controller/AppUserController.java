@@ -25,7 +25,7 @@ public class AppUserController {
         String password = signInDto.getPassword();
         SignInResponse response = appUserService.signIn(username, password);
         log.info("request username = {}, password = {}", username, password);
-        log.info("jwtToken accessToken = {}, refreshToken = {}", response.getAccessToken(), response.getRefreshToken());
+        log.info("jwtToken accessToken = {}, refreshToken = {}", response.getJwtToken().getAccessToken(), response.getJwtToken().getRefreshToken());
         return ResponseEntity.ok(response);
     }
 

@@ -31,10 +31,9 @@ public class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 기반 인증 비활성화
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
-                                .requestMatchers("/**").permitAll()
-//                                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/api/v2/appUser/sign-in", "/api/v2/appUser/sign-out").permitAll()// 특정 경로 허용
-//                                .requestMatchers("/api/v2/appUser/test").hasRole("ADMIN")
+                                .requestMatchers("/api/v2/appUser/**").permitAll()
                                 .anyRequest().authenticated()); // 나머지 요청은 인증 필요
+//                                .anyRequest().hasRole("ADMIN")); // 나머지 요청은 인증 필요 //ToDo: API 별로 케이스 나누기(ADMIN, USER)
 
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter.class); // JWT 인증 필터 추가

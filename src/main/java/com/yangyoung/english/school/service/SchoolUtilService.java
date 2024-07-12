@@ -15,7 +15,7 @@ public class SchoolUtilService {
     private final SchoolRepository schoolRepository;
 
     @Transactional
-    public School getSchoolByName(String schoolName) {
+    public School findSchoolByName(String schoolName) {
         if (schoolName.isBlank()) {
             return null;
         }

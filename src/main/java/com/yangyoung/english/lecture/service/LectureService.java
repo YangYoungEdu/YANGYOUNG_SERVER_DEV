@@ -1,5 +1,6 @@
 package com.yangyoung.english.lecture.service;
 
+import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.domain.LectureType;
@@ -40,7 +41,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.WeekFields;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +74,7 @@ public class LectureService {
     @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
     @Transactional
     public void checkLectureStatus() {
+
         LocalDate today = LocalDate.now();
 
         List<Lecture> lectureList = lectureRepository.findByIsFinishedFalse();
@@ -83,13 +84,14 @@ public class LectureService {
                     .max(LocalDate::compareTo)
                     .orElse(null);
 
-            if (lastDate != null && lastDate.isAfter(today)) {
+            if (lastDate != null && lastDate.isAfter(today)) { // 마지막 강의 날짜가 오늘 이전일 경우 강의 종료 처리
                 lecture.updateIsFinished();
             }
         }
     }
 
     // 강의 정보 등록 - 폼 입력으로 등록
+    // ToDo: 2024-07-10: 강의 추가 시 요일 선택 필요?
     @Transactional
     public LectureResponse addLectureByForm(AddLectureByFormRequest request) {
 
@@ -347,7 +349,9 @@ public class LectureService {
     @Transactional
     public Page<LectureResponse> getAllLecture(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return lectureRepository.findAll(pageable).map(LectureResponse::new);
+        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
+
+        return lectureRepository.findAll(oneIndexedPageable).map(LectureResponse::new);
     }
 
     // 강의 전체 조회 - 달 단위
@@ -417,25 +421,26 @@ public class LectureService {
         return new LectureResponse(lecture);
     }
 
-    // 강의 삭제 - single
-    @Transactional
-    public void deleteLecture(Long lectureId) {
-
-        boolean isExist = lectureRepository.existsById(lectureId);
-        if (!isExist) {
-            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NOT_FOUND;
-            throw new LectureNotFoundException(lectureErrorCode, lectureId);
-        }
-
-        lectureRepository.deleteById(lectureId);
-    }
-
-    // 강의 삭제 - multiple
+    // 강의 삭제
     @Transactional
     public void deleteLectures(List<Long> lectureIdList) {
+
+        List<Long> deletedLectureIdList = new ArrayList<>();
+
         for (Long lectureId : lectureIdList) {
-            deleteLecture(lectureId);
+
+            boolean isExist = lectureRepository.existsById(lectureId);
+            if (!isExist) {
+                LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NOT_FOUND;
+                log.warn("Lecture not found: {}", lectureId);
+
+                return;
+            }
+
+            deletedLectureIdList.add(lectureId);
         }
+
+        lectureRepository.deleteAllById(deletedLectureIdList);
     }
 
     // 특정 학생이 수강하는 강의 조회

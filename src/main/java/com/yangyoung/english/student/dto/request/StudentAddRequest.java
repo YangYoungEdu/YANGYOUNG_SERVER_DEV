@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +28,18 @@ public class StudentAddRequest {
     private String studentPhoneNumber;
 
     private String parentPhoneNumber;
+
+    public static StudentAddRequest of(List<Object> objectList) {
+        return new StudentAddRequest(
+                Long.parseLong(objectList.get(0).toString()),
+                objectList.get(1).toString(),
+                objectList.get(2).toString(),
+                objectList.get(3).toString(),
+                objectList.get(4).toString(),
+                objectList.get(5).toString(),
+                objectList.get(6).toString()
+        );
+    }
 
     public Student toEntity(School school, Section section) {
         return Student.builder()

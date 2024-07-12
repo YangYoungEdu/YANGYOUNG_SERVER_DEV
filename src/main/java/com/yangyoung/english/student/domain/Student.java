@@ -71,12 +71,12 @@ public class Student extends BaseEntity {
     }
 
     @Builder
-    public Student(List<Object> studentData) {
-        this.id = (Long) studentData.get(0);
-        this.name = (String) studentData.get(1);
-        this.school = (School) studentData.get(2);
-        this.section = (Section) studentData.get(3);
-        this.grade = (Grade) studentData.get(4);
+    public Student(List<Object> studentData, School school, Section section) {
+        this.id = Long.parseLong(studentData.get(0).toString());
+        this.name = studentData.get(1).toString();
+        this.school = school;
+        this.section = section;
+        this.grade = Grade.getGradeName(studentData.get(4).toString());
         this.studentPhoneNumber = (String) studentData.get(5);
         this.parentPhoneNumber = (String) studentData.get(6);
         this.isEnrolled = true;

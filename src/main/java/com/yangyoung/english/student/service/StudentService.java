@@ -1,7 +1,6 @@
 package com.yangyoung.english.student.service;
 
 import com.yangyoung.english.configuration.OneIndexedPageable;
-import com.yangyoung.english.exception.general.EmptyFieldException;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
@@ -25,8 +24,8 @@ import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
-import com.yangyoung.english.util.spreasheet.SheetsService;
 import com.yangyoung.english.util.UtilService;
+import com.yangyoung.english.util.spreasheet.SheetsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +46,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StudentService {
 
+    private final static int REQUIRED_DATA = 7;
     private final static int STUDENT_ID_INDEX = 0;
     private final static int STUDENT_NAME_INDEX = 1;
     private final static int STUDENT_GRADE_INDEX = 2;
@@ -66,12 +66,18 @@ public class StudentService {
     @Transactional
     public StudentResponse addStudentByForm(StudentAddRequest request) {
 
-        if (isIdDuplicated(request.getId())) { // id 중복 검사
+//        boolean isDataValid = validateStudentData(request);
+//        if (!isDataValid) { // 필수 데이터 확인
+//            log.error("학생 데이터가 충분하지 않습니다.");
+//        }
+
+        boolean isIdDuplicate = studentRepository.existsById(request.getId());
+        if (isIdDuplicate) { // id 중복 검사
             StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_ID_DUPLICATED;
             throw new StudentIdDuplicateException(studentErrorCode, request.getId());
         }
 
-        School school = schoolUtilService.getSchoolByName(request.getSchool());
+        School school = schoolUtilService.findSchoolByName(request.getSchool());
         Section section = sectionUtilService.findSectionByName(request.getSection());
         Student newStudent = request.toEntity(school, section);
         studentRepository.save(newStudent);
@@ -89,66 +95,78 @@ public class StudentService {
 
         List<List<Object>> studentListData = SheetsService.readSpreadSheet("학생");
         for (List<Object> studentData : studentListData) {
-            if (isStudentDataEmpty(studentData)) { // 필수 데이터 확인
+            StudentAddRequest request = StudentAddRequest.of(studentData);
+            if (validateStudentData(studentData)) { // 필수 데이터 확인
                 continue;
             }
 
-            Long studentId = Long.parseLong(studentData.get(STUDENT_ID_INDEX).toString());
-            if (isIdDuplicated(studentId)) { // 이미 있는 학생일 경우 업데이트할 정보 있는지 확인 후 업데이트
-                Student existingStudent = studentUtilService.findStudentById(studentId);
+
+            Student existingStudent = studentUtilService.findStudentById(request.getId());
+            if (existingStudent != null) {
                 if (isNeedToUpdate(existingStudent, studentData)) {
                     existingStudent.update(studentData);
                 }
             }
 
-            Student newStudent = new Student(studentData);
+            School school = schoolUtilService.findSchoolByName(studentData.get(STUDENT_SCHOOL_INDEX).toString());
+            Section section = sectionUtilService.findSectionByName(studentData.get(STUDENT_SECTION_INDEX).toString());
+            Student newStudent = new Student(studentData, school, section);
             newStudentList.add(newStudent);
         }
 
-        studentRepository.saveAll(newStudentList);
-    }
-
-    // 아이디 중복 검사
-    private boolean isIdDuplicated(Long id) {
-        return studentRepository.existsById(id);
+        if (!newStudentList.isEmpty()) {
+            studentRepository.saveAll(newStudentList);
+        }
     }
 
     // 필수항목 확인
     // ToDo : 필수 데이터 기준 수정 필요
-    private boolean isStudentDataEmpty(List<Object> studentData) {
+    private boolean validateStudentData(List<Object> studentData) {
 
-        String studentId = studentData.get(STUDENT_ID_INDEX).toString();
-        String name = studentData.get(STUDENT_NAME_INDEX).toString();
-        String grade = studentData.get(STUDENT_GRADE_INDEX).toString();
-        String school = studentData.get(STUDENT_SCHOOL_INDEX).toString();
-        String section = studentData.get(STUDENT_SECTION_INDEX).toString();
-
-        boolean isDataEmpty = studentId.isBlank() ||
-                name.isBlank() || grade.isBlank() || school.isBlank() || section.isBlank();
-        if (!isDataEmpty) {
-            log.error("학생 정보 누락 : 학생 ID : {}, 이름 : {}, 학년 : {}, 학교 : {}, 반 : {}",
-                    studentId, name, grade, school, section);
+        if (studentData == null || studentData.size() < REQUIRED_DATA) {
+            return false;
         }
 
-        return isDataEmpty;
+        if (!isNumeric(studentData.get(STUDENT_ID_INDEX))) {
+            log.error("학생 아이디가 숫자가 아닙니다.");
+            return false;
+        }
+
+        boolean isDataEmpty = isNullOrBlank(studentData.get(STUDENT_NAME_INDEX)) ||
+                isNullOrBlank(studentData.get(STUDENT_GRADE_INDEX)) ||
+                isNullOrBlank(studentData.get(STUDENT_SCHOOL_INDEX)) ||
+                isNullOrBlank(studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX));
+
+        if (isDataEmpty) {
+            log.error("학생 데이터 중 필수 데이터가 비어있습니다.");
+        }
+
+        return !isDataEmpty;
+    }
+
+    private boolean isNullOrBlank(Object obj) {
+        return obj == null || obj.toString().isBlank();
+    }
+
+    private boolean isNumeric(Object obj) {
+        if (obj == null) return false;
+        try {
+            Long.parseLong(obj.toString());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     // 업데이트 필요 여부 확인
-    private boolean isNeedToUpdate(Student existringStudent, List<Object> studentData) {
-
-        String name = studentData.get(STUDENT_NAME_INDEX).toString();
-        String school = studentData.get(STUDENT_SCHOOL_INDEX).toString();
-        String grade = studentData.get(STUDENT_GRADE_INDEX).toString();
-        String studentPhoneNumber = studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX).toString();
-        String parentPhoneNumber = studentData.get(STUDENT_PARENT_PHONE_NUMBER_INDEX).toString();
-
-        return
-                !existringStudent.getName().equals(name) ||
-                        !existringStudent.getSchool().getName().equals(school) ||
-                        !existringStudent.getGrade().getGradeName().equals(grade) ||
-                        !existringStudent.getStudentPhoneNumber().equals(studentPhoneNumber) ||
-                        !existringStudent.getParentPhoneNumber().equals(parentPhoneNumber);
+    private boolean isNeedToUpdate(Student existingStudent, List<Object> studentData) {
+        return !existingStudent.getName().equals(studentData.get(STUDENT_NAME_INDEX).toString()) ||
+                !existingStudent.getSchool().getName().equals(studentData.get(STUDENT_SCHOOL_INDEX).toString()) ||
+                !existingStudent.getGrade().getGradeName().equals(studentData.get(STUDENT_GRADE_INDEX).toString()) ||
+                !existingStudent.getStudentPhoneNumber().equals(studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX).toString()) ||
+                !existingStudent.getParentPhoneNumber().equals(studentData.get(STUDENT_PARENT_PHONE_NUMBER_INDEX).toString());
     }
+
 
     // 학생 전체 조회 - 페이징 처리
     @Transactional
@@ -184,7 +202,7 @@ public class StudentService {
     public StudentResponse updateStudent(StudentAddRequest request) {
 
         Student student = studentUtilService.findStudentById(request.getId());
-        School school = schoolUtilService.getSchoolByName(request.getSchool());
+        School school = schoolUtilService.findSchoolByName(request.getSchool());
 
         student.update(request.getName(), school, request.getGrade(), request.getStudentPhoneNumber(), request.getParentPhoneNumber());
 

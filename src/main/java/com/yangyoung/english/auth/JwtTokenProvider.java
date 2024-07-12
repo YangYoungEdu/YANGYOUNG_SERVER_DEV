@@ -17,10 +17,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,12 +27,15 @@ public class JwtTokenProvider {
     private final static String TWO_HOURS = "7200000";
     private final static String TWO_WEEKS = "1209600000";
     private final Key key;
+    private final String secretKey;
+
 
     // application.yaml에서 secret 값 가져와서 key에 저장
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
         log.info("secretKey: {}", secretKey);
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.secretKey = secretKey;
     }
 
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
@@ -48,7 +48,7 @@ public class JwtTokenProvider {
         if (authorities.isEmpty()) {
             throw new RuntimeException("권한 정보가 없습니다.");
         } else {
-            log.info("authorities: {}", authorities.get());
+            log.info("authorities list: {}", authorities.get());
         }
 
         // 현재 시각 가져오기
@@ -63,7 +63,8 @@ public class JwtTokenProvider {
         // Access Token 생성
         Optional<String> accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim("auth", authorities)
+                .claim("roles", authorities.get())
+//                .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresInDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact().describeConstable();
@@ -95,12 +96,12 @@ public class JwtTokenProvider {
         // Jwt 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
-        if (claims.get("auth") == null) {
+        if (claims.get("roles") == null) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
         // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
+        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("roles").toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
@@ -148,5 +149,31 @@ public class JwtTokenProvider {
     public Long getExpiration(String accessToken) {
         Claims claims = parseClaims(accessToken);
         return claims.getExpiration().getTime();
+    }
+
+    public String getUsername(String token) {
+        return Jwts.parserBuilder().
+                setSigningKey(secretKey).
+                build().
+                parseClaimsJws(token).
+                getBody().
+                getSubject();
+    }
+
+    public List<String> getRoles(String token) {
+        List<String> roles = new ArrayList<>();
+
+        Claims claims = Jwts.
+                parserBuilder().
+                setSigningKey(secretKey).
+                build().
+                parseClaimsJws(token).
+                getBody();
+
+        System.out.println(claims.get("roles").toString());
+
+//        roles = roleList.get();
+
+        return roles;
     }
 }

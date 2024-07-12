@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 public enum StudentErrorCode implements ErrorCode {
 
     STUDENT_ID_DUPLICATED(HttpStatus.BAD_REQUEST, "해당 아이디가 이미 존재합니다. (ID: %s)"),
-    STUDENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 학생을 찾을 수 없습니다. (학생 ID: %d)");
+    STUDENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 학생을 찾을 수 없습니다. (학생 ID: %d)"),
+    STUDENT_ID_INVALID(HttpStatus.BAD_REQUEST, "학생 ID가 올바르지 않습니다. (ID: %s)"),
+    ;
 
     private final HttpStatus httpStatus;
     private final String message;
