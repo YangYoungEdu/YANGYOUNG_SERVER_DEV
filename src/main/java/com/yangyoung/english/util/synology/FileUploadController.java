@@ -28,7 +28,8 @@ public class FileUploadController {
     public ResponseEntity<String> uploadFile(
             @RequestPart("files") List<MultipartFile> fileList,
             @RequestPart("lecture") String lecture,
-            @RequestPart("date") String date) {
+            @RequestPart("date") String date,
+            @RequestHeader(value = "Authorization") String token) {
         try {
             FileUploadRequest request = new FileUploadRequest();
             request.setFileList(fileList);
@@ -63,7 +64,9 @@ public class FileUploadController {
 //    }
 
     @GetMapping("")
-    public ResponseEntity<List<MaterialResponse>> getFile(@RequestParam String lecture, @RequestParam String date) {
+    public ResponseEntity<List<MaterialResponse>> getFile(@RequestParam String lecture,
+                                                          @RequestParam String date,
+                                                          @RequestHeader(value = "Authorization") String token) {
         try {
             List<MaterialResponse> response = fileStationService.getFile(lecture, date);
             return ResponseEntity.ok(response);
@@ -73,7 +76,10 @@ public class FileUploadController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<byte[]> downloadFile(@RequestParam String lecture, @RequestParam String date, @RequestParam String fileName) {
+    public ResponseEntity<byte[]> downloadFile(@RequestParam String lecture,
+                                               @RequestParam String date,
+                                               @RequestParam String fileName,
+                                               @RequestHeader(value = "Authorization") String token) {
         try {
             byte[] fileContent = fileStationService.downloadFile(lecture, date, fileName);
 
@@ -88,7 +94,10 @@ public class FileUploadController {
     }
 
     @GetMapping("/delete")
-    public ResponseEntity<Void> deleteFile(@RequestParam String lecture, @RequestParam String date, @RequestParam String fileName) {
+    public ResponseEntity<Void> deleteFile(@RequestParam String lecture,
+                                           @RequestParam String date,
+                                           @RequestParam String fileName,
+                                           @RequestHeader(value = "Authorization") String token) {
         try {
             fileStationService.deleteFile(lecture, date, fileName);
             return ResponseEntity.ok().build();
