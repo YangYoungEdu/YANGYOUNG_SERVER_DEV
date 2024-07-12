@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    private final static String TWO_HOURS = "7200000";
-    private final static String TWO_WEEKS = "1209600000";
+    private final static Long TWO_HOURS = 7200000L;
+    private final static Long TWO_WEEKS = 86400000 * 14L;
     private final Key key;
     private final String secretKey;
 
@@ -54,8 +54,8 @@ public class JwtTokenProvider {
         // 현재 시각 가져오기
         Instant now = Instant.now();
         // Access Token 만료 시각 계산
-        Instant accessTokenExpiresIn = now.plus(2, ChronoUnit.HOURS);
-        Instant refreshTokenExpiresIn = now.plus(2, ChronoUnit.DAYS);
+        Instant accessTokenExpiresIn = now.plus(TWO_HOURS, ChronoUnit.HOURS);
+        Instant refreshTokenExpiresIn = now.plus(TWO_WEEKS, ChronoUnit.DAYS);
         // Date 객체로 변환 (예시로 Date 객체로 변환하는 경우)
         Date accessTokenExpiresInDate = Date.from(accessTokenExpiresIn);
         Date refreshTokenExpiresInDate = Date.from(refreshTokenExpiresIn);
@@ -64,7 +64,6 @@ public class JwtTokenProvider {
         Optional<String> accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("roles", authorities.get())
-//                .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresInDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact().describeConstable();
