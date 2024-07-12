@@ -24,9 +24,6 @@ public class Lecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private Long seq;
-
     @Enumerated(EnumType.STRING)
     private LectureType lectureType;
 
@@ -66,7 +63,6 @@ public class Lecture {
     @Builder
     public Lecture(Long id, LectureType lectureType, String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
         this.id = id;
-        this.seq = id;
         this.lectureType = lectureType;
         this.name = name;
         this.teacher = teacher;
@@ -92,10 +88,6 @@ public class Lecture {
         if (endTime != null) {
             this.endTime = endTime;
         }
-    }
-
-    public void updateSeq(Long seq) {
-        this.seq = seq;
     }
 
     public void updateIsFinished() {
