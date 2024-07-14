@@ -118,7 +118,11 @@ public class StudentService {
             newStudentList.add(newStudent);
             studentRepository.save(newStudent);
 
-            List<String> sectionNameList = Arrays.asList(studentListData.get(STUDENT_SECTION_INDEX).toString().split(","));
+            String section = studentData.get(6).toString();
+            List<String> sectionNameList = Arrays.asList(section.split(","));
+            for (String sectionName : sectionNameList) {
+                log.info("sectionName : {}", sectionName);
+            }
             List<Section> sectionList = sectionNameList.stream().
                     map(sectionUtilService::findSectionByName)
                     .toList();
