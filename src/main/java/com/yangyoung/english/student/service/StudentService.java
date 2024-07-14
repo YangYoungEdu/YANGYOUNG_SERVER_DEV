@@ -25,6 +25,7 @@ import com.yangyoung.english.studentSection.domain.StudentSection;
 import com.yangyoung.english.studentSection.domain.StudentSectionRepository;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
+import com.yangyoung.english.task.dto.response.TaskResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
 import com.yangyoung.english.util.UtilService;
 import com.yangyoung.english.util.spreasheet.SheetsService;
@@ -120,9 +121,6 @@ public class StudentService {
 
             String section = studentData.get(6).toString();
             List<String> sectionNameList = Arrays.asList(section.split(","));
-            for (String sectionName : sectionNameList) {
-                log.info("sectionName : {}", sectionName);
-            }
             List<Section> sectionList = sectionNameList.stream().
                     map(sectionUtilService::findSectionByName)
                     .toList();
@@ -307,11 +305,11 @@ public class StudentService {
                 .toList();
 
         List<Task> taskList = taskUtilService.getTaskByStudentAndDate(studentId, today);
-        List<TaskBriefResponse> taskBriefResponseList = taskList.stream()
-                .map(TaskBriefResponse::new)
+        List<TaskResponse> taskResponseList = taskList.stream()
+                .map(TaskResponse::new)
                 .toList();
 
-        return new StudentScheduleResponse(studentBrief, lectureBriefResponseList, taskBriefResponseList);
+        return new StudentScheduleResponse(studentBrief, lectureBriefResponseList, taskResponseList);
     }
 
     // 학생 간단 조회

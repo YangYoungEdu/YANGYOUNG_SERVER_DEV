@@ -127,6 +127,8 @@ public class StudentController {
     public ResponseEntity<StudentScheduleResponse> getStudentSchedule(@RequestParam Long studentId,
                                                                       @RequestParam LocalDate date,
                                                                       @RequestHeader(value = "Authorization") String token) {
+        System.out.println("studentId = " + studentId);
+        System.out.println("date = " + date);
         StudentScheduleResponse response = studentService.getStudentTodaySchedule(studentId, date);
 
         return ResponseEntity.ok(response);

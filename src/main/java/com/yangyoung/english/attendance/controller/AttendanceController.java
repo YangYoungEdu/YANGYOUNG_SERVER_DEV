@@ -3,6 +3,7 @@ package com.yangyoung.english.attendance.controller;
 import com.yangyoung.english.attendance.dto.request.AttendanceUpdateRequest;
 import com.yangyoung.english.attendance.dto.response.AttendanceResponse;
 import com.yangyoung.english.attendance.service.AttendanceService;
+import io.swagger.annotations.Authorization;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,8 @@ public class AttendanceController {
     @GetMapping("/lecture")
     @Operation(summary = "강의별 출석 현황 조회", description = "강의별 출석 현황을 조회합니다.")
     public ResponseEntity<List<AttendanceResponse>> getAttendanceByLecture(@RequestParam(value = "lectureId") Long lectureId,
-                                                                           @RequestParam(value = "date") LocalDate date) {
+                                                                           @RequestParam(value = "date") LocalDate date,
+                                                                           @RequestHeader(value = "Authorization") String token) {
 
         List<AttendanceResponse> attendanceResponseList = attendanceService.getAttendanceByLecture(lectureId, date);
 
@@ -42,7 +44,8 @@ public class AttendanceController {
     // 출석 정보 수정
     @PatchMapping("")
     @Operation(summary = "출석 정보 수정", description = "출석 정보를 수정합니다.")
-    public ResponseEntity<Void> updateAttendance(@RequestBody List<AttendanceUpdateRequest> requestList) {
+    public ResponseEntity<Void> updateAttendance(@RequestBody List<AttendanceUpdateRequest> requestList,
+                                                 @RequestHeader(value = "Authorization") String token) {
 
         attendanceService.updateAttendance(requestList);
 

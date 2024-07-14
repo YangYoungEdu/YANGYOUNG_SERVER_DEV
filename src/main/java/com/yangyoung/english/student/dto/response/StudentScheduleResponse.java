@@ -4,6 +4,7 @@ import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.task.dto.response.StudentTaskResponse;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
+import com.yangyoung.english.task.dto.response.TaskResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,5 +20,5 @@ public class StudentScheduleResponse {
 
     private List<LectureBriefResponse> lectureList;
 
-    private List<TaskBriefResponse> taskList;
+    private List<TaskResponse> taskList;
 }
