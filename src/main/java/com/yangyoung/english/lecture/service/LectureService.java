@@ -167,21 +167,6 @@ public class LectureService {
                         .map(LocalDate::parse)
                         .toList();
                 assignLectureDayAndDate(newLecture, dayList, dateList);
-
-                // ToDo: 케이스 고려 필요
-//                if (!lectureData.get(LECTURE_DAY_INDEX).toString().isBlank()) {
-//                    List<DayOfWeek> lectureDayList = Arrays.stream(lectureData.get(LECTURE_DAY_INDEX).toString().split(","))
-//                            .map(LectureDay::convertLectureDay)
-//                            .collect(Collectors.toList());
-//                    assignLectureDay(newLecture, lectureDayList);
-//                }
-//
-//                if (!lectureData.get(LECTURE_DATE_INDEX).toString().isBlank()) {
-//                    List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
-//                            .map(LocalDate::parse)
-//                            .toList();
-//                    assignLectureDate(newLecture, lectureDateList);
-//                }
             }
 
             String preset = lectureData.get(LECTURE_PRESET_INDEX).toString();
@@ -338,9 +323,7 @@ public class LectureService {
             dateListByDay = dateList;
         }
 
-        for (LocalDate date : dateListByDay) {
-            log.info("date: {}", date);
-        }
+        assignLectureDay(lecture, dayList);
         assignLectureDate(lecture, dateListByDay);
     }
 

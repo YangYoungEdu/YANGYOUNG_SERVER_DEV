@@ -101,13 +101,12 @@ public class StudentService {
 
         List<List<Object>> studentListData = SheetsService.readSpreadSheet("학생");
         for (List<Object> studentData : studentListData) {
-            StudentAddRequest request = StudentAddRequest.of(studentData);
-//            if (validateStudentData(studentData)) { // 필수 데이터 확인
-//                continue;
-//            }
+            if (!validateStudentData(studentData)) { // 필수 데이터 확인
+                continue;
+            }
 
 
-            Student existingStudent = studentUtilService.findStudentById(request.getId());
+            Student existingStudent = studentUtilService.findStudentById(Long.parseLong(studentData.get(STUDENT_ID_INDEX).toString()));
             if (existingStudent != null) {
                 if (isNeedToUpdate(existingStudent, studentData)) {
                     existingStudent.update(studentData);
@@ -119,17 +118,13 @@ public class StudentService {
             newStudentList.add(newStudent);
             studentRepository.save(newStudent);
 
-            String section = studentData.get(6).toString();
+            String section = studentData.get(STUDENT_SECTION_INDEX).toString();
             List<String> sectionNameList = Arrays.asList(section.split(","));
             List<Section> sectionList = sectionNameList.stream().
                     map(sectionUtilService::findSectionByName)
                     .toList();
             assignStudentToSections(newStudent, sectionList);
         }
-
-//        if (!newStudentList.isEmpty()) {
-//            studentRepository.saveAll(newStudentList);
-//        }
     }
 
     // 필수항목 확인
@@ -145,16 +140,16 @@ public class StudentService {
             return false;
         }
 
-//        boolean isDataEmpty = isNullOrBlank(studentData.get(STUDENT_NAME_INDEX)) ||
+        boolean isDataEmpty = isNullOrBlank(studentData.get(STUDENT_NAME_INDEX));
 //                isNullOrBlank(studentData.get(STUDENT_GRADE_INDEX)) ||
 //                isNullOrBlank(studentData.get(STUDENT_SCHOOL_INDEX)) ||
 //                isNullOrBlank(studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX));
 
-//        if (isDataEmpty) {
-//            log.error("학생 데이터 중 필수 데이터가 비어있습니다.");
-//        }
+        if (isDataEmpty) {
+            log.error("학생 데이터 중 필수 데이터가 비어있습니다.");
+            return false;
+        }
 //
-//        return !isDataEmpty;
 
         return true;
     }
