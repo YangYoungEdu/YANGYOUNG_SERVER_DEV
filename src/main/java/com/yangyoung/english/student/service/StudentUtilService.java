@@ -25,7 +25,8 @@ public class StudentUtilService {
         Optional<Student> student = studentRepository.findById(id);
         if (student.isEmpty()) {
             StudentErrorCode studentErrorCode = StudentErrorCode.STUDENT_NOT_FOUND;
-            throw new StudentNotFoundException(studentErrorCode, id);
+            return null;
+//            throw new StudentNotFoundException(studentErrorCode, id);
         }
 
         return student.get();

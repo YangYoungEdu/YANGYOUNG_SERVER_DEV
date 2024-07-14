@@ -33,9 +33,10 @@ public class SheetsService {
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     // ToDo: 사용자에게 받아서 유동적으로 사용 할 수 있도록 수정 필요
-    private static final String SPREADSHEET_ID = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU";
-    private static final String STUDENT_RANGE = "학생!A2:H";
-    private static final String LECTURE_RANGE = "24년7월강의!A2:L";
+//    private static final String SPREADSHEET_ID = "1E6c8cejIokpPKTQ5TpXs19Or_oh9ygFf4gABBoP-6VU";
+    private static final String SPREADSHEET_ID = "1P5p3-5WOHTXByVIs-ieR7rTOS2aeyEaRV7tP4u-muAU";
+    private static final String STUDENT_RANGE = "학생!A2:G";
+    private static final String LECTURE_RANGE = "24년7월강의!A2:I";
 
     /**
      * Creates an authorized Credential object.

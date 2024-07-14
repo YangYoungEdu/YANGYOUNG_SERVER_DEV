@@ -24,6 +24,7 @@ import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
+import com.yangyoung.english.studentSection.domain.StudentSectionRepository;
 import com.yangyoung.english.util.spreasheet.SheetsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +69,7 @@ public class LectureService {
     private final LectureUtilService lectureUtilService;
     private final SectionRepository sectionRepository;
     private final SectionUtilService sectionUtilService;
+    private final StudentSectionRepository studentSectionRepository;
 
     // 강의 종료 여부 확인
     // second minute hour day-of-month month day-of-week
@@ -210,7 +212,8 @@ public class LectureService {
         if (!sections.isEmpty()) {
             List<StudentLecture> studentLectureList = new ArrayList<>();
             for (Section section : sections) {
-                for (Student student : section.getStudentList()) {
+                List<Student> studentList = studentSectionRepository.findStudentsBySectionId(section.getId());
+                for (Student student : studentList) {
                     studentLectureList.add(new StudentLecture(student, lecture));
                 }
             }
@@ -287,7 +290,8 @@ public class LectureService {
 
         List<StudentLecture> studentLectureList = new ArrayList<>();
         for (Section section : sectionList) {
-            for (Student student : section.getStudentList()) {
+            List<Student> studentList = studentSectionRepository.findStudentsBySectionId(section.getId());
+            for (Student student : studentList) {
                 studentLectureList.add(new StudentLecture(student, lecture));
             }
         }

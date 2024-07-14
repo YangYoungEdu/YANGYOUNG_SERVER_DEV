@@ -20,6 +20,8 @@ public class SectionUtilService {
             return null;
         }
 
+        System.out.println("sectionName = " + sectionName);
+
         Optional<Section> section = sectionRepository.findByName(sectionName);
         if (section.isEmpty()) {
             Section newSection = Section.builder().name(sectionName).build();

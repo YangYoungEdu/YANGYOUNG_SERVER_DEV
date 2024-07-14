@@ -21,6 +21,8 @@ import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
+import com.yangyoung.english.studentSection.domain.StudentSection;
+import com.yangyoung.english.studentSection.domain.StudentSectionRepository;
 import com.yangyoung.english.task.domain.Task;
 import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
@@ -36,8 +38,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,8 +53,8 @@ public class StudentService {
     private final static int REQUIRED_DATA = 7;
     private final static int STUDENT_ID_INDEX = 0;
     private final static int STUDENT_NAME_INDEX = 1;
-    private final static int STUDENT_GRADE_INDEX = 2;
-    private final static int STUDENT_SCHOOL_INDEX = 3;
+    private final static int STUDENT_SCHOOL_INDEX = 2;
+    private final static int STUDENT_GRADE_INDEX = 3;
     private final static int STUDENT_STUDENT_PHONE_NUMBER_INDEX = 4;
     private final static int STUDENT_PARENT_PHONE_NUMBER_INDEX = 5;
     private final static int STUDENT_SECTION_INDEX = 6;
@@ -61,6 +65,7 @@ public class StudentService {
     private final TaskUtilService taskUtilService;
     private final SchoolRepository schoolRepository;
     private final SectionUtilService sectionUtilService;
+    private final StudentSectionRepository studentSectionRepository;
 
     // 학생 정보 등록 - 폼 입력으로 등록
     @Transactional
@@ -78,8 +83,8 @@ public class StudentService {
         }
 
         School school = schoolUtilService.findSchoolByName(request.getSchool());
-        Section section = sectionUtilService.findSectionByName(request.getSection());
-        Student newStudent = request.toEntity(school, section);
+//        List<Section> section = sectionUtilService.findSectionByName(request.getSection());
+        Student newStudent = request.toEntity(school);
         studentRepository.save(newStudent);
 
         return new StudentResponse(newStudent);
@@ -96,9 +101,9 @@ public class StudentService {
         List<List<Object>> studentListData = SheetsService.readSpreadSheet("학생");
         for (List<Object> studentData : studentListData) {
             StudentAddRequest request = StudentAddRequest.of(studentData);
-            if (validateStudentData(studentData)) { // 필수 데이터 확인
-                continue;
-            }
+//            if (validateStudentData(studentData)) { // 필수 데이터 확인
+//                continue;
+//            }
 
 
             Student existingStudent = studentUtilService.findStudentById(request.getId());
@@ -109,39 +114,47 @@ public class StudentService {
             }
 
             School school = schoolUtilService.findSchoolByName(studentData.get(STUDENT_SCHOOL_INDEX).toString());
-            Section section = sectionUtilService.findSectionByName(studentData.get(STUDENT_SECTION_INDEX).toString());
-            Student newStudent = new Student(studentData, school, section);
+            Student newStudent = new Student(studentData, school);
             newStudentList.add(newStudent);
+            studentRepository.save(newStudent);
+
+            List<String> sectionNameList = Arrays.asList(studentListData.get(STUDENT_SECTION_INDEX).toString().split(","));
+            List<Section> sectionList = sectionNameList.stream().
+                    map(sectionUtilService::findSectionByName)
+                    .toList();
+            assignStudentToSections(newStudent, sectionList);
         }
 
-        if (!newStudentList.isEmpty()) {
-            studentRepository.saveAll(newStudentList);
-        }
+//        if (!newStudentList.isEmpty()) {
+//            studentRepository.saveAll(newStudentList);
+//        }
     }
 
     // 필수항목 확인
     // ToDo : 필수 데이터 기준 수정 필요
     private boolean validateStudentData(List<Object> studentData) {
 
-        if (studentData == null || studentData.size() < REQUIRED_DATA) {
-            return false;
-        }
+//        if (studentData == null || studentData.size() < REQUIRED_DATA) {
+//            return false;
+//        }
 
         if (!isNumeric(studentData.get(STUDENT_ID_INDEX))) {
             log.error("학생 아이디가 숫자가 아닙니다.");
             return false;
         }
 
-        boolean isDataEmpty = isNullOrBlank(studentData.get(STUDENT_NAME_INDEX)) ||
-                isNullOrBlank(studentData.get(STUDENT_GRADE_INDEX)) ||
-                isNullOrBlank(studentData.get(STUDENT_SCHOOL_INDEX)) ||
-                isNullOrBlank(studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX));
+//        boolean isDataEmpty = isNullOrBlank(studentData.get(STUDENT_NAME_INDEX)) ||
+//                isNullOrBlank(studentData.get(STUDENT_GRADE_INDEX)) ||
+//                isNullOrBlank(studentData.get(STUDENT_SCHOOL_INDEX)) ||
+//                isNullOrBlank(studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX));
 
-        if (isDataEmpty) {
-            log.error("학생 데이터 중 필수 데이터가 비어있습니다.");
-        }
+//        if (isDataEmpty) {
+//            log.error("학생 데이터 중 필수 데이터가 비어있습니다.");
+//        }
+//
+//        return !isDataEmpty;
 
-        return !isDataEmpty;
+        return true;
     }
 
     private boolean isNullOrBlank(Object obj) {
@@ -165,6 +178,20 @@ public class StudentService {
                 !existingStudent.getGrade().getGradeName().equals(studentData.get(STUDENT_GRADE_INDEX).toString()) ||
                 !existingStudent.getStudentPhoneNumber().equals(studentData.get(STUDENT_STUDENT_PHONE_NUMBER_INDEX).toString()) ||
                 !existingStudent.getParentPhoneNumber().equals(studentData.get(STUDENT_PARENT_PHONE_NUMBER_INDEX).toString());
+    }
+
+    private void assignStudentToSections(Student student, List<Section> sectionList) {
+
+        List<StudentSection> studentSectionList = new ArrayList<>();
+        for (Section section : sectionList) {
+            StudentSection studentSection = StudentSection.builder()
+                    .student(student)
+                    .section(section)
+                    .build();
+            studentSectionList.add(studentSection);
+        }
+
+        studentSectionRepository.saveAll(studentSectionList);
     }
 
 

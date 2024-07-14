@@ -8,6 +8,7 @@ import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
+import com.yangyoung.english.studentSection.domain.StudentSection;
 import com.yangyoung.english.studentTask.domain.StudentTask;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -34,10 +35,10 @@ public class Student extends BaseEntity {
     @JsonManagedReference
     private School school;
 
-    @ManyToOne()
-    @JoinColumn(name = "section_id")
-    @JsonManagedReference
-    private Section section;
+//    @ManyToOne()
+//    @JoinColumn(name = "section_id")
+//    @JsonManagedReference
+//    private Section section;
 
     @Enumerated(EnumType.STRING)
     private Grade grade;
@@ -45,6 +46,10 @@ public class Student extends BaseEntity {
     private String studentPhoneNumber;
 
     private String parentPhoneNumber;
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<StudentSection> studentSectionList;
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
@@ -59,11 +64,10 @@ public class Student extends BaseEntity {
     private List<Attendance> attendanceList;
 
     @Builder
-    public Student(Long id, String name, School school, Section section, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
+    public Student(Long id, String name, School school, Grade grade, String studentPhoneNumber, String parentPhoneNumber) {
         this.id = id;
         this.name = name;
         this.school = school;
-        this.section = section;
         this.grade = grade;
         this.studentPhoneNumber = studentPhoneNumber;
         this.parentPhoneNumber = parentPhoneNumber;
@@ -71,14 +75,13 @@ public class Student extends BaseEntity {
     }
 
     @Builder
-    public Student(List<Object> studentData, School school, Section section) {
+    public Student(List<Object> studentData, School school) {
         this.id = Long.parseLong(studentData.get(0).toString());
         this.name = studentData.get(1).toString();
         this.school = school;
-        this.section = section;
-        this.grade = Grade.getGradeName(studentData.get(4).toString());
-        this.studentPhoneNumber = (String) studentData.get(5);
-        this.parentPhoneNumber = (String) studentData.get(6);
+        this.grade = Grade.getGradeName(studentData.get(3).toString());
+        this.studentPhoneNumber = (String) studentData.get(4);
+        this.parentPhoneNumber = (String) studentData.get(5);
         this.isEnrolled = true;
     }
 

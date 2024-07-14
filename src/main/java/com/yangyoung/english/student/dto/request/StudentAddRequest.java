@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -23,7 +24,7 @@ public class StudentAddRequest {
 
     private String grade;
 
-    private String section;
+    private List<String> sectionList;
 
     private String studentPhoneNumber;
 
@@ -35,18 +36,17 @@ public class StudentAddRequest {
                 objectList.get(1).toString(),
                 objectList.get(2).toString(),
                 objectList.get(3).toString(),
-                objectList.get(4).toString(),
+                Collections.singletonList(objectList.get(4).toString()), // ToDo: 수정
                 objectList.get(5).toString(),
                 objectList.get(6).toString()
         );
     }
 
-    public Student toEntity(School school, Section section) {
+    public Student toEntity(School school) {
         return Student.builder()
                 .id(id)
                 .name(name)
                 .school(school)
-                .section(section)
                 .grade(Grade.getGradeName(grade))
                 .studentPhoneNumber(studentPhoneNumber)
                 .parentPhoneNumber(parentPhoneNumber)
