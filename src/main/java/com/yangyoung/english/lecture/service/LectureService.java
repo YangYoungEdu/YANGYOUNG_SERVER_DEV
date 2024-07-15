@@ -35,6 +35,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -141,7 +142,7 @@ public class LectureService {
     @Scheduled(cron = "0 0 0 * * SUN") // 매주 일요일 자정에 실행
     @Transactional
     // ToDo : 날짜 중복 할당 수정
-    public void addLectureBySheet() throws GeneralSecurityException, IOException {
+    public void addLectureBySheet() throws GeneralSecurityException, IOException, URISyntaxException {
 
         List<List<Object>> lectureDataList = SheetsService.readSpreadSheet("강의");
 
