@@ -18,7 +18,7 @@ public class CORSConfig {
                 //for develop
                 corsRegistry
                         .addMapping("/**")
-                        .allowedOriginPatterns("*")
+                        .allowedOriginPatterns("https://www.ebhttps.store")
                         .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTION");
             }
         };

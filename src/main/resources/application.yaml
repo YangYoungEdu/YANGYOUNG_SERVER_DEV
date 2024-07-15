@@ -3,4 +3,4 @@ springdoc:
     path: /
 spring:
   profiles:
-    include: synology, jwt
+    include: synology, jwt, prod
