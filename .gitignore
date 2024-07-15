@@ -41,5 +41,7 @@ out/
 /src/main/resources/application-oauth2.yaml
 /src/main/resources/application-synology.yaml
 /src/main/resources/application-mail.yaml
+/src/main/resources/application-dev.yaml
+/src/main/resources/application-prod.yaml
 /src/main/resources/credentials.json
 /src/main/resources/crenentials_ysh.json

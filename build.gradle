@@ -59,6 +59,40 @@ dependencies {
     implementation 'com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0'
 }
 
+//profile 값이 없을 경우 dev 설정
+ext.profile = (!project.hasProperty('profile') || !profile) ? 'dev' : profile
+
+//profile 값에 따른 소스파일 변경 설정
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "src/main/resources/${profile}"
+        }
+    }
+}
+
+// 중복 파일 처리 전략 추가
+tasks.withType(Copy) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// 또는 특정 작업에만 설정
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('printProfile') {
+    doLast {
+        println "Active Profile: ${project.profile}"
+    }
+}
+
+bootRun {
+    if (project.hasProperty('profile')) {
+        args = ["--spring.profiles.active=${project.profile}"]
+        finalizedBy printProfile
+    }
+}
 //tasks.named('test') {
 //    useJUnitPlatform()
 //}
