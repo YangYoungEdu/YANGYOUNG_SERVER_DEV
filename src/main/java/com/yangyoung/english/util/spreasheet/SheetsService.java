@@ -55,12 +55,12 @@ public class SheetsService {
 
             // Check if tokens directory exists and delete it if it does.
             Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
-            if (Files.exists(tokenPath)) {
-                Files.walk(tokenPath)
-                        .map(Path::toFile)
-                        .forEach(File::delete);
-                Files.delete(tokenPath);
-            }
+//            if (Files.exists(tokenPath)) {
+//                Files.walk(tokenPath)
+//                        .map(Path::toFile)
+//                        .forEach(File::delete);
+//                Files.delete(tokenPath);
+//            }
 
             // Build flow and trigger user authorization request.
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
