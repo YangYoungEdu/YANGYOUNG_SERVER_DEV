@@ -2,6 +2,7 @@ package com.yangyoung.english.student.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.yangyoung.english.appUser.domain.AppUser;
 import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.school.domain.School;
@@ -22,6 +23,10 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Student extends BaseEntity {
+
+    @OneToOne()
+    @JoinColumn(name = "app_user_id") // Customizes the column name for the join column
+    private AppUser appUser;
 
     @Id
     private Long id;

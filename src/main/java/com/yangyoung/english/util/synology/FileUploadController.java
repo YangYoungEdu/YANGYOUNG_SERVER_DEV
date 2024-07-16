@@ -2,6 +2,7 @@ package com.yangyoung.english.util.synology;
 
 import com.yangyoung.english.material.dto.request.FileUploadRequest;
 import com.yangyoung.english.material.dto.response.MaterialResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,15 +15,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v2/file")
 public class FileUploadController {
 
     private final SynologyFileStationService fileStationService;
-
-    @Autowired
-    public FileUploadController(SynologyFileStationService fileStationService) {
-        this.fileStationService = fileStationService;
-    }
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(
@@ -42,26 +39,6 @@ public class FileUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed: " + e.getMessage());
         }
     }
-
-//    @GetMapping("/get")
-//    public ResponseEntity<String> listFile() {
-//        try {
-//            String response = fileStationService.listFile();
-//            return ResponseEntity.ok(response);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(500).body("File List failed: " + e.getMessage());
-//        }
-//    }
-
-//    @GetMapping("/search")
-//    public ResponseEntity<String> searchFile() {
-//        try {
-//            String response = fileStationService.searchFile();
-//            return ResponseEntity.ok(response);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(500).body("File Search failed: " + e.getMessage());
-//        }
-//    }
 
     @GetMapping("")
     public ResponseEntity<List<MaterialResponse>> getFile(@RequestParam String lecture,

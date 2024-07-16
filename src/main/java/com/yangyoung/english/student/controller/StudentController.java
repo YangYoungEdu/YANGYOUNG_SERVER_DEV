@@ -2,16 +2,15 @@ package com.yangyoung.english.student.controller;
 
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.dto.request.*;
-import com.yangyoung.english.student.dto.response.StudentAddByExcelResponse;
 import com.yangyoung.english.student.dto.response.StudentBriefResponse;
 import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -129,9 +128,19 @@ public class StudentController {
                                                                       @RequestHeader(value = "Authorization") String token) {
         System.out.println("studentId = " + studentId);
         System.out.println("date = " + date);
-        StudentScheduleResponse response = studentService.getStudentTodaySchedule(studentId, date);
+        StudentScheduleResponse response = studentService.getStudentSchedule(studentId, date);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/today")
+    @Operation(summary = "학생 당일 스케줄 조회 - client", description = "오늘 출석한 학생을 조회합니다.")
+    public ResponseEntity<StudentScheduleResponse> getTodayStudents(@RequestParam Long studentId) {
+
+        LocalDate today = LocalDate.now();
+        StudentScheduleResponse responses = studentService.getStudentSchedule(studentId, today);
+
+        return ResponseEntity.ok(responses);
     }
 
     // 강의별 학생 전체 조회 컨트롤러

@@ -1,13 +1,16 @@
 package com.yangyoung.english.util.spreasheet;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
@@ -24,6 +27,7 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class SheetsService {
     private static final String APPLICATION_NAME = "양영학원 고등부 영어과 관리 프로그램";
@@ -45,6 +49,32 @@ public class SheetsService {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
+//    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+//        // Load client secrets.
+//        InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+//        if (in == null) {
+//            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+//        }
+//        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+//
+//        // Check if tokens directory exists and delete it if it does.
+//        Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
+//        if (Files.exists(tokenPath)) {
+//            Files.walk(tokenPath)
+//                    .map(Path::toFile)
+//                    .forEach(File::delete);
+//            Files.delete(tokenPath);
+//        }
+//
+//        // Build flow and trigger user authorization request.
+//        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+//                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+//                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+//                .setAccessType("offline")
+//                .build();
+//        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(443).setCallbackPath("/CallBack").build();
+//        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+//    }
     public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
         InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
@@ -53,23 +83,22 @@ public class SheetsService {
         }
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-        // Check if tokens directory exists and delete it if it does.
-        Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
-        if (Files.exists(tokenPath)) {
-            Files.walk(tokenPath)
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-            Files.delete(tokenPath);
-        }
-
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
                 .setAccessType("offline")
                 .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(443).setCallbackPath("/CallBack").build();
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+        // Load existing tokens from the file system.
+        DataStore<StoredCredential> tokenDataStore = new FileDataStoreFactory(new File(TOKENS_DIRECTORY_PATH)).getDataStore("user");
+        Credential credential = flow.loadCredential("user");
+
+        if (credential == null || credential.getAccessToken() == null) {
+            throw new IllegalStateException("No valid credentials found.");
+        }
+
+        return credential;
     }
 
     /**

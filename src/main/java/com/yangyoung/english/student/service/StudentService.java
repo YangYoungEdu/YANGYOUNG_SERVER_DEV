@@ -24,7 +24,6 @@ import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentSection.domain.StudentSection;
 import com.yangyoung.english.studentSection.domain.StudentSectionRepository;
 import com.yangyoung.english.task.domain.Task;
-import com.yangyoung.english.task.dto.response.TaskBriefResponse;
 import com.yangyoung.english.task.dto.response.TaskResponse;
 import com.yangyoung.english.task.service.TaskUtilService;
 import com.yangyoung.english.util.UtilService;
@@ -39,7 +38,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -290,7 +288,7 @@ public class StudentService {
     // 학생 오늘 스케줄 조회
     // ToDo: 클라이언트에 맞춰서 수정 필요
     @Transactional
-    public StudentScheduleResponse getStudentTodaySchedule(Long studentId, LocalDate today) {
+    public StudentScheduleResponse getStudentSchedule(Long studentId, LocalDate today) {
 
         StudentBriefResponse studentBrief = getStudentBrief(studentId);
 

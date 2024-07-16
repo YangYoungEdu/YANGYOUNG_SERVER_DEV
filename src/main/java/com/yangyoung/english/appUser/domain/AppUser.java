@@ -1,5 +1,6 @@
 package com.yangyoung.english.appUser.domain;
 
+import com.yangyoung.english.student.domain.Student;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +19,10 @@ import java.util.stream.Collectors;
 @Builder
 @EqualsAndHashCode(of = "id")
 public class AppUser implements UserDetails {
+
+    @OneToOne(mappedBy = "appUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Student student;
+
     @Id
     @GeneratedValue
     @Column(name = "user_id", updatable = false, unique = true, nullable = false)
