@@ -10,6 +10,7 @@ import com.yangyoung.english.lecture.service.LectureUtilService;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class AttendanceService {
     private final LectureUtilService lectureUtilService;
 
     // 출석 - 학생
+    @Transactional
     public AttendanceResponse attend(Long studentId) {
         Student attendStudent = studentUtilService.findStudentById(studentId);
 
@@ -80,6 +82,7 @@ public class AttendanceService {
     }
 
     // 강의별 출석 조회
+    @Transactional
     public List<AttendanceResponse> getAttendanceByLecture(Long lectureId, LocalDate date) {
 
         LocalDateTime startDateTime = date.atStartOfDay();
@@ -111,6 +114,7 @@ public class AttendanceService {
     }
 
     // 출석 정보 수정
+    @Transactional
     public void updateAttendance(List<AttendanceUpdateRequest> requestList) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -123,6 +127,7 @@ public class AttendanceService {
             }
 
             if (pastAttendance.isEmpty()) {
+                log.info("New Attendance");
                 Student student = studentUtilService.findStudentById(request.getStudentId());
                 Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
                 AttendanceType attendanceType = AttendanceType.getAttendanceType(request.getAttendanceType());
