@@ -15,13 +15,18 @@ import java.util.TimeZone;
 @EnableScheduling
 public class EnglishApplication {
 
+//    @PostConstruct
+//    public void started() {
+//        // timezone UTC 셋팅
+//        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+//    }
+
     public static void main(String[] args) {
         SpringApplication.run(EnglishApplication.class, args);
     }
 
     @PostConstruct
-    public void init() {
-        // timezone 설정
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    void started() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
     }
 }
