@@ -277,9 +277,14 @@ public class StudentService {
         Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
+        List<School> schools = schoolRepository.findByNameIn(schoolList);
+        for (School school : schools) {
+            log.info("school : {}", school.getName());
+        }
+
         Specification<Student> searchFilter = Specification
                 .where(StudentSpecifications.nameIn(nameList))
-                .and(StudentSpecifications.schoolIn(schoolList))
+                .and(StudentSpecifications.schoolIn(schools))
                 .and(StudentSpecifications.gradeIn(gradeList));
 
         return studentRepository.findAll(searchFilter, oneIndexedPageable).map(StudentResponse::new);

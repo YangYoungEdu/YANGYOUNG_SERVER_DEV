@@ -11,6 +11,7 @@ import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
@@ -82,18 +84,18 @@ public class AttendanceService {
 
         LocalDateTime startDateTime = date.atStartOfDay();
         LocalDateTime endDateTime = date.atTime(LocalTime.MAX);
+        log.info(String.valueOf(startDateTime));
+        log.info(String.valueOf(endDateTime));
 
         Lecture lecture = lectureUtilService.findLectureById(lectureId);
         List<Student> studentList = lecture.getStudentLectureList().stream()
                 .map(StudentLecture::getStudent)
                 .toList();
 
-        List<Long> studentIdList = studentList.stream()
-                .map(Student::getId)
-                .toList();
         // 한 번의 쿼리로 모든 출석 정보 가져오기
-        Map<Long, Attendance> attendanceMap = attendanceRepository.findByStudentIdInAndAttendedDateTimeBetween(studentIdList, startDateTime, endDateTime)
+        Map<Long, Attendance> attendanceMap = attendanceRepository.findByLectureIdAndAttendedDateTimeBetween(lectureId, startDateTime, endDateTime)
                 .stream().collect(Collectors.toMap(attendance -> attendance.getStudent().getId(), attendance -> attendance));
+        log.info(String.valueOf(attendanceMap.size()));
 
         // 출석 정보를 포함한 응답 리스트 생성
         return studentList.stream().map(student -> {

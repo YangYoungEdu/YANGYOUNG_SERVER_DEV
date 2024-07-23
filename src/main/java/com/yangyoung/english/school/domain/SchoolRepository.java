@@ -10,4 +10,6 @@ public interface SchoolRepository extends JpaRepository<School, Long> {
     Optional<School> findByName(String name);
 
     List<School> findByStatus(Status status);
+
+    List<School> findByNameIn(List<String> names);
 }

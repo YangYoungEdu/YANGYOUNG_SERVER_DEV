@@ -1,5 +1,6 @@
 package com.yangyoung.english.student.service;
 
+import com.yangyoung.english.school.domain.School;
 import org.springframework.data.jpa.domain.Specification;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.Grade;
@@ -17,7 +18,7 @@ public class StudentSpecifications {
         };
     }
 
-    public static Specification<Student> schoolIn(List<String> schools) {
+    public static Specification<Student> schoolIn(List<School> schools) {
         return (root, query, criteriaBuilder) -> {
             if (schools == null || schools.isEmpty()) {
                 return criteriaBuilder.conjunction(); // always true
