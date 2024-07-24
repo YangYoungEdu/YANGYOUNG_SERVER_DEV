@@ -111,7 +111,6 @@ public class AttendanceService {
     // 출석 정보 수정
     @Transactional
     public void updateAttendance(List<AttendanceUpdateRequest> requestList) {
-        LocalDateTime now = LocalDateTime.now();
 
         for (AttendanceUpdateRequest request : requestList) {
             Optional<Long> id = Optional.ofNullable(request.getId());
@@ -131,7 +130,7 @@ public class AttendanceService {
                         .student(student)
                         .lecture(lecture)
                         .attendanceType(attendanceType)
-                        .attendedDateTime(now)
+                        .attendedDateTime(request.getAttendDateTime())
                         .build();
 
                 attendanceRepository.save(newAttendance);
