@@ -47,11 +47,6 @@ public class AttendanceService {
         // 먼저 출석 기록이 있는지 확인
         boolean isAlreadyAttended = attendanceRepository.existsByStudentAndAttendedDateTimeBetween(attendStudent, startDateTime, endDateTime);
         if (isAlreadyAttended) {
-            Optional<Attendance> attendance = attendanceRepository.findByStudentAndAttendedDateTimeBetween(attendStudent, startDateTime, endDateTime);
-            if (attendance.isPresent()) {
-                attendance.get().updateAttendance(AttendanceType.ATTENDANCE, null);
-            }
-
             return new AttendanceResponse(attendStudent);
         }
 

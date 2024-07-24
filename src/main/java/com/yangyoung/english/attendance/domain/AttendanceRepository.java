@@ -12,7 +12,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     boolean existsByStudentAndAttendedDateTimeBetween(Student student, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    Optional<Attendance> findByStudentAndAttendedDateTimeBetween(Student student, LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<Attendance> findByStudentAndAttendedDateTimeBetween(Student student, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     List<Attendance> findByLectureId(Long lectureId);
 
