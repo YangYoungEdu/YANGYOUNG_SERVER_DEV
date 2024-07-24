@@ -81,10 +81,11 @@ public class LectureService {
 
         List<Lecture> lectureList = lectureRepository.findByIsFinishedFalse();
         for (Lecture lecture : lectureList) {
-            LocalDate lastDate = lecture.getLectureDateList().stream()
-                    .map(LectureDate::getLectureDate)
-                    .max(LocalDate::compareTo)
-                    .orElse(null);
+            LocalDate lastDate = lecture.getLectureDateList().get(lecture.getLectureDateList().size() - 1).getLectureDate();
+//            LocalDate lastDate = lecture.getLectureDateList().stream()
+//                    .map(LectureDate::getLectureDate)
+//                    .max(LocalDate::compareTo)
+//                    .orElse(null);
 
             if (lastDate != null && lastDate.isAfter(today)) { // 마지막 강의 날짜가 오늘 이전일 경우 강의 종료 처리
                 lecture.updateIsFinished();
