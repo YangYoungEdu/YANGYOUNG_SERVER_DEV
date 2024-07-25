@@ -121,6 +121,10 @@ public class AttendanceService {
             }
 
             if (pastAttendance.isEmpty()) {
+                if (request.getAttendDateTime() == null) {
+                    continue;
+                }
+
                 log.info("New Attendance");
                 Student student = studentUtilService.findStudentById(request.getStudentId());
                 Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
