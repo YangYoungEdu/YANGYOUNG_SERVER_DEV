@@ -35,5 +35,9 @@ public class StudentSpecifications {
             return root.get("grade").in(grades);
         };
     }
+
+    public static Specification<Student> isEnrolled(boolean isEnrolled) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isEnrolled"), isEnrolled);
+    }
 }
 

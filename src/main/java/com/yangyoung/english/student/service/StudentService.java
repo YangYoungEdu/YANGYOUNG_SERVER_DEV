@@ -285,9 +285,11 @@ public class StudentService {
         Specification<Student> searchFilter = Specification
                 .where(StudentSpecifications.nameIn(nameList))
                 .and(StudentSpecifications.schoolIn(schools))
-                .and(StudentSpecifications.gradeIn(grades));
+                .and(StudentSpecifications.gradeIn(grades))
+                .and(StudentSpecifications.isEnrolled(true));
 
-        return studentRepository.findAll(searchFilter, oneIndexedPageable).map(StudentResponse::new);
+        return studentRepository.findAll(searchFilter, oneIndexedPageable).map(
+                StudentResponse::new);
     }
 
     // 학생 오늘 스케줄 조회
