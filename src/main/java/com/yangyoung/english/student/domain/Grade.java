@@ -23,10 +23,10 @@ public enum Grade {
 
     public static Grade getGradeName(String gradeName) {
         return switch (gradeName) {
-            case "1학년" -> H1;
-            case "2학년" -> H2;
-            case "3학년" -> H3;
-            case "예비 고1" -> M3;
+            case "고1" -> H1;
+            case "고2" -> H2;
+            case "고3" -> H3;
+            case "중3" -> M3;
             default -> throw new IllegalArgumentException("No enum constant with gradeName: " + gradeName);
         };
     }
