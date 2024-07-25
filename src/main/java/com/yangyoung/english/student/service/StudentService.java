@@ -272,20 +272,20 @@ public class StudentService {
     // 학생 검색(이름, 학교, 학년)
     @Transactional
     public Page<StudentResponse> searchStudents
-    (List<String> nameList, List<String> schoolList, List<Grade> gradeList, int page, int size) {
+    (List<String> nameList, List<String> schoolList, List<String> gradeList, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
         OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
 
         List<School> schools = schoolRepository.findByNameIn(schoolList);
-        for (School school : schools) {
-            log.info("school : {}", school.getName());
-        }
+        List<Grade> grades = gradeList.stream()
+                .map(Grade::getGradeName)
+                .toList();
 
         Specification<Student> searchFilter = Specification
                 .where(StudentSpecifications.nameIn(nameList))
                 .and(StudentSpecifications.schoolIn(schools))
-                .and(StudentSpecifications.gradeIn(gradeList));
+                .and(StudentSpecifications.gradeIn(grades));
 
         return studentRepository.findAll(searchFilter, oneIndexedPageable).map(StudentResponse::new);
     }
