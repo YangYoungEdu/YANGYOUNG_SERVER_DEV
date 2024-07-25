@@ -111,7 +111,7 @@ public class StudentController {
     public ResponseEntity<Page<StudentResponse>> searchStudents(
             @RequestParam(required = false) List<String> nameList,
             @RequestParam(required = false) List<String> schoolList,
-            @RequestParam(required = false) List<Grade> gradeList,
+            @RequestParam(required = false) List<String> gradeList,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestHeader(value = "Authorization") String token) {
