@@ -1,6 +1,7 @@
 package com.yangyoung.english.studentTask.domain;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.task.domain.Task;
 import jakarta.persistence.*;
@@ -14,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Slf4j
-public class StudentTask {
+public class StudentTask extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

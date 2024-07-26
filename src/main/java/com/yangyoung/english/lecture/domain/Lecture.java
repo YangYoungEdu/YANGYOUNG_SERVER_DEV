@@ -2,10 +2,12 @@ package com.yangyoung.english.lecture.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.yangyoung.english.attendance.domain.Attendance;
+import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureSection.domain.LectureSection;
 import com.yangyoung.english.lectureTask.domain.LectureTask;
+import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import jakarta.persistence.*;
@@ -20,7 +22,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Lecture {
+public class Lecture extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +30,6 @@ public class Lecture {
 
     @Enumerated(EnumType.STRING)
     private LectureType lectureType;
-
-    @Enumerated(EnumType.STRING)
-    private Grade grade;
 
     private String lectureCode;
 
@@ -72,7 +71,7 @@ public class Lecture {
 
 
     @Builder
-    public Lecture(Long id, LectureType lectureType, String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
+    public Lecture(Long id, LectureType lectureType, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode) {
         this.id = id;
         this.lectureType = lectureType;
         this.name = name;
@@ -81,6 +80,7 @@ public class Lecture {
         this.startTime = startTime;
         this.endTime = endTime;
         this.isFinished = false;
+        this.lectureCode = lectureCode;
     }
 
     public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {

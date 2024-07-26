@@ -1,5 +1,6 @@
 package com.yangyoung.english.studentSection.domain;
 
+import com.yangyoung.english.configuration.BaseEntity;
 import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.student.domain.Student;
 import jakarta.persistence.*;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StudentSection {
+public class StudentSection extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

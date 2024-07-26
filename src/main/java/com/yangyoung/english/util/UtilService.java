@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -17,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class UtilService {
+
+    private final static int lengthOfLectureCode = 6;
 
     public static List<List<Object>> readExcel(MultipartFile file, SheetType sheetType) throws IOException {
         List<List<Object>> data = new ArrayList<>();
@@ -75,5 +78,16 @@ public class UtilService {
 
     public static LocalDate getEndOfWeek(LocalDate date) {
         return date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+    }
+
+    public static String generateLectureCode() {
+        String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(lengthOfLectureCode);
+        for (int i = 0; i < lengthOfLectureCode; i++) {
+            int index = random.nextInt(ALPHA_NUMERIC_STRING.length());
+            sb.append(ALPHA_NUMERIC_STRING.charAt(index));
+        }
+        return sb.toString();
     }
 }

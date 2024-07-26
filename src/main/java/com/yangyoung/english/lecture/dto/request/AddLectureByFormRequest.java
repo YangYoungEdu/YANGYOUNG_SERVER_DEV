@@ -2,6 +2,7 @@ package com.yangyoung.english.lecture.dto.request;
 
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureType;
+import com.yangyoung.english.util.UtilService;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -40,6 +41,7 @@ public class AddLectureByFormRequest {
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
+                .lectureCode(UtilService.generateLectureCode())
                 .build();
     }
 }

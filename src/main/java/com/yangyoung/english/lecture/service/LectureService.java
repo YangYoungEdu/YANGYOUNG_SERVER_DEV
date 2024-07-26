@@ -82,10 +82,6 @@ public class LectureService {
         List<Lecture> lectureList = lectureRepository.findByIsFinishedFalse();
         for (Lecture lecture : lectureList) {
             LocalDate lastDate = lecture.getLectureDateList().get(lecture.getLectureDateList().size() - 1).getLectureDate();
-//            LocalDate lastDate = lecture.getLectureDateList().stream()
-//                    .map(LectureDate::getLectureDate)
-//                    .max(LocalDate::compareTo)
-//                    .orElse(null);
 
             if (lastDate != null && lastDate.isAfter(today)) { // 마지막 강의 날짜가 오늘 이전일 경우 강의 종료 처리
                 lecture.updateIsFinished();
@@ -140,7 +136,7 @@ public class LectureService {
         studentLectureRepository.saveAll(studentLectureList);
     }
 
-    @Scheduled(cron = "0 0 0 * * SUN") // 매주 일요일 자정에 실행
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
     @Transactional
     // ToDo : 날짜 중복 할당 수정
     public void addLectureBySheet() throws GeneralSecurityException, IOException, URISyntaxException {
@@ -153,11 +149,18 @@ public class LectureService {
 
             Lecture newLecture = null;
 
+
             if (!isLectureDataValid(lectureData) && tempLecture == null) { // 강의 필수 정보가 없고 이전 강의가 없을 경우
                 continue;
             }
 
-            if (isLectureDataValid(lectureData)) { // 강의 필수 정보가 없고 이전 강의가 없을 경우
+            Optional<Lecture> isLectureExist = lectureRepository.findByLectureCode(lectureData.get(LECTURE_NAME_INDEX).toString());
+            if (isLectureDataValid(lectureData)) { // 강의 필수 정보가 존재할 경우
+                // ToDo: 2024-07-10: 강의가 존재 할 때 업데이트 될 수 있도록 수정
+                if (isLectureExist.isPresent()) { // 강의가 이미 존재할 경우
+                    continue;
+                }
+
                 newLecture = createLectureFromData(lectureData);
                 tempLecture = newLecture;
                 lectureRepository.save(newLecture);
@@ -169,26 +172,26 @@ public class LectureService {
                         .map(LocalDate::parse)
                         .toList();
                 assignLectureDayAndDate(newLecture, dayList, dateList);
+
+                String preset = lectureData.get(LECTURE_PRESET_INDEX).toString();
+                if (!preset.isBlank()) { // 프리셋이 존재할 경우
+                    if (tempLecture != null) {
+                        assignLectureStudents(tempLecture, preset);
+                    }
+                }
+
+                String school = lectureData.get(LECTURE_SCHOOL_INDEX).toString();
+                if (!school.isBlank() || tempSchool != null) { // 학교가 존재할 경우
+                    tempSchool = school;
+                    String studentName = lectureData.get(LECTURE_STUDENT_INDEX).toString();
+                    if (!studentName.isBlank()) {
+                        Optional<Student> student = studentUtilService.findStudentByNameAndSchoolOptional(studentName, tempSchool);
+                        if (student.isPresent()) {
+                            assignLectureStudents(tempLecture, student.get());
+                        }
+                    }
+                }
             }
-
-            String preset = lectureData.get(LECTURE_PRESET_INDEX).toString();
-            log.info("preset: {}", preset);
-//            if (!preset.isBlank()) { // 프리셋이 존재할 경우
-//                assignLectureStudents(tempLecture, preset);
-//            }
-            assignLectureStudents(tempLecture, preset);
-
-//            String school = lectureData.get(LECTURE_SCHOOL_INDEX).toString();
-//            if (!school.isBlank() || tempSchool != null) { // 학교가 존재할 경우
-//                tempSchool = school;
-//                String studentName = lectureData.get(LECTURE_STUDENT_INDEX).toString();
-//                if (!studentName.isBlank()) {
-//                    Optional<Student> student = studentUtilService.findStudentByNameAndSchoolOptional(studentName, tempSchool);
-//                    if (student.isPresent()) {
-//                        assignLectureStudents(tempLecture, student.get());
-//                    }
-//                }
-//            }
         }
     }
 
@@ -222,23 +225,22 @@ public class LectureService {
         studentLectureRepository.save(new StudentLecture(student, lecture));
     }
 
-    // 강의 필수 정보 확인(강의 유형, 강의명, 강사, 강의실, 날짜, 시작 시간, 종료 시간)
+    // 강의 필수 정보 확인(과목 코드, 과목 이름)
     private boolean isLectureDataValid(List<Object> lectureData) {
-        if (lectureData == null) {
-            return false;
-        }
 
-//        for (int i = 0; i < REQUIRED_FIELDS; i++) {
-//            if (lectureData.get(i) == null || lectureData.get(i).toString().isBlank()) {
-//                return false;
-//            }
-//        }
+        String lectureName = lectureData.get(LECTURE_NAME_INDEX).toString();
+        String teacher = lectureData.get(LECTURE_TEACHER_INDEX).toString();
+        List<String> dayList = Arrays.asList(lectureData.get(LECTURE_DAY_INDEX).toString().split(","));
+        List<String> dateList = Arrays.asList(lectureData.get(LECTURE_DATE_INDEX).toString().split(","));
+        String startTime = lectureData.get(LECTURE_START_TIME_INDEX).toString();
+        String endTime = lectureData.get(LECTURE_END_TIME_INDEX).toString();
 
-//        String lectureName = lectureData.get(LECTURE_NAME_INDEX).toString();
-//        if (lectureRepository.existsByName(lectureName)) {
-//            return false;
-//        }
-        return true;
+        return !lectureName.isBlank() &&
+                !teacher.isBlank() &&
+                !dayList.isEmpty() &&
+                !dateList.isEmpty() &&
+                !startTime.isBlank() &&
+                !endTime.isBlank();
     }
 
 
