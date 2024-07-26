@@ -1,8 +1,6 @@
 package com.yangyoung.english.lecture.dto.request;
 
 import com.yangyoung.english.lecture.domain.Lecture;
-import com.yangyoung.english.lecture.domain.LectureType;
-import com.yangyoung.english.util.UtilService;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,15 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 public class AddLectureByFormRequest {
 
-    private String lectureType;
+    private String lectureCode;
 
     private String name;
 
     private String teacher;
 
     private String room;
-
-    private String lectureCode;
 
     private LocalTime startTime;
 
@@ -37,7 +33,6 @@ public class AddLectureByFormRequest {
 
     public Lecture toEntity() {
         return Lecture.builder()
-                .lectureType(LectureType.getLectureTypeName(lectureType))
                 .name(name)
                 .teacher(teacher)
                 .room(room)

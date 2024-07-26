@@ -33,7 +33,6 @@ public interface StudentLectureRepository extends JpaRepository<StudentLecture, 
             "WHERE sl.student.id = :studentId " +
             "AND EXISTS (SELECT ld FROM l.lectureDateList ld " +
             "WHERE ld.lectureDate BETWEEN :startDate AND :endDate) " +
-            "AND l.lectureType = 'CLASS' " +
             "AND l.isFinished = false")
     long countClassLecturesByStudentAndWeek(@Param("studentId") Long studentId,
                                             @Param("startDate") LocalDate startDate,

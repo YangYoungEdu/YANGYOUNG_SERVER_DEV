@@ -29,23 +29,4 @@ public class LectureDetailResponse {
     private List<String> dayList;
 
     private List<String> dateList;
-
-    public LectureDetailResponse(Lecture lecture) {
-        this.id = lecture.getId();
-        this.name = lecture.getName();
-        this.teacher = lecture.getTeacher();
-        this.room = lecture.getRoom();
-        this.startTime = lecture.getStartTime().toString();
-        this.endTime = lecture.getEndTime().toString();
-        if (lecture.getLectureDayList() != null) {
-            this.dayList = lecture.getLectureDayList().stream()
-                    .map(lectureDay -> LectureDay.getLectureDay(lectureDay.getLectureDay()))
-                    .collect(Collectors.toList());
-        }
-        if (lecture.getLectureDateList() != null) {
-            this.dateList = lecture.getLectureDateList().stream()
-                    .map(lectureDate -> lectureDate.getLectureDate().toString())
-                    .collect(Collectors.toList());
-        }
-    }
 }

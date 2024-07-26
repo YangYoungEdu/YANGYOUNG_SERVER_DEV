@@ -28,9 +28,6 @@ public class Lecture extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private LectureType lectureType;
-
     private String lectureCode;
 
     private String name;
@@ -71,9 +68,8 @@ public class Lecture extends BaseEntity {
 
 
     @Builder
-    public Lecture(Long id, LectureType lectureType, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode) {
+    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode) {
         this.id = id;
-        this.lectureType = lectureType;
         this.name = name;
         this.teacher = teacher;
         this.room = room;
