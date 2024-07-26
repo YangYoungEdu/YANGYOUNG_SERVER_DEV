@@ -15,6 +15,8 @@ import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
 import com.yangyoung.english.lectureDay.domain.LectureDayRepository;
+import com.yangyoung.english.lectureSection.domain.LectureSection;
+import com.yangyoung.english.lectureSection.domain.LectureSectionRepository;
 import com.yangyoung.english.section.domain.Section;
 import com.yangyoung.english.section.domain.SectionRepository;
 import com.yangyoung.english.section.service.SectionUtilService;
@@ -69,6 +71,7 @@ public class LectureService {
     private final SectionRepository sectionRepository;
     private final SectionUtilService sectionUtilService;
     private final StudentSectionRepository studentSectionRepository;
+    private final LectureSectionRepository lectureSectionRepository;
 
     // 강의 종료 여부 확인
     // second minute hour day-of-month month day-of-week
@@ -137,7 +140,6 @@ public class LectureService {
 
     @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
     @Transactional
-    // ToDo : 날짜 중복 할당 수정
     public void addLectureBySheet() throws GeneralSecurityException, IOException, URISyntaxException {
 
         List<List<Object>> lectureDataList = SheetsService.readSpreadSheet("강의");
@@ -174,6 +176,9 @@ public class LectureService {
                 String preset = lectureData.get(LECTURE_PRESET_INDEX).toString();
                 if (!preset.isBlank()) { // 프리셋이 존재할 경우
                     assignLectureStudents(tempLecture, preset);
+
+                    Section section = sectionUtilService.findSectionByName(preset);
+                    assignLecturesToSection(tempLecture, section);
                 }
 
                 String school = lectureData.get(LECTURE_SCHOOL_INDEX).toString();
@@ -219,6 +224,11 @@ public class LectureService {
     // 강의 -> 학생 할당 - 스프레드시트
     private void assignLectureStudents(Lecture lecture, Student student) {
         studentLectureRepository.save(new StudentLecture(student, lecture));
+    }
+
+    // 강의 -> 분반 할당
+    private void assignLecturesToSection(Lecture lecture, Section section) {
+        lectureSectionRepository.save(new LectureSection(lecture, section));
     }
 
     // 강의 필수 정보 확인(과목 코드, 과목 이름)

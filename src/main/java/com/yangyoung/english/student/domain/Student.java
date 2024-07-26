@@ -74,6 +74,7 @@ public class Student extends BaseEntity {
         this.studentPhoneNumber = studentPhoneNumber;
         this.parentPhoneNumber = parentPhoneNumber;
         this.isEnrolled = true;
+        this.isLectureRegistered = false;
     }
 
     @Builder

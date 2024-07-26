@@ -339,21 +339,24 @@ public class StudentService {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfWeek = UtilService.getStartOfWeek(today);
         LocalDate lastDayOfWeek = UtilService.getEndOfWeek(today);
-        List<Section> sectionList = sectionRepository.findAll();
 
-        for (Section section : sectionList) {
-            long numberOfLectureInLecture = lectureSectionRepository.countLecturesBySectionIdAndDateRange(section.getId(), firstDayOfWeek, lastDayOfWeek);
 
-            List<Student> students = section.getStudentSectionList().stream().map(StudentSection::getStudent).toList();
-            for (Student student : students) {
-                long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
-
-                if (numberOfLectureInLecture != numberOfLectureInStudent) {
-                    student.updateIsLectureRegistered(false);
-                }
-                if (numberOfLectureInLecture == numberOfLectureInStudent) {
-                    student.updateIsLectureRegistered(true);
-                }
+        List<Student> students = studentRepository.findAll();
+        for (Student student : students) {
+            long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
+            long numberOfLectureInSectionList = 0;
+            List<Section> sectionList = student.getStudentSectionList().stream().map(StudentSection::getSection).toList();
+            for (Section section : sectionList) {
+                long numberOfLectureInLecture = lectureSectionRepository.countLecturesBySectionIdAndDateRange(section.getId(), firstDayOfWeek, lastDayOfWeek);
+                numberOfLectureInSectionList += numberOfLectureInLecture;
+            }
+            log.info("numberOfLectureInLecture : {}", numberOfLectureInSectionList);
+            log.info("numberOfLectureInStudent : {}", numberOfLectureInStudent);
+            if (numberOfLectureInSectionList != numberOfLectureInStudent) {
+                student.updateIsLectureRegistered(false);
+            }
+            if (numberOfLectureInSectionList == numberOfLectureInStudent) {
+                student.updateIsLectureRegistered(true);
             }
         }
     }
@@ -363,6 +366,8 @@ public class StudentService {
     public List<StudentResponse> getUnregisteredStudents() {
 
         List<Student> students = studentRepository.findByIsLectureRegisteredFalse();
+
+        log.info("students : {}", students.size());
 
         return students.stream()
                 .map(StudentResponse::new)

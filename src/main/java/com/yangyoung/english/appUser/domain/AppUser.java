@@ -24,7 +24,7 @@ public class AppUser implements UserDetails {
     private Student student;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", updatable = false, unique = true, nullable = false)
     private Long id;
 

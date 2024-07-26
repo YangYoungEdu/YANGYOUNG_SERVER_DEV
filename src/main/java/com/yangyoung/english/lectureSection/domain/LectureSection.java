@@ -4,6 +4,7 @@ import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.section.domain.Section;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,4 +24,10 @@ public class LectureSection {
     @ManyToOne
     @JoinColumn(name = "section_id")
     private Section section;
+
+    @Builder
+    public LectureSection(Lecture lecture, Section section) {
+        this.lecture = lecture;
+        this.section = section;
+    }
 }
