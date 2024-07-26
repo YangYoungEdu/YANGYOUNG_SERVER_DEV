@@ -343,14 +343,15 @@ public class StudentService {
 
         List<Student> students = studentRepository.findAll();
         for (Student student : students) {
+
             long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
             long numberOfLectureInSectionList = 0;
             List<Section> sectionList = student.getStudentSectionList().stream().map(StudentSection::getSection).toList();
             for (Section section : sectionList) {
-                long numberOfLectureInLecture = lectureSectionRepository.countLecturesBySectionIdAndDateRange(section.getId(), firstDayOfWeek, lastDayOfWeek);
+                long numberOfLectureInLecture = lectureSectionRepository.countBySectionIdAndLectureIsFinishedFalseAndLectureLectureDateListLectureDateBetween(section.getId(), firstDayOfWeek, lastDayOfWeek);
                 numberOfLectureInSectionList += numberOfLectureInLecture;
             }
-            log.info("numberOfLectureInLecture : {}", numberOfLectureInSectionList);
+            log.info("numberOfLectureInSectionList : {}", numberOfLectureInSectionList);
             log.info("numberOfLectureInStudent : {}", numberOfLectureInStudent);
             if (numberOfLectureInSectionList != numberOfLectureInStudent) {
                 student.updateIsLectureRegistered(false);
