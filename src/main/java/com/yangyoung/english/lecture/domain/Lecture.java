@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.yangyoung.english.attendance.domain.Attendance;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
+import com.yangyoung.english.lectureSection.domain.LectureSection;
 import com.yangyoung.english.lectureTask.domain.LectureTask;
+import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -26,6 +28,11 @@ public class Lecture {
 
     @Enumerated(EnumType.STRING)
     private LectureType lectureType;
+
+    @Enumerated(EnumType.STRING)
+    private Grade grade;
+
+    private String lectureCode;
 
     private String name;
 
@@ -58,6 +65,10 @@ public class Lecture {
     @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Attendance> attendanceList;
+
+    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<LectureSection> lectureSectionList;
 
 
     @Builder

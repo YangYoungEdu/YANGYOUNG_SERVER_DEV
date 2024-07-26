@@ -1,6 +1,7 @@
 package com.yangyoung.english.section.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.yangyoung.english.lectureSection.domain.LectureSection;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.studentSection.domain.StudentSection;
 import jakarta.persistence.*;
@@ -27,6 +28,10 @@ public class Section {
     @OneToMany(mappedBy = "section", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
     private List<StudentSection> studentSectionList;
+
+    @OneToMany(mappedBy = "section", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<LectureSection> lectureSectionList;
 
     @Builder
     public Section(String name) {

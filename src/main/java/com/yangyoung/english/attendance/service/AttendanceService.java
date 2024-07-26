@@ -51,7 +51,7 @@ public class AttendanceService {
         }
 
         // 강의 목록 조회 및 출석 처리
-        List<Lecture> lectureList = lectureUtilService.getLectureByDay(date);
+        List<Lecture> lectureList = lectureUtilService.findLectureByDay(date);
         lectureList.sort(Comparator.comparing(Lecture::getStartTime)); // 시작 시간 순 정렬
         for (int i = 0; i < lectureList.size(); i++) {
             Lecture lecture = lectureList.get(i);

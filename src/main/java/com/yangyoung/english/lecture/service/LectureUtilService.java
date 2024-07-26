@@ -34,7 +34,7 @@ public class LectureUtilService {
 
     // 강의 간단 조회 - 일단위
     @Transactional
-    public List<Lecture> getLectureByDay(LocalDate date) {
+    public List<Lecture> findLectureByDay(LocalDate date) {
         return lectureRepository.findLecturesByDate(date);
     }
 
@@ -42,5 +42,11 @@ public class LectureUtilService {
     @Transactional
     public List<Lecture> findLecturesByStudentId(Long studentId) {
         return studentLectureRepository.findLecturesByStudentId(studentId);
+    }
+
+    // 강의 조회 - 날짜
+    @Transactional
+    public List<Lecture> findLecturesByDate(LocalDate date) {
+        return lectureRepository.findLecturesByDate(date);
     }
 }

@@ -370,7 +370,7 @@ public class LectureService {
         LocalDate firstDayOfWeek = date.with(weekFields.dayOfWeek(), 1);
         LocalDate lastDayOfWeek = date.with(weekFields.dayOfWeek(), 7);
 
-        return lectureRepository.findByLectureDateList_LectureDateBetween(firstDayOfWeek, lastDayOfWeek).stream()
+        return lectureRepository.findLecturesByDateRange(firstDayOfWeek, lastDayOfWeek).stream()
                 .map(LectureResponse::new)
                 .toList();
     }

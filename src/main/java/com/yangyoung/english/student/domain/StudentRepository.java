@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,4 +24,6 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
     // 이름과 학교로 검색
     @Query("SELECT s FROM Student s WHERE s.name = :name AND s.school.name = :schoolName")
     Optional<Student> findByNameAndSchoolName(@Param("name") String name, @Param("schoolName") String schoolName);
+
+    List<Student> findByGrade(Grade grade);
 }

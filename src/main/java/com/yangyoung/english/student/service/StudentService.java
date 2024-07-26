@@ -4,11 +4,12 @@ import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
+import com.yangyoung.english.lectureSection.domain.LectureSectionRepository;
 import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.school.domain.SchoolRepository;
-import com.yangyoung.english.school.domain.Status;
 import com.yangyoung.english.school.service.SchoolUtilService;
 import com.yangyoung.english.section.domain.Section;
+import com.yangyoung.english.section.domain.SectionRepository;
 import com.yangyoung.english.section.service.SectionUtilService;
 import com.yangyoung.english.student.domain.Grade;
 import com.yangyoung.english.student.domain.Student;
@@ -20,7 +21,7 @@ import com.yangyoung.english.student.dto.response.StudentResponse;
 import com.yangyoung.english.student.dto.response.StudentScheduleResponse;
 import com.yangyoung.english.student.exception.StudentErrorCode;
 import com.yangyoung.english.student.exception.StudentIdDuplicateException;
-import com.yangyoung.english.studentLecture.domain.StudentLecture;
+import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import com.yangyoung.english.studentSection.domain.StudentSection;
 import com.yangyoung.english.studentSection.domain.StudentSectionRepository;
 import com.yangyoung.english.task.domain.Task;
@@ -42,7 +43,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +65,10 @@ public class StudentService {
     private final SchoolRepository schoolRepository;
     private final SectionUtilService sectionUtilService;
     private final StudentSectionRepository studentSectionRepository;
+    private final SectionRepository sectionRepository;
+    private final StudentLectureRepository studentLectureRepository;
+    private final LectureSectionRepository lectureSectionRepository;
+
 
     // 학생 정보 등록 - 폼 입력으로 등록
     @Transactional
@@ -95,8 +99,6 @@ public class StudentService {
     @Transactional
     public void addStudentsBySheet() throws Exception {
 
-        List<Student> newStudentList = new ArrayList<>();
-
         List<List<Object>> studentListData = SheetsService.readSpreadSheet("학생");
         for (List<Object> studentData : studentListData) {
             if (!validateStudentData(studentData)) { // 필수 데이터 확인
@@ -113,7 +115,6 @@ public class StudentService {
 
             School school = schoolUtilService.findSchoolByName(studentData.get(STUDENT_SCHOOL_INDEX).toString());
             Student newStudent = new Student(studentData, school);
-            newStudentList.add(newStudent);
             studentRepository.save(newStudent);
 
             String section = studentData.get(STUDENT_SECTION_INDEX).toString();
@@ -299,7 +300,7 @@ public class StudentService {
 
         StudentBriefResponse studentBrief = getStudentBrief(studentId);
 
-        List<Lecture> lectureList = lectureUtilService.getLectureByDay(today);
+        List<Lecture> lectureList = lectureUtilService.findLectureByDay(today);
         List<LectureBriefResponse> lectureBriefResponseList = lectureList.stream()
                 .map(LectureBriefResponse::new)
                 .toList();
@@ -332,51 +333,36 @@ public class StudentService {
                 .toList();
     }
 
-    // 수업 미등록 학생 조회
-    // ToDo: 로직 수정 및 최적화 필요
     @Transactional
-    public List<StudentResponse> getUnregisteredStudents() {
+    @Scheduled(cron = "0 0 3 * * *")
+    public void checkUnregisteredStudents() {
 
-        LocalDate mon = UtilService.getStartOfWeek(LocalDate.now());
-        LocalDate sun = UtilService.getEndOfWeek(LocalDate.now());
+        long numberOfStudent = studentRepository.count();
+        long numberOfLecture = 0;
 
-        List<School> schoolList = schoolRepository.findByStatus(Status.NON_EXAM);
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfWeek = UtilService.getStartOfWeek(today);
+        LocalDate lastDayOfWeek = UtilService.getEndOfWeek(today);
+        List<Section> sectionList = sectionRepository.findAll();
 
-        List<Student> unregisteredStudents = schoolList.stream()
-                .flatMap(school -> school.getStudentList().stream())
-                .filter(student -> isStudentUnregistered(student, mon, sun, Status.NON_EXAM))
-                .toList();
+        for (Section section : sectionList) {
+            long numberOfLectureInLecture = lectureSectionRepository.countLecturesBySectionIdAndDateRange(section.getId(), firstDayOfWeek, lastDayOfWeek);
+            numberOfLecture += numberOfLectureInLecture;
 
-        return unregisteredStudents.stream()
-                .map(StudentResponse::new)
-                .collect(Collectors.toList());
-    }
+            List<Student> students = section.getStudentSectionList().stream().map(StudentSection::getStudent).toList();
+            for (Student student : students) {
+                long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
 
-    // 수업 미등록 학생 확인
-    private boolean isStudentUnregistered(Student student, LocalDate mon, LocalDate sun, Status status) {
-        List<Lecture> lectureList = student.getStudentLectureList().stream()
-                .map(StudentLecture::getLecture)
-                .filter(lecture -> isLectureInCurrentWeek(lecture, mon, sun))
-                .toList();
-
-        if (status.equals(Status.NON_EXAM)) {
-            boolean isPre = lectureList.stream().anyMatch(lecture -> lecture.getLectureType().getLectureTypeName().equals("PRE"));
-            boolean isClass = lectureList.stream().anyMatch(lecture -> lecture.getLectureType().getLectureTypeName().equals("CLASS"));
-
-            return !isPre && !isClass;
+                if (numberOfLectureInLecture != numberOfLectureInStudent) {
+                    student.updateIsLectureRegistered(false);
+                }
+                if (numberOfLectureInLecture == numberOfLectureInStudent) {
+                    student.updateIsLectureRegistered(true);
+                }
+            }
         }
 
-        return false;
-    }
-
-    // 수업이 현재 주에 있는지 확인
-    private boolean isLectureInCurrentWeek(Lecture lecture, LocalDate mon, LocalDate sun) {
-        return lecture.getLectureDateList().stream()
-                .anyMatch(lectureDate -> !isDateBeforeOrAfter(lectureDate.getLectureDate(), mon, sun));
-    }
-
-    // 날짜 비교
-    private boolean isDateBeforeOrAfter(LocalDate date, LocalDate start, LocalDate end) {
-        return date.isBefore(start) || date.isAfter(end);
+        log.info("numberOfStudent = {}", numberOfStudent);
+        log.info("numberOfLecture = {}", numberOfLecture);
     }
 }

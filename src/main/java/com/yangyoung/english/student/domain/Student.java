@@ -40,17 +40,14 @@ public class Student extends BaseEntity {
     @JsonManagedReference
     private School school;
 
-//    @ManyToOne()
-//    @JoinColumn(name = "section_id")
-//    @JsonManagedReference
-//    private Section section;
-
     @Enumerated(EnumType.STRING)
     private Grade grade;
 
     private String studentPhoneNumber;
 
     private String parentPhoneNumber;
+
+    private Boolean isLectureRegistered;
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
@@ -128,5 +125,9 @@ public class Student extends BaseEntity {
 
     public void updateEnrollStatus(boolean isEnrolled) {
         this.isEnrolled = isEnrolled;
+    }
+
+    public void updateIsLectureRegistered(Boolean isLectureRegistered) {
+        this.isLectureRegistered = isLectureRegistered;
     }
 }
