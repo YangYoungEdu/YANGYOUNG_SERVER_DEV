@@ -50,16 +50,17 @@ public class LectureService {
 
     private static final int REQUIRED_FIELDS = 7;
     private static final int LECTURE_TYPE_INDEX = 0;
-    private static final int LECTURE_NAME_INDEX = 1;
-    private static final int LECTURE_TEACHER_INDEX = 2;
-    private static final int LECTURE_ROOM_INDEX = 3;
-    private static final int LECTURE_DAY_INDEX = 4;
-    private static final int LECTURE_DATE_INDEX = 5;
-    private static final int LECTURE_START_TIME_INDEX = 6;
-    private static final int LECTURE_END_TIME_INDEX = 7;
-    private static final int LECTURE_PRESET_INDEX = 8;
-    private static final int LECTURE_SCHOOL_INDEX = 9;
-    private static final int LECTURE_STUDENT_INDEX = 10;
+    private static final int LECTURE_LECTURE_CODE_INDEX = 1;
+    private static final int LECTURE_NAME_INDEX = 2;
+    private static final int LECTURE_TEACHER_INDEX = 3;
+    private static final int LECTURE_ROOM_INDEX = 4;
+    private static final int LECTURE_DAY_INDEX = 5;
+    private static final int LECTURE_DATE_INDEX = 6;
+    private static final int LECTURE_START_TIME_INDEX = 7;
+    private static final int LECTURE_END_TIME_INDEX = 8;
+    private static final int LECTURE_PRESET_INDEX = 9;
+    private static final int LECTURE_SCHOOL_INDEX = 10;
+    private static final int LECTURE_STUDENT_INDEX = 11;
 
     private final LectureRepository lectureRepository;
     private final LectureDateRepository lectureDateRepository;
@@ -256,23 +257,17 @@ public class LectureService {
         String room = lectureData.get(LECTURE_ROOM_INDEX).toString();
         LocalTime startTime = LocalTime.parse(lectureData.get(LECTURE_START_TIME_INDEX).toString());
         LocalTime endTime = LocalTime.parse(lectureData.get(LECTURE_END_TIME_INDEX).toString());
+        String lectureCode = lectureData.get(LECTURE_LECTURE_CODE_INDEX).toString();
 
-//        List<LocalDate> lectureDateList = Arrays.stream(lectureData.get(LECTURE_DATE_INDEX).toString().split(","))
-//                .map(LocalDate::parse)
-//                .toList();
-
-        Lecture newLecture = Lecture.builder()
+        return Lecture.builder()
                 .lectureType(lectureType)
                 .name(name)
                 .teacher(teacher)
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
+                .lectureCode(lectureCode)
                 .build();
-
-//        lectureDateList.forEach(date -> lectureDateRepository.save(new LectureDate(date, newLecture)));
-
-        return newLecture;
     }
 
 
