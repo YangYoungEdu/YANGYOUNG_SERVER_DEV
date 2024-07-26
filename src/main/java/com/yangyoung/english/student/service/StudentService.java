@@ -336,9 +336,6 @@ public class StudentService {
     @Scheduled(cron = "0 0 3 * * *")
     public void checkUnregisteredStudents() {
 
-        long numberOfStudent = studentRepository.count();
-        long numberOfLecture = 0;
-
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfWeek = UtilService.getStartOfWeek(today);
         LocalDate lastDayOfWeek = UtilService.getEndOfWeek(today);
@@ -346,7 +343,6 @@ public class StudentService {
 
         for (Section section : sectionList) {
             long numberOfLectureInLecture = lectureSectionRepository.countLecturesBySectionIdAndDateRange(section.getId(), firstDayOfWeek, lastDayOfWeek);
-            numberOfLecture += numberOfLectureInLecture;
 
             List<Student> students = section.getStudentSectionList().stream().map(StudentSection::getStudent).toList();
             for (Student student : students) {
@@ -360,8 +356,16 @@ public class StudentService {
                 }
             }
         }
+    }
 
-        log.info("numberOfStudent = {}", numberOfStudent);
-        log.info("numberOfLecture = {}", numberOfLecture);
+    // 수업 미등록 학생 조회
+    @Transactional
+    public List<StudentResponse> getUnregisteredStudents() {
+
+        List<Student> students = studentRepository.findByIsLectureRegisteredFalse();
+
+        return students.stream()
+                .map(StudentResponse::new)
+                .toList();
     }
 }

@@ -25,5 +25,5 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
     @Query("SELECT s FROM Student s WHERE s.name = :name AND s.school.name = :schoolName")
     Optional<Student> findByNameAndSchoolName(@Param("name") String name, @Param("schoolName") String schoolName);
 
-    List<Student> findByGrade(Grade grade);
+    List<Student> findByIsLectureRegisteredFalse();
 }

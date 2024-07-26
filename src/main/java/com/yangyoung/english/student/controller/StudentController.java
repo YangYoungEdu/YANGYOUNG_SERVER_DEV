@@ -153,10 +153,18 @@ public class StudentController {
     }
 
     // 수업 미등록 학생 조회 컨트롤러
-    @GetMapping("/unregistered")
-    @Operation(summary = "미등록 학생 조회", description = "미등록 학생을 조회합니다.")
-    public ResponseEntity<Void> getUnregisteredStudents() {
+    @GetMapping("/unregistered/refresh")
+    @Operation(summary = "미등록 학생 업데이트", description = "미등록 학생을 업데이트.")
+    public ResponseEntity<Void> checkUnregisteredStudents() {
         studentService.checkUnregisteredStudents();
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unregistered")
+    @Operation(summary = "미등록 학생 조회", description = "미등록 학생을 조회합니다.")
+    public ResponseEntity<List<StudentResponse>> getUnregisteredStudents() {
+        List<StudentResponse> responses = studentService.getUnregisteredStudents();
+
+        return ResponseEntity.ok().body(responses);
     }
 }
