@@ -95,7 +95,7 @@ public class LectureService {
     @Transactional
     public LectureResponse addLectureByForm(AddLectureByFormRequest request) {
 
-        isNameDuplicated(request.getName());  // 강의명 중복 검사
+        isLectureExist(request.getName());  // 강의명 중복 검사
 
         Lecture newLecture = request.toEntity();
         lectureRepository.save(newLecture); // 강의 저장
@@ -117,8 +117,8 @@ public class LectureService {
     }
 
     // 강의명 중복 검사 - 폼
-    private void isNameDuplicated(String name) {
-        boolean isDuplicated = lectureRepository.existsByName(name);
+    private void isLectureExist(String name) {
+        boolean isDuplicated = lectureRepository.existsByLectureCode(name);
         if (isDuplicated) {
             LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NAME_DUPLICATED;
             throw new LectureNameDuplicateException(lectureErrorCode, name);
@@ -149,7 +149,6 @@ public class LectureService {
         for (List<Object> lectureData : lectureDataList) {
 
             Lecture newLecture = null;
-
 
             if (!isLectureDataValid(lectureData) && tempLecture == null) { // 강의 필수 정보가 없고 이전 강의가 없을 경우
                 continue;

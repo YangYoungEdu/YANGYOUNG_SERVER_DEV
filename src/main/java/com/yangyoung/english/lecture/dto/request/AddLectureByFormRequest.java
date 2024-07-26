@@ -23,6 +23,8 @@ public class AddLectureByFormRequest {
 
     private String room;
 
+    private String lectureCode;
+
     private LocalTime startTime;
 
     private LocalTime endTime;
@@ -41,7 +43,7 @@ public class AddLectureByFormRequest {
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
-                .lectureCode(UtilService.generateLectureCode())
+                .lectureCode(lectureCode)
                 .build();
     }
 }

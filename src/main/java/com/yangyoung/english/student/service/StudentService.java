@@ -148,7 +148,6 @@ public class StudentService {
             log.error("학생 데이터 중 필수 데이터가 비어있습니다.");
             return false;
         }
-//
 
         return true;
     }
