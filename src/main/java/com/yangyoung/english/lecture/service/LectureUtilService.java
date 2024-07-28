@@ -38,6 +38,12 @@ public class LectureUtilService {
         return lectureRepository.findLecturesByDate(date);
     }
 
+    // 강의 간단 조회 - 학생, 일단위
+    @Transactional
+    public List<Lecture> findLectureByStudentIdAndDay(Long studentId, LocalDate date) {
+        return studentLectureRepository.findDistinctLecturesByStudentIdAndDate(studentId, date);
+    }
+
     // 특정 학생이 수강하는 강의 조회
     @Transactional
     public List<Lecture> findLecturesByStudentId(Long studentId) {

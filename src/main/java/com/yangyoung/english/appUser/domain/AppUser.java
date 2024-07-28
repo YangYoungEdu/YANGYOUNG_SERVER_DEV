@@ -38,6 +38,14 @@ public class AppUser implements UserDetails {
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
+    @Builder
+    public AppUser(Student student) {
+        this.student = student;
+        this.username = student.getName();
+        this.password = String.valueOf(student.getId());
+        this.roles.add("STUDENT");
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()

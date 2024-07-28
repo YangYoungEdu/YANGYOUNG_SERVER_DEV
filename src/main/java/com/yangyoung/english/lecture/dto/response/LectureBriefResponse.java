@@ -31,13 +31,26 @@ public class LectureBriefResponse {
 
     private LectureTime endTime;
 
-    private List<String> dateList;
+    private String lectureDate;
 
-    private List<String> dayList;
+    private String lectureDay;
 
     private boolean isFinished;
 
     private boolean isRepeated;
+
+    public LectureBriefResponse(LectureDate lectureDate) {
+        this.id = lectureDate.getId();
+        this.lectureCode = lectureDate.getLecture().getLectureCode();
+        this.lectureDate = lectureDate.getLectureDate().toString();
+        this.isFinished = lectureDate.getLecture().isFinished();
+        this.isRepeated = lectureDate.getLecture().isRepeated();
+        this.name = lectureDate.getLecture().getName();
+        this.teacher = lectureDate.getLecture().getTeacher();
+        this.room = lectureDate.getLecture().getRoom();
+        this.startTime = new LectureTime(lectureDate.getLecture().getStartTime().getHour(), lectureDate.getLecture().getStartTime().getMinute());
+        this.endTime = new LectureTime(lectureDate.getLecture().getEndTime().getHour(), lectureDate.getLecture().getEndTime().getMinute());
+    }
 
     public LectureBriefResponse(Lecture lecture) {
         this.id = lecture.getId();
@@ -47,16 +60,6 @@ public class LectureBriefResponse {
         this.room = lecture.getRoom();
         this.startTime = new LectureTime(lecture.getStartTime().getHour(), lecture.getStartTime().getMinute());
         this.endTime = new LectureTime(lecture.getEndTime().getHour(), lecture.getEndTime().getMinute());
-        if (lecture.getLectureDayList() != null) {
-            this.dayList = lecture.getLectureDayList().stream()
-                    .map(lectureDay -> LectureDay.getLectureDay(lectureDay.getLectureDay()))
-                    .collect(Collectors.toList());
-        }
-        if (lecture.getLectureDateList() != null) {
-            this.dateList = lecture.getLectureDateList().stream()
-                    .map(lectureDate -> lectureDate.getLectureDate().toString())
-                    .collect(Collectors.toList());
-        }
         this.isFinished = lecture.isFinished();
         this.isRepeated = lecture.isRepeated();
     }

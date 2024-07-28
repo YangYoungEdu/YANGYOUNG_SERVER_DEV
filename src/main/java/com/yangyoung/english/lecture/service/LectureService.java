@@ -412,16 +412,29 @@ public class LectureService {
 
             boolean isExist = lectureRepository.existsById(lectureId);
             if (!isExist) {
-                LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NOT_FOUND;
-                log.warn("Lecture not found: {}", lectureId);
-
-                return;
+                continue;
             }
 
             deletedLectureIdList.add(lectureId);
         }
 
         lectureRepository.deleteAllById(deletedLectureIdList);
+    }
+
+    @Transactional
+    public void deleteLecture(Long lectureId, boolean isAllDeleted) {
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(lectureId);
+        if (lectureDate.isEmpty()) {
+            return;
+        }
+
+        if (isAllDeleted) {
+            lectureRepository.delete(lectureDate.get().getLecture());
+        }
+        if (!isAllDeleted) {
+            lectureDateRepository.delete(lectureDate.get());
+        }
     }
 
     // 특정 학생이 수강하는 강의 조회

@@ -1,9 +1,13 @@
 package com.yangyoung.english.student.service;
 
+import com.yangyoung.english.appUser.domain.AppUser;
+import com.yangyoung.english.appUser.domain.AppUserRepository;
 import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.service.LectureUtilService;
+import com.yangyoung.english.lectureDate.domain.LectureDate;
+import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureSection.domain.LectureSectionRepository;
 import com.yangyoung.english.school.domain.School;
 import com.yangyoung.english.school.domain.SchoolRepository;
@@ -68,16 +72,13 @@ public class StudentService {
     private final SectionRepository sectionRepository;
     private final StudentLectureRepository studentLectureRepository;
     private final LectureSectionRepository lectureSectionRepository;
+    private final AppUserRepository appUserRepository;
+    private final LectureDateRepository lectureDateRepository;
 
 
     // 학생 정보 등록 - 폼 입력으로 등록
     @Transactional
     public StudentResponse addStudentByForm(StudentAddRequest request) {
-
-//        boolean isDataValid = validateStudentData(request);
-//        if (!isDataValid) { // 필수 데이터 확인
-//            log.error("학생 데이터가 충분하지 않습니다.");
-//        }
 
         boolean isIdDuplicate = studentRepository.existsById(request.getId());
         if (isIdDuplicate) { // id 중복 검사
@@ -89,6 +90,8 @@ public class StudentService {
 //        List<Section> section = sectionUtilService.findSectionByName(request.getSection());
         Student newStudent = request.toEntity(school);
         studentRepository.save(newStudent);
+        AppUser appUser = new AppUser(newStudent);
+        appUserRepository.save(appUser);
 
         return new StudentResponse(newStudent);
     }
@@ -105,7 +108,6 @@ public class StudentService {
                 continue;
             }
 
-
             Student existingStudent = studentUtilService.findStudentById(Long.parseLong(studentData.get(STUDENT_ID_INDEX).toString()));
             if (existingStudent != null) {
                 if (isNeedToUpdate(existingStudent, studentData)) {
@@ -116,6 +118,8 @@ public class StudentService {
             School school = schoolUtilService.findSchoolByName(studentData.get(STUDENT_SCHOOL_INDEX).toString());
             Student newStudent = new Student(studentData, school);
             studentRepository.save(newStudent);
+            AppUser appUser = new AppUser(newStudent);
+            appUserRepository.save(appUser);
 
             String section = studentData.get(STUDENT_SECTION_INDEX).toString();
             List<String> sectionNameList = Arrays.asList(section.split(","));
@@ -297,10 +301,14 @@ public class StudentService {
     @Transactional
     public StudentScheduleResponse getStudentSchedule(Long studentId, LocalDate today) {
 
+        log.info("today : {}", today);
+
         StudentBriefResponse studentBrief = getStudentBrief(studentId);
 
-        List<Lecture> lectureList = lectureUtilService.findLectureByDay(today);
-        List<LectureBriefResponse> lectureBriefResponseList = lectureList.stream()
+//        List<Lecture> lectureList = lectureUtilService.findLectureByStudentIdAndDay(studentId, today);
+        List<LectureDate> lectureDateList = lectureDateRepository.findByStudentIdAndDate(studentId, today);
+        log.info("lectureList : {}", lectureDateList.size());
+        List<LectureBriefResponse> lectureBriefResponseList = lectureDateList.stream()
                 .map(LectureBriefResponse::new)
                 .toList();
 

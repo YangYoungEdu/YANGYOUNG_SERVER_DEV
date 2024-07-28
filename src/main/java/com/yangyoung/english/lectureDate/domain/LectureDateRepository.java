@@ -23,4 +23,12 @@ public interface LectureDateRepository extends JpaRepository<LectureDate, Long> 
     @Query("SELECT ld FROM LectureDate ld WHERE ld.lectureDate BETWEEN :startDate AND :endDate")
     List<LectureDate> findByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+    // 강의 조회 - 특정 일, 학생 아이디
+    @Query("SELECT ld FROM LectureDate ld " +
+            "JOIN ld.lecture l " +
+            "JOIN l.studentLectureList sl " +
+            "WHERE sl.student.id = :studentId " +
+            "AND ld.lectureDate = :date")
+    List<LectureDate> findByStudentIdAndDate(@Param("studentId") Long studentId, @Param("date") LocalDate date);
+
 }

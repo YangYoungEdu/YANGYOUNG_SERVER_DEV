@@ -37,4 +37,14 @@ public interface StudentLectureRepository extends JpaRepository<StudentLecture, 
     long countClassLecturesByStudentAndWeek(@Param("studentId") Long studentId,
                                             @Param("startDate") LocalDate startDate,
                                             @Param("endDate") LocalDate endDate);
+
+    // 학생 id, 날짜 기준으로 수강 강의 조회
+    @Query("SELECT DISTINCT l FROM Lecture l " +
+            "JOIN l.lectureDateList ld " +
+            "JOIN l.studentLectureList sl " +
+            "WHERE sl.student.id = :studentId " +
+            "AND l.isFinished = false " +
+            "AND ld.lectureDate = :date")
+    List<Lecture> findDistinctLecturesByStudentIdAndDate(@Param("studentId") Long studentId,
+                                                         @Param("date") LocalDate date);
 }
