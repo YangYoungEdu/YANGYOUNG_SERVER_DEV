@@ -103,7 +103,6 @@ public class LectureService {
         lectureRepository.save(newLecture);
 
         assignLectureDate(newLecture, request.getLectureDateList()); // 강의 -> 날짜/요일 할당
-        assignLectureDay(newLecture, request.getLectureDayList()); // 강의 -> 요일 할당
 
         this.assignLectureStudentsWithId(newLecture, request.getStudentList()); // 강의 -> 학생 할당
 
