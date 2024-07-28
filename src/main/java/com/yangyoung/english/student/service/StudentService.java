@@ -43,7 +43,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,12 +57,13 @@ public class StudentService {
 
     private final static int REQUIRED_DATA = 7;
     private final static int STUDENT_ID_INDEX = 0;
-    private final static int STUDENT_NAME_INDEX = 1;
-    private final static int STUDENT_SCHOOL_INDEX = 2;
-    private final static int STUDENT_GRADE_INDEX = 3;
-    private final static int STUDENT_STUDENT_PHONE_NUMBER_INDEX = 4;
-    private final static int STUDENT_PARENT_PHONE_NUMBER_INDEX = 5;
-    private final static int STUDENT_SECTION_INDEX = 6;
+    private final static int STUDENT_LECTURE_TYPE_INDEX = 1;
+    private final static int STUDENT_NAME_INDEX = 2;
+    private final static int STUDENT_SCHOOL_INDEX = 3;
+    private final static int STUDENT_GRADE_INDEX = 4;
+    private final static int STUDENT_STUDENT_PHONE_NUMBER_INDEX = 5;
+    private final static int STUDENT_PARENT_PHONE_NUMBER_INDEX = 6;
+    private final static int STUDENT_SECTION_INDEX = 7;
     private final StudentRepository studentRepository;
     private final SchoolUtilService schoolUtilService;
     private final StudentUtilService studentUtilService;
@@ -133,10 +136,6 @@ public class StudentService {
     // 필수항목 확인
     // ToDo : 필수 데이터 기준 수정 필요
     private boolean validateStudentData(List<Object> studentData) {
-
-//        if (studentData == null || studentData.size() < REQUIRED_DATA) {
-//            return false;
-//        }
 
         if (!isNumeric(studentData.get(STUDENT_ID_INDEX))) {
             log.error("학생 아이디가 숫자가 아닙니다.");
@@ -345,9 +344,19 @@ public class StudentService {
     public void checkUnregisteredStudents() {
 
         LocalDate today = LocalDate.now();
-        LocalDate firstDayOfWeek = UtilService.getStartOfWeek(today);
-        LocalDate lastDayOfWeek = UtilService.getEndOfWeek(today);
+        LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate lastDayOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
+        List<School> schools = schoolRepository.findAll();
+        for (School school : schools) {
+            for (Grade grade : Grade.values()) {
+                long numberOfLectureInSchoolAndGrade = 0;
+                List<Student> studentListBySchoolAndGrade = studentRepository.findBySchoolAndGradeAndIsEnrolledTrue(school, grade);
+                for (Student student : studentListBySchoolAndGrade) {
+                    long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
+                }
+            }
+        }
 
         List<Student> students = studentRepository.findAll();
         for (Student student : students) {

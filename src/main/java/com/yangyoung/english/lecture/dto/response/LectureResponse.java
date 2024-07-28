@@ -21,6 +21,8 @@ public class LectureResponse {
 
     private String name;
 
+    private String lectureType;
+
     private String teacher;
 
     private String room;
@@ -39,6 +41,7 @@ public class LectureResponse {
         this.id = lecture.getId();
         this.lectureCode = lecture.getLectureCode();
         this.name = lecture.getName();
+        this.lectureType = lecture.getLectureType().getDescription();
         this.teacher = lecture.getTeacher();
         this.room = lecture.getRoom();
         this.startTime = new LectureTime(lecture.getStartTime().getHour(), lecture.getStartTime().getMinute());
@@ -52,6 +55,7 @@ public class LectureResponse {
         this.lectureCode = lectureDate.getLecture().getLectureCode();
         this.lectureDate = lectureDate.getLectureDate().toString();
         this.isFinished = lectureDate.getLecture().isFinished();
+        this.lectureType = lectureDate.getLecture().getLectureType().getDescription();
         this.isRepeated = lectureDate.getLecture().isRepeated();
         this.name = lectureDate.getLecture().getName();
         this.teacher = lectureDate.getLecture().getTeacher();

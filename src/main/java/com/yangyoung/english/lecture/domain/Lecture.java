@@ -31,6 +31,9 @@ public class Lecture extends BaseEntity {
     @Column(unique = true)
     private String lectureCode;
 
+    @Enumerated(EnumType.STRING)
+    private LectureType lectureType;
+
     private String name;
 
     private String teacher;
@@ -71,7 +74,7 @@ public class Lecture extends BaseEntity {
 
 
     @Builder
-    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode, boolean isRepeated) {
+    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode, boolean isRepeated, LectureType lectureType) {
         this.id = id;
         this.name = name;
         this.teacher = teacher;
@@ -81,6 +84,7 @@ public class Lecture extends BaseEntity {
         this.isFinished = false;
         this.lectureCode = lectureCode;
         this.isRepeated = isRepeated;
+        this.lectureType = lectureType;
     }
 
     public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {

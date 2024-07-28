@@ -37,6 +37,7 @@ import java.security.GeneralSecurityException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -327,10 +328,11 @@ public class LectureService {
     @Transactional
     public List<LectureResponse> getAllLectureByWeek(LocalDate date) {
 
-        WeekFields weekFields = WeekFields.of(Locale.KOREA);
+        LocalDate firstDayOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate lastDayOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
-        LocalDate firstDayOfWeek = date.with(weekFields.dayOfWeek(), 1);
-        LocalDate lastDayOfWeek = date.with(weekFields.dayOfWeek(), 7);
+        log.info("firstDayOfWeek: {}", firstDayOfWeek);
+        log.info("lastDayOfWeek: {}", lastDayOfWeek);
 
         List<LectureDate> lectureDateList = lectureDateRepository.findByDateRange(firstDayOfWeek, lastDayOfWeek);
         return lectureDateList.stream()

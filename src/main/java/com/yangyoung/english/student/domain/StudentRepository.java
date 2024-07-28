@@ -1,5 +1,6 @@
 package com.yangyoung.english.student.domain;
 
+import com.yangyoung.english.school.domain.School;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,4 +27,6 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
     Optional<Student> findByNameAndSchoolName(@Param("name") String name, @Param("schoolName") String schoolName);
 
     List<Student> findByIsLectureRegisteredFalse();
+
+    List<Student> findBySchoolAndGradeAndIsEnrolledTrue(School school, Grade grade);
 }

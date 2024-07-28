@@ -1,6 +1,7 @@
 package com.yangyoung.english.lecture.dto.request;
 
 import com.yangyoung.english.lecture.domain.Lecture;
+import com.yangyoung.english.lecture.domain.LectureType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,8 @@ import java.util.List;
 public class AddLectureByFormRequest {
 
     private String name;
+
+    private String lectureType;
 
     private String teacher;
 
@@ -36,6 +39,7 @@ public class AddLectureByFormRequest {
                 .startTime(startTime)
                 .endTime(endTime)
                 .isRepeated(isRepeated)
+                .lectureType(LectureType.getLectureTypeByDescription(lectureType))
                 .build();
     }
 }

@@ -23,6 +23,8 @@ public class LectureBriefResponse {
 
     private String name;
 
+    private String lectureType;
+
     private String teacher;
 
     private String room;
@@ -42,6 +44,7 @@ public class LectureBriefResponse {
     public LectureBriefResponse(LectureDate lectureDate) {
         this.id = lectureDate.getId();
         this.lectureCode = lectureDate.getLecture().getLectureCode();
+        this.lectureType = lectureDate.getLecture().getLectureType().getDescription();
         this.lectureDate = lectureDate.getLectureDate().toString();
         this.isFinished = lectureDate.getLecture().isFinished();
         this.isRepeated = lectureDate.getLecture().isRepeated();
@@ -55,6 +58,7 @@ public class LectureBriefResponse {
     public LectureBriefResponse(Lecture lecture) {
         this.id = lecture.getId();
         this.lectureCode = lecture.getLectureCode();
+        this.lectureType = lecture.getLectureType().getDescription();
         this.name = lecture.getName();
         this.teacher = lecture.getTeacher();
         this.room = lecture.getRoom();
