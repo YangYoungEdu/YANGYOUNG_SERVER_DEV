@@ -99,7 +99,7 @@ public class LectureService {
         if (request.getLectureDateList().size() > 1) {
             isRepeated = true;
         }
-        Lecture newLecture = request.toEntity(isRepeated);
+        Lecture newLecture = request.toEntity(lectureCode, isRepeated);
         lectureRepository.save(newLecture);
 
         assignLectureDate(newLecture, request.getLectureDateList()); // 강의 -> 날짜/요일 할당

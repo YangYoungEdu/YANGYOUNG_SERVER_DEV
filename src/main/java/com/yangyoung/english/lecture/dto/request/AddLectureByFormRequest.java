@@ -27,9 +27,10 @@ public class AddLectureByFormRequest {
 
     private List<Long> studentList;
 
-    public Lecture toEntity(boolean isRepeated) {
+    public Lecture toEntity(String lectureCode, boolean isRepeated) {
         return Lecture.builder()
                 .name(name)
+                .lectureCode(lectureCode)
                 .teacher(teacher)
                 .room(room)
                 .startTime(startTime)
