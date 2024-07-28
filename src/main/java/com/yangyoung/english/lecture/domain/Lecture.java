@@ -28,6 +28,7 @@ public class Lecture extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String lectureCode;
 
     private String name;
@@ -41,6 +42,8 @@ public class Lecture extends BaseEntity {
     private LocalTime endTime;
 
     private boolean isFinished;
+
+    private boolean isRepeated;
 
     @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
@@ -68,7 +71,7 @@ public class Lecture extends BaseEntity {
 
 
     @Builder
-    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode) {
+    public Lecture(Long id, String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode, boolean isRepeated) {
         this.id = id;
         this.name = name;
         this.teacher = teacher;
@@ -77,6 +80,7 @@ public class Lecture extends BaseEntity {
         this.endTime = endTime;
         this.isFinished = false;
         this.lectureCode = lectureCode;
+        this.isRepeated = isRepeated;
     }
 
     public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {

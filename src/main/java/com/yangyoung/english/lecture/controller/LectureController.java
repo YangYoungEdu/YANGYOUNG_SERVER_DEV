@@ -49,15 +49,6 @@ public class LectureController {
         return ResponseEntity.ok().build();
     }
 
-    // 강의 전체 조회 - 페이징 처리 조회 컨트롤러
-    @GetMapping("")
-    @Operation(summary = "강의 전체 조회 - 페이징 처리", description = "강의 정보를 전체 조회합니다.")
-    public ResponseEntity<Page<LectureResponse>> getLectures(@RequestParam(value = "page", defaultValue = "0") final int page,
-                                                             @RequestParam(value = "size", defaultValue = "10") final int size,
-                                                             @RequestHeader(value = "Authorization") String token) {
-        return ResponseEntity.ok(lectureService.getAllLecture(page, size));
-    }
-
     // 강의 전체 조회 - 달 단위
     @GetMapping("/month")
     @Operation(summary = "강의 전체 조회 - 달 단위", description = "강의 정보를 달 단위로 조회합니다.")

@@ -13,8 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 public class AddLectureByFormRequest {
 
-    private String lectureCode;
-
     private String name;
 
     private String teacher;
@@ -27,18 +25,16 @@ public class AddLectureByFormRequest {
 
     private List<LocalDate> lectureDateList;
 
-    private List<DayOfWeek> lectureDayList;
-
     private List<Long> studentList;
 
-    public Lecture toEntity() {
+    public Lecture toEntity(boolean isRepeated) {
         return Lecture.builder()
                 .name(name)
                 .teacher(teacher)
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
-                .lectureCode(lectureCode)
+                .isRepeated(isRepeated)
                 .build();
     }
 }

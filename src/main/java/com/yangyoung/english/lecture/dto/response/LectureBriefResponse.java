@@ -19,6 +19,8 @@ public class LectureBriefResponse {
 
     private Long id;
 
+    private String lectureCode;
+
     private String name;
 
     private String teacher;
@@ -35,14 +37,16 @@ public class LectureBriefResponse {
 
     private boolean isFinished;
 
+    private boolean isRepeated;
+
     public LectureBriefResponse(Lecture lecture) {
         this.id = lecture.getId();
+        this.lectureCode = lecture.getLectureCode();
         this.name = lecture.getName();
         this.teacher = lecture.getTeacher();
         this.room = lecture.getRoom();
         this.startTime = new LectureTime(lecture.getStartTime().getHour(), lecture.getStartTime().getMinute());
         this.endTime = new LectureTime(lecture.getEndTime().getHour(), lecture.getEndTime().getMinute());
-        this.isFinished = lecture.isFinished();
         if (lecture.getLectureDayList() != null) {
             this.dayList = lecture.getLectureDayList().stream()
                     .map(lectureDay -> LectureDay.getLectureDay(lectureDay.getLectureDay()))
@@ -53,5 +57,7 @@ public class LectureBriefResponse {
                     .map(lectureDate -> lectureDate.getLectureDate().toString())
                     .collect(Collectors.toList());
         }
+        this.isFinished = lecture.isFinished();
+        this.isRepeated = lecture.isRepeated();
     }
 }

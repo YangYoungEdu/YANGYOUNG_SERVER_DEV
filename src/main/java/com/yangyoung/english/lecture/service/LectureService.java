@@ -1,6 +1,5 @@
 package com.yangyoung.english.lecture.service;
 
-import com.yangyoung.english.configuration.OneIndexedPageable;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
@@ -10,7 +9,6 @@ import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.exception.LectureErrorCode;
-import com.yangyoung.english.lecture.exception.LectureNameDuplicateException;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
@@ -25,13 +23,11 @@ import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import com.yangyoung.english.studentSection.domain.StudentSectionRepository;
+import com.yangyoung.english.util.UtilService;
 import com.yangyoung.english.util.spreasheet.SheetsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.WeekFields;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,10 +93,14 @@ public class LectureService {
     @Transactional
     public LectureResponse addLectureByForm(AddLectureByFormRequest request) {
 
-        isLectureExist(request.getName());  // 강의명 중복 검사
+        String lectureCode = createLectureCode();
 
-        Lecture newLecture = request.toEntity();
-        lectureRepository.save(newLecture); // 강의 저장
+        boolean isRepeated = false;
+        if (request.getLectureDateList().size() > 1) {
+            isRepeated = true;
+        }
+        Lecture newLecture = request.toEntity(isRepeated);
+        lectureRepository.save(newLecture);
 
         assignLectureDate(newLecture, request.getLectureDateList()); // 강의 -> 날짜/요일 할당
         assignLectureDay(newLecture, request.getLectureDayList()); // 강의 -> 요일 할당
@@ -118,11 +119,12 @@ public class LectureService {
     }
 
     // 강의명 중복 검사 - 폼
-    private void isLectureExist(String name) {
-        boolean isDuplicated = lectureRepository.existsByLectureCode(name);
-        if (isDuplicated) {
-            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NAME_DUPLICATED;
-            throw new LectureNameDuplicateException(lectureErrorCode, name);
+    private String createLectureCode() {
+        while (true) {
+            String lectureCode = UtilService.generateLectureCode();
+            if (!lectureRepository.existsByLectureCode(lectureCode)) {
+                return lectureCode;
+            }
         }
     }
 
@@ -311,22 +313,15 @@ public class LectureService {
         }
     }
 
-    // 강의 전체 조회 - 페이징 처리
-    @Transactional
-    public Page<LectureResponse> getAllLecture(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        OneIndexedPageable oneIndexedPageable = new OneIndexedPageable(pageable);
-
-        return lectureRepository.findAll(oneIndexedPageable).map(LectureResponse::new);
-    }
-
     // 강의 전체 조회 - 달 단위
     @Transactional
     public List<LectureResponse> getAllLectureByMonth(int year, int month) {
 
-        return lectureRepository.findLecturesByYearAndMonth(year, month).stream()
+        List<LectureDate> lectureDateList = lectureDateRepository.findByYearAndMonth(year, month);
+
+        return lectureDateList.stream()
                 .map(LectureResponse::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     // 강의 전체 조회 - 주 단위
@@ -338,53 +333,74 @@ public class LectureService {
         LocalDate firstDayOfWeek = date.with(weekFields.dayOfWeek(), 1);
         LocalDate lastDayOfWeek = date.with(weekFields.dayOfWeek(), 7);
 
-        return lectureRepository.findLecturesByDateRange(firstDayOfWeek, lastDayOfWeek).stream()
+        List<LectureDate> lectureDateList = lectureDateRepository.findByDateRange(firstDayOfWeek, lastDayOfWeek);
+        return lectureDateList.stream()
                 .map(LectureResponse::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
-    // 강의 전체 조회 - 일 단위 & 시간 오름차순 정렬
+    // 강의 전체 조회 - 일 단위
     @Transactional
     public List<LectureResponse> getAllLectureByDate(LocalDate date) {
 
-        return lectureRepository.findLecturesByDate(date).stream()
-                .sorted((l1, l2) -> l1.getStartTime().compareTo(l2.getStartTime()))
+        List<LectureDate> lectureDateList = lectureDateRepository.findByDate(date);
+
+        return lectureDateList.stream()
                 .map(LectureResponse::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     // 강의 상세 조회
     @Transactional
     public LectureResponse getLecture(Long lectureId) {
-        Lecture lecture = lectureRepository.findById(lectureId).orElseThrow();
-        return new LectureResponse(lecture);
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(lectureId);
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+
+        return new LectureResponse(lectureDate.get());
     }
 
     // 강의 정보 수정
     @Transactional
     public LectureResponse updateLecture(LectureUpdateRequest request) {
 
-        Lecture lecture = lectureUtilService.findLectureById(request.getId());
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getId());
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+        Lecture lecture = lectureDate.get().getLecture();
 
-        lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
+        if (request.isAllUpdate()) {
+            lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
+        }
+        if (!request.isAllUpdate()) {
+            lectureDateRepository.deleteByLectureId(lecture.getId());
 
-        lectureDateRepository.deleteByLectureId(lecture.getId());
-        lectureDayRepository.deleteByLectureId(lecture.getId());
-        assignLectureDate(lecture, request.getLectureDateList());
+            Lecture newLecture = request.toEntity();
+            lectureRepository.save(newLecture);
+            lectureDateRepository.save(new LectureDate(lectureDate.get().getLectureDate(), newLecture));
+        }
 
-        return new LectureResponse(lecture);
+        return new LectureResponse(lectureDate.get());
     }
 
     // 강의 수강 학생 수정
     @Transactional
     public LectureResponse updateLectureStudents(LectureStudentUpdateRequest request) {
 
-        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getLectureId());
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+
+        Lecture lecture = lectureDate.get().getLecture();
 
         studentLectureRepository.deleteByLectureId(lecture.getId());
         this.assignLectureStudentsWithId(lecture, request.getStudentIdList());
 
-        return new LectureResponse(lecture);
+        return new LectureResponse(lectureDate.get());
     }
 
     // 강의 삭제

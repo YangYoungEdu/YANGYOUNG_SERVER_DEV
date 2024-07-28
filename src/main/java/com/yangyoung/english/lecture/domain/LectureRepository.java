@@ -46,4 +46,5 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
             "WHERE ld.lectureDate BETWEEN :startDate AND :endDate " +
             "AND l.isFinished = false")
     List<Lecture> findLecturesByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
 }
