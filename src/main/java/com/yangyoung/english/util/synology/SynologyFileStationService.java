@@ -3,6 +3,8 @@ package com.yangyoung.english.util.synology;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yangyoung.english.lectureDate.domain.LectureDate;
+import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.material.dto.request.FileUploadRequest;
 import com.yangyoung.english.material.dto.response.MaterialResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -39,18 +41,21 @@ import java.util.*;
 @Slf4j
 public class SynologyFileStationService {
 
+    private final static String fixedPath = "/YangYoung/고등관/프로그램/";
     private final RestTemplate restTemplate;
-
+    private LectureDateRepository lectureDateRepository;
     @Value("${synology.url}")
     private String synologyUrl;
     @Value("${synology.username}")
     private String username;
     @Value("${synology.password}")
     private String password;
+//    private final static String fixedPath = "/YangYoung/";
 
     @Autowired
-    public SynologyFileStationService(RestTemplateBuilder builder) {
+    public SynologyFileStationService(RestTemplateBuilder builder, LectureDateRepository lectureDateRepository) {
         restTemplate = builder.build();
+        this.lectureDateRepository = lectureDateRepository;
     }
 
     /*
@@ -61,15 +66,14 @@ public class SynologyFileStationService {
      * */
     public String uploadFile(FileUploadRequest request) throws IOException {
 
-        log.info("File upload request: {}", request.getFileList());
-        log.info("Lecture: {}", request.getLecture());
-        log.info("Date: {}", request.getDate());
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getLectureId());
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+        String lectureName = lectureDate.get().getLecture().getName();
+        String lectureCode = lectureDate.get().getLecture().getLectureCode();
 
-        String lecture = request.getLecture();
-        String date = request.getDate();
         List<MultipartFile> fileList = request.getFileList();
-
-        String path = "/YangYoung/" + lecture + "/" + date;
 
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
@@ -77,6 +81,8 @@ public class SynologyFileStationService {
         }
 
         String uploadUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Upload&method=upload&version=2&_sid=" + sid.get();
+        String date = request.getDate();
+        String folder_path = buildPath(lectureName, lectureCode, date);
 
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             for (MultipartFile file : fileList) {
@@ -91,7 +97,7 @@ public class SynologyFileStationService {
                 FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, fileName);
 
                 HttpEntity reqEntity = MultipartEntityBuilder.create()
-                        .addPart("path", new StringBody(path, ContentType.create("text/plain", StandardCharsets.UTF_8)))
+                        .addPart("path", new StringBody(folder_path, ContentType.create("text/plain", StandardCharsets.UTF_8)))
                         .addPart("create_parents", new StringBody("true", ContentType.create("text/plain", StandardCharsets.UTF_8)))
                         .addPart("filename", fileBody)
                         .setLaxMode()
@@ -117,77 +123,17 @@ public class SynologyFileStationService {
     }
 
 
-    public String listFile() {
-
-        Optional<String> sid = authenticate();
-        if (sid.isEmpty()) {
-            throw new RuntimeException("Failed to authenticate with Synology");
-        }
-
-        String listUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.List&method=list&version=2&_sid=" + sid.get();
-
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(listUrl);
-
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
-                System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
-
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    // Print the response content
-                    String responseContent = EntityUtils.toString(entity);
-                    System.out.println(responseContent);
-
-                    return responseContent;
-                }
-
-                EntityUtils.consume(entity);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return "success";
-    }
-
-    public String searchFile() {
-
-        Optional<String> sid = authenticate();
-        if (sid.isEmpty()) {
-            throw new RuntimeException("Failed to authenticate with Synology");
-        }
-
-        String searchUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Search&method=start&version=2&_sid=" + sid.get();
-
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            URIBuilder uriBuilder = new URIBuilder(searchUrl);
-            uriBuilder.addParameter("folder_path", "/YangYoung/test");
-            URI uri = uriBuilder.build();
-
-            HttpGet request = new HttpGet(uri);
-
-            try (CloseableHttpResponse response = httpClient.execute(request)) {
-                System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
-
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    String responseContent = EntityUtils.toString(entity);
-                    System.out.println(responseContent);
-                }
-
-                EntityUtils.consume(entity);
-            }
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        return "success";
-    }
-
     /*
      * Get the file list of the lecture on the date
      * */
-    public List<MaterialResponse> getFile(String lecture, String date) {
+    public List<MaterialResponse> getFile(Long lectureId, String date) {
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(lectureId);
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+        String lectureName = lectureDate.get().getLecture().getName();
+        String lectureCode = lectureDate.get().getLecture().getLectureCode();
 
         List<String> fileList = new ArrayList<>();
 
@@ -197,7 +143,7 @@ public class SynologyFileStationService {
         }
 
         String searchUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.List&method=list&version=2&_sid=" + sid.get();
-        String folder_path = buildPath(lecture, date);
+        String folder_path = buildPath(lectureName, lectureCode, date);
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             URIBuilder uriBuilder = new URIBuilder(searchUrl);
@@ -227,13 +173,21 @@ public class SynologyFileStationService {
                 .toList();
     }
 
-    public byte[] downloadFile(String lecture, String date, String fileName) {
+    public byte[] downloadFile(Long lectureId, String date, String fileName) {
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(lectureId);
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+        String lectureName = lectureDate.get().getLecture().getName();
+        String lectureCode = lectureDate.get().getLecture().getLectureCode();
+
         Optional<String> sid = authenticate();
         if (sid.isEmpty()) {
             throw new RuntimeException("Failed to authenticate with Synology");
         }
 
-        String path = buildPath(lecture, date) + "/" + fileName;
+        String path = buildPath(lectureName, lectureCode, date) + "/" + fileName;
 
         String searchUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Download&method=download&version=2&_sid=" + sid.get();
 
@@ -305,13 +259,22 @@ public class SynologyFileStationService {
         return fileList;
     }
 
-    public void deleteFile(String lecture, String date, String fileName) {
+    public void deleteFile(Long lectureId, String date, String fileName) {
         Optional<String> sid = authenticate();
+
+
         if (sid.isEmpty()) {
             throw new RuntimeException("Failed to authenticate with Synology");
         }
 
-        String path = buildPath(lecture, date) + "/" + fileName;
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(lectureId);
+        if (lectureDate.isEmpty()) {
+            return;
+        }
+        String lectureName = lectureDate.get().getLecture().getName();
+        String lectureCode = lectureDate.get().getLecture().getLectureCode();
+
+        String path = buildPath(lectureName, lectureCode, date) + "/" + fileName;
 
         String deleteUrl = synologyUrl + "/webapi/entry.cgi?api=SYNO.FileStation.Delete&method=start&version=2&_sid=" + sid.get();
 
@@ -338,7 +301,7 @@ public class SynologyFileStationService {
         }
     }
 
-    private String buildPath(String lecture, String date) {
-        return "/YangYoung/" + lecture + "/" + date;
+    private String buildPath(String lecture, String lectureCode, String date) {
+        return fixedPath + lecture + "(" + lectureCode + ")/" + date;
     }
 }

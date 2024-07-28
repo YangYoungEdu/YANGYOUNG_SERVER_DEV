@@ -21,18 +21,29 @@ public class FileUploadController {
 
     private final SynologyFileStationService fileStationService;
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(
-            @RequestPart("files") List<MultipartFile> fileList,
-            @RequestPart("lecture") String lecture,
-            @RequestPart("date") String date,
-            @RequestHeader(value = "Authorization") String token) {
-        try {
-            FileUploadRequest request = new FileUploadRequest();
-            request.setFileList(fileList);
-            request.setLecture(lecture);
-            request.setDate(date);
+//    @PostMapping("")
+//    public ResponseEntity<String> uploadFile(
+//            @RequestPart("files") List<MultipartFile> fileList,
+//            @RequestPart("lecture") String lecture,
+//            @RequestPart("date") String date,
+//            @RequestHeader(value = "Authorization") String token) {
+//        try {
+//            FileUploadRequest request = new FileUploadRequest();
+//            request.setFileList(fileList);
+//            request.setLecture(lecture);
+//            request.setDate(date);
+//
+//            String response = fileStationService.uploadFile(request);
+//            return ResponseEntity.ok(response);
+//        } catch (IOException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed: " + e.getMessage());
+//        }
+//    }
 
+    @PostMapping("")
+    public ResponseEntity<String> uploadFile(@ModelAttribute FileUploadRequest request,
+                                             @RequestHeader(value = "Authorization") String token) {
+        try {
             String response = fileStationService.uploadFile(request);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
@@ -41,11 +52,11 @@ public class FileUploadController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<MaterialResponse>> getFile(@RequestParam String lecture,
+    public ResponseEntity<List<MaterialResponse>> getFile(@RequestParam Long lectureId,
                                                           @RequestParam String date,
                                                           @RequestHeader(value = "Authorization") String token) {
         try {
-            List<MaterialResponse> response = fileStationService.getFile(lecture, date);
+            List<MaterialResponse> response = fileStationService.getFile(lectureId, date);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).build();
@@ -53,12 +64,12 @@ public class FileUploadController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<byte[]> downloadFile(@RequestParam String lecture,
+    public ResponseEntity<byte[]> downloadFile(@RequestParam Long lectureId,
                                                @RequestParam String date,
                                                @RequestParam String fileName,
                                                @RequestHeader(value = "Authorization") String token) {
         try {
-            byte[] fileContent = fileStationService.downloadFile(lecture, date, fileName);
+            byte[] fileContent = fileStationService.downloadFile(lectureId, date, fileName);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=GIT-FLOW.pdf");
@@ -71,12 +82,12 @@ public class FileUploadController {
     }
 
     @GetMapping("/delete")
-    public ResponseEntity<Void> deleteFile(@RequestParam String lecture,
+    public ResponseEntity<Void> deleteFile(@RequestParam Long lectureId,
                                            @RequestParam String date,
                                            @RequestParam String fileName,
                                            @RequestHeader(value = "Authorization") String token) {
         try {
-            fileStationService.deleteFile(lecture, date, fileName);
+            fileStationService.deleteFile(lectureId, date, fileName);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).build();

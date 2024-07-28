@@ -14,7 +14,11 @@ public class FileUploadRequest {
 
     private List<MultipartFile> fileList;
 
-    private String lecture;
+    private Long lectureId;
+
+//    private String lectureName;
+//
+//    private String lectureCode;
 
     private String date;
 }
