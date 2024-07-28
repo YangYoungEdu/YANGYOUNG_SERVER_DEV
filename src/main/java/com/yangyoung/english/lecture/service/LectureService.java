@@ -2,6 +2,7 @@ package com.yangyoung.english.lecture.service;
 
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
+import com.yangyoung.english.lecture.domain.LectureType;
 import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentAddRequest;
 import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
@@ -100,6 +101,8 @@ public class LectureService {
         if (request.getLectureDateList().size() > 1) {
             isRepeated = true;
         }
+
+        LectureType lectureType = LectureType.getLectureTypeByDescription(request.getLectureType());
         Lecture newLecture = request.toEntity(lectureCode, isRepeated);
         lectureRepository.save(newLecture);
 

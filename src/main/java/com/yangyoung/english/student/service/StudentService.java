@@ -46,9 +46,8 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -342,42 +341,37 @@ public class StudentService {
     @Transactional
     @Scheduled(cron = "0 0 3 * * *")
     public void checkUnregisteredStudents() {
-
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate lastDayOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
         List<School> schools = schoolRepository.findAll();
         for (School school : schools) {
+            log.info("school : {}", school.getName());
             for (Grade grade : Grade.values()) {
-                long numberOfLectureInSchoolAndGrade = 0;
+                log.info("grade : {}", grade.getGradeName());
+
                 List<Student> studentListBySchoolAndGrade = studentRepository.findBySchoolAndGradeAndIsEnrolledTrue(school, grade);
-                for (Student student : studentListBySchoolAndGrade) {
-                    long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
-                }
-            }
-        }
+                Map<Student, Long> studentLectureCounts = studentListBySchoolAndGrade.stream()
+                        .collect(Collectors.toMap(
+                                student -> student,
+                                student -> studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek)
+                        ));
 
-        List<Student> students = studentRepository.findAll();
-        for (Student student : students) {
+                long maxLectureCount = studentLectureCounts.values().stream()
+                        .max(Long::compare)
+                        .orElse(0L);
+                log.info("maxLectureCount : {}", maxLectureCount);
 
-            long numberOfLectureInStudent = studentLectureRepository.countClassLecturesByStudentAndWeek(student.getId(), firstDayOfWeek, lastDayOfWeek);
-            long numberOfLectureInSectionList = 0;
-            List<Section> sectionList = student.getStudentSectionList().stream().map(StudentSection::getSection).toList();
-            for (Section section : sectionList) {
-                long numberOfLectureInLecture = lectureSectionRepository.countBySectionIdAndLectureIsFinishedFalseAndLectureLectureDateListLectureDateBetween(section.getId(), firstDayOfWeek, lastDayOfWeek);
-                numberOfLectureInSectionList += numberOfLectureInLecture;
-            }
-            log.info("numberOfLectureInSectionList : {}", numberOfLectureInSectionList);
-            log.info("numberOfLectureInStudent : {}", numberOfLectureInStudent);
-            if (numberOfLectureInSectionList != numberOfLectureInStudent) {
-                student.updateIsLectureRegistered(false);
-            }
-            if (numberOfLectureInSectionList == numberOfLectureInStudent) {
-                student.updateIsLectureRegistered(true);
+                studentLectureCounts.forEach((student, lectureCount) -> {
+                    log.info("student : {}, lectureCount : {}", student.getName(), lectureCount);
+                    boolean isRegistered = (lectureCount == maxLectureCount);
+                    student.updateIsLectureRegistered(isRegistered);
+                });
             }
         }
     }
+
 
     // 수업 미등록 학생 조회
     @Transactional

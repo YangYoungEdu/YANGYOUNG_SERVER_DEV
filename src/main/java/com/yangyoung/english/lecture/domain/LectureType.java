@@ -26,6 +26,7 @@ public enum LectureType {
     }
 
     public static LectureType getLectureTypeByDescription(String description) {
+        System.out.println(description);
         return switch (description) {
             case "일반" -> GENERAL;
             case "특강" -> SPECIAL;
