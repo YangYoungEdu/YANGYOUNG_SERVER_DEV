@@ -155,11 +155,14 @@ public class LectureService {
             }
 
             Optional<Lecture> isLectureExist = lectureRepository.findByLectureCode(lectureData.get(LECTURE_NAME_INDEX).toString());
+            if (isLectureExist.isPresent()) { // 강의가 이미 존재할 경우
+                log.info("Lecture already exists: {}", lectureData.get(LECTURE_LECTURE_CODE_INDEX).toString());
+                continue;
+            }
+
             if (isLectureDataValid(lectureData)) { // 강의 필수 정보가 존재할 경우
                 // ToDo: 2024-07-10: 강의가 존재 할 때 업데이트 될 수 있도록 수정
-                if (isLectureExist.isPresent()) { // 강의가 이미 존재할 경우
-                    continue;
-                }
+
 
                 newLecture = createLectureFromData(lectureData);
                 tempLecture = newLecture;
@@ -205,15 +208,12 @@ public class LectureService {
             Optional<Section> section = sectionRepository.findByName(s);
             section.ifPresent(sections::add);
         }
-        log.info("sections: {}", sections.size());
 
         if (!sections.isEmpty()) {
             List<StudentLecture> studentLectureList = new ArrayList<>();
             for (Section section : sections) {
-                log.info("section: {}", section.getName());
                 List<Student> studentList = studentSectionRepository.findStudentsBySectionId(section.getId());
                 for (Student student : studentList) {
-                    log.info("student: {}", student.getName());
                     studentLectureList.add(new StudentLecture(student, lecture));
                 }
             }

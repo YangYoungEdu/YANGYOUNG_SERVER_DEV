@@ -22,9 +22,9 @@ public class LectureResponse {
 
     private String room;
 
-    private String startTime;
+    private LectureTime startTime;
 
-    private String endTime;
+    private LectureTime endTime;
 
     private boolean isFinished;
 
@@ -37,8 +37,8 @@ public class LectureResponse {
         this.name = lecture.getName();
         this.teacher = lecture.getTeacher();
         this.room = lecture.getRoom();
-        this.startTime = lecture.getStartTime().toString();
-        this.endTime = lecture.getEndTime().toString();
+        this.startTime = new LectureTime(lecture.getStartTime().getHour(), lecture.getStartTime().getMinute());
+        this.endTime = new LectureTime(lecture.getEndTime().getHour(), lecture.getEndTime().getMinute());
         this.isFinished = lecture.isFinished();
         if (lecture.getLectureDayList() != null) {
             this.dayList = lecture.getLectureDayList().stream()
