@@ -347,10 +347,15 @@ public class StudentService {
 
         List<School> schools = schoolRepository.findAll();
         for (School school : schools) {
-            log.info("school : {}", school.getName());
-            for (Grade grade : Grade.values()) {
-                log.info("grade : {}", grade.getGradeName());
-
+            List<Grade> gradeList = new ArrayList<>();
+            String schoolType = school.getName().substring(school.getName().length() - 1);
+            if (schoolType.equals("중")) {
+                gradeList.add(Grade.M3);
+            }
+            if (schoolType.equals("고")) {
+                gradeList.addAll(Arrays.asList(Grade.H1, Grade.H2, Grade.H3));
+            }
+            for (Grade grade : gradeList) {
                 List<Student> studentListBySchoolAndGrade = studentRepository.findBySchoolAndGradeAndIsEnrolledTrue(school, grade);
                 Map<Student, Long> studentLectureCounts = studentListBySchoolAndGrade.stream()
                         .collect(Collectors.toMap(
@@ -361,10 +366,8 @@ public class StudentService {
                 long maxLectureCount = studentLectureCounts.values().stream()
                         .max(Long::compare)
                         .orElse(0L);
-                log.info("maxLectureCount : {}", maxLectureCount);
 
                 studentLectureCounts.forEach((student, lectureCount) -> {
-                    log.info("student : {}, lectureCount : {}", student.getName(), lectureCount);
                     boolean isRegistered = (lectureCount == maxLectureCount);
                     student.updateIsLectureRegistered(isRegistered);
                 });

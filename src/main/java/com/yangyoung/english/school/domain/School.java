@@ -22,6 +22,9 @@ public class School {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    private SchoolType schoolType;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
