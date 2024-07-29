@@ -1,9 +1,6 @@
 package com.yangyoung.english.lecture.controller;
 
-import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
-import com.yangyoung.english.lecture.dto.request.LectureStudentAddRequest;
-import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
-import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
+import com.yangyoung.english.lecture.dto.request.*;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.service.LectureService;
@@ -88,6 +85,14 @@ public class LectureController {
     public ResponseEntity<LectureResponse> updateLecture(@RequestBody final LectureUpdateRequest request,
                                                          @RequestHeader(value = "Authorization") String token) {
         return ResponseEntity.ok(lectureService.updateLecture(request));
+    }
+
+    // 강의 수업 날짜 수정 컨트롤러
+    @PatchMapping("/date")
+    @Operation(summary = "강의 수업 날짜 수정", description = "강의 수업 날짜를 수정합니다.")
+    public ResponseEntity<LectureResponse> updateLectureDate(@RequestBody final LectureDateUpdateRequest request,
+                                                             @RequestHeader(value = "Authorization") String token) {
+        return ResponseEntity.ok(lectureService.updateLectureDate(request));
     }
 
     // 강의 수강 학생 수정 컨트롤러

@@ -3,10 +3,7 @@ package com.yangyoung.english.lecture.service;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.domain.LectureType;
-import com.yangyoung.english.lecture.dto.request.AddLectureByFormRequest;
-import com.yangyoung.english.lecture.dto.request.LectureStudentAddRequest;
-import com.yangyoung.english.lecture.dto.request.LectureStudentUpdateRequest;
-import com.yangyoung.english.lecture.dto.request.LectureUpdateRequest;
+import com.yangyoung.english.lecture.dto.request.*;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lecture.exception.LectureErrorCode;
@@ -370,28 +367,57 @@ public class LectureService {
     @Transactional
     public LectureResponse updateLecture(LectureUpdateRequest request) {
 
+        log.info("isAllUpdate: {}", request.getIsAllUpdate());
+
         Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getId());
         if (lectureDate.isEmpty()) {
             return null;
         }
+        log.info("lectureDate: {}", lectureDate.get().getLecture().getLectureType().getDescription());
+        LocalDate date = lectureDate.get().getLectureDate();
         Lecture lecture = lectureDate.get().getLecture();
 
-        if (request.isAllUpdate()) {
-            lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
-            lectureDate.get().updateLectureDate(request.getNewLecturerDate());
-        }
-        if (!request.isAllUpdate()) {
-            lectureDateRepository.deleteByLectureId(lecture.getId());
+        if (!request.getIsAllUpdate()) {
+            lectureDateRepository.deleteById(request.getId());
+            log.info("{}", lectureDateRepository.existsById(request.getId()));
 
-            Lecture newLecture = request.toEntity();
-            lectureRepository.save(newLecture);
-            lectureDateRepository.save(new LectureDate(lectureDate.get().getLectureDate(), newLecture));
+            String lectureCode = createLectureCode();
+            Lecture newLecture = request.toEntity(lectureCode);
+            log.info("newLecture: {}", newLecture.getLectureType().getDescription());
+            newLecture = lectureRepository.save(newLecture);
+
+            LectureDate newLectureDate = new LectureDate(date, newLecture);
+            lectureDateRepository.save(newLectureDate);
+            return new LectureResponse(newLecture);
+        }
+
+        if (request.getIsAllUpdate()) {
+            lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
         }
 
         return new LectureResponse(lectureDate.get());
     }
 
-    // 강의 수강 학생 수정
+    @Transactional
+    public LectureResponse updateLectureDate(LectureDateUpdateRequest request) {
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getId());
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+
+        Lecture lecture = lectureDate.get().getLecture();
+        List<LectureDate> lectureDateList = lecture.getLectureDateList();
+        if (!lectureDateList.isEmpty()) {
+            lectureDateRepository.deleteAll(lectureDateList);
+        }
+
+
+        assignLectureDate(lecture, request.getUpdatedLectureDateList());
+
+        return new LectureResponse(lectureDate.get());
+    }
+
     @Transactional
     public LectureResponse updateLectureStudents(LectureStudentUpdateRequest request) {
 

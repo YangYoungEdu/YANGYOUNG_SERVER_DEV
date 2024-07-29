@@ -48,27 +48,27 @@ public class Lecture extends BaseEntity {
 
     private boolean isRepeated;
 
-    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<LectureDay> lectureDayList;
 
-    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lecture")
     @JsonBackReference
     private List<LectureDate> lectureDateList;
 
-    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<StudentLecture> studentLectureList;
 
-    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<LectureTask> lectureTaskList;
 
-    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<Attendance> attendanceList;
 
-    @OneToMany(mappedBy = "lecture", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<LectureSection> lectureSectionList;
 

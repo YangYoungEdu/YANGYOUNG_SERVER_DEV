@@ -1,6 +1,7 @@
 package com.yangyoung.english.lecture.dto.request;
 
 import com.yangyoung.english.lecture.domain.Lecture;
+import com.yangyoung.english.lecture.domain.LectureType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,11 +14,13 @@ import java.util.List;
 @NoArgsConstructor
 public class LectureUpdateRequest {
 
-    boolean isAllUpdate;
+    private Boolean isAllUpdate;
 
     private Long id;
 
     private String name;
+
+    private String lectureType;
 
     private String teacher;
 
@@ -27,19 +30,18 @@ public class LectureUpdateRequest {
 
     private LocalTime endTime;
 
-    private List<Long> studentList;
 
-    private LocalDate newLecturerDate;
-
-    public Lecture toEntity() {
+    public Lecture toEntity(String lectureCode) {
         return Lecture.builder()
                 .id(id)
+                .lectureCode(lectureCode)
                 .name(name)
                 .teacher(teacher)
                 .room(room)
                 .startTime(startTime)
                 .endTime(endTime)
                 .isRepeated(false)
+                .lectureType(LectureType.getLectureTypeByDescription(lectureType))
                 .build();
     }
 }

@@ -19,18 +19,16 @@ public enum LectureType {
 
     public static LectureType getLectureTypeByCode(int code) {
         return switch (code) {
-            case 1 -> GENERAL;
             case 2 -> SPECIAL;
-            default -> null;
+            default -> GENERAL;
         };
     }
 
     public static LectureType getLectureTypeByDescription(String description) {
         System.out.println(description);
         return switch (description) {
-            case "일반" -> GENERAL;
             case "특강" -> SPECIAL;
-            default -> null;
+            default -> GENERAL;
         };
     }
 }
