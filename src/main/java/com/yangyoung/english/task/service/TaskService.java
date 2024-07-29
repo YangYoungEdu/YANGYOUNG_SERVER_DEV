@@ -50,7 +50,7 @@ public class TaskService {
 
         // ToDo: 수업이 필수인지 아닌지 확인
         if (request.getLectureId() != null) {
-            Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+            Lecture lecture = lectureUtilService.findLectureByDateId(request.getLectureId());
             LectureTask lectureTask = new LectureTask(lecture, newTask);
             lectureTaskRepository.save(lectureTask);
         }
@@ -109,7 +109,7 @@ public class TaskService {
     @Transactional
     public LectureTaskResponse addLectureTask(LectureTaskAddRequest request) {
 
-        Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+        Lecture lecture = lectureUtilService.findLectureByDateId(request.getLectureId());
         Task newTask = request.toEntity(lecture);
         taskRepository.save(newTask);
 

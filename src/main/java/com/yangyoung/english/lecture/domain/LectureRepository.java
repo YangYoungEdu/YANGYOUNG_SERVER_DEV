@@ -47,4 +47,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
             "AND l.isFinished = false")
     List<Lecture> findLecturesByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+    // LectureDateId로 강의 조회
+    @Query("SELECT l FROM Lecture l " +
+            "JOIN l.lectureDateList ld " +
+            "WHERE ld.id = :dateId " +
+            "AND l.isFinished = false")
+    Optional<Lecture> findLectureByDateId(@Param("dateId") Long dateId);
+
 }

@@ -85,7 +85,7 @@ public class AttendanceService {
         log.info(String.valueOf(startDateTime));
         log.info(String.valueOf(endDateTime));
 
-        Lecture lecture = lectureUtilService.findLectureById(lectureId);
+        Lecture lecture = lectureUtilService.findLectureByDateId(lectureId);
         List<Student> studentList = lecture.getStudentLectureList().stream()
                 .map(StudentLecture::getStudent)
                 .toList();
@@ -127,7 +127,7 @@ public class AttendanceService {
 
                 log.info("New Attendance");
                 Student student = studentUtilService.findStudentById(request.getStudentId());
-                Lecture lecture = lectureUtilService.findLectureById(request.getLectureId());
+                Lecture lecture = lectureUtilService.findLectureByDateId(request.getLectureId());
                 AttendanceType attendanceType = AttendanceType.getAttendanceType(request.getAttendanceType());
 
                 Attendance newAttendance = Attendance.builder()

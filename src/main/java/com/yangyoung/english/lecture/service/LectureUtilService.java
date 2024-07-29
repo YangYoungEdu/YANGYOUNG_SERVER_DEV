@@ -4,6 +4,7 @@ import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.exception.LectureErrorCode;
 import com.yangyoung.english.lecture.exception.LectureNotFoundException;
+import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.studentLecture.domain.StudentLectureRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class LectureUtilService {
 
     private final LectureRepository lectureRepository;
     private final StudentLectureRepository studentLectureRepository;
+    private final LectureDateRepository lectureDateRepository;
 
 
     // 강의 ID로 강의 조회
@@ -28,6 +30,16 @@ public class LectureUtilService {
         if (lecture.isEmpty()) {
             LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NOT_FOUND;
             throw new LectureNotFoundException(lectureErrorCode, lectureId);
+        }
+        return lecture.get();
+    }
+
+    @Transactional
+    public Lecture findLectureByDateId(Long dateId) {
+        Optional<Lecture> lecture = lectureRepository.findLectureByDateId(dateId);
+        if (lecture.isEmpty()) {
+            LectureErrorCode lectureErrorCode = LectureErrorCode.LECTURE_NOT_FOUND;
+            throw new LectureNotFoundException(lectureErrorCode, dateId);
         }
         return lecture.get();
     }
