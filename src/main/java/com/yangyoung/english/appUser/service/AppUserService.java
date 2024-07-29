@@ -60,7 +60,7 @@ public class AppUserService {
             // 3. 인증 정보를 기반으로 JWT 토큰 생성
             JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
 
-            return new SignInResponse(appUser.get().getId(), appUser.get().getUsername(), jwtToken);
+            return new SignInResponse(appUser.get().getPassword(), appUser.get().getUsername(), jwtToken);
         } catch (BadCredentialsException e) {
             AppUserErrorCode appUserErrorCode = AppUserErrorCode.PASSWORD_NOT_MATCH;
             throw new PasswordNotMatchException(appUserErrorCode, password);

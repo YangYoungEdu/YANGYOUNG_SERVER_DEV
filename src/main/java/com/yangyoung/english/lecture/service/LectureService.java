@@ -378,6 +378,7 @@ public class LectureService {
 
         if (request.isAllUpdate()) {
             lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
+            lectureDate.get().updateLectureDate(request.getNewLecturerDate());
         }
         if (!request.isAllUpdate()) {
             lectureDateRepository.deleteByLectureId(lecture.getId());

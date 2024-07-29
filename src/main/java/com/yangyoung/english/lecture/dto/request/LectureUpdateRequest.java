@@ -14,13 +14,22 @@ import java.util.List;
 public class LectureUpdateRequest {
 
     boolean isAllUpdate;
+
     private Long id;
+
     private String name;
+
     private String teacher;
+
     private String room;
+
     private LocalTime startTime;
+
     private LocalTime endTime;
+
     private List<Long> studentList;
+
+    private LocalDate newLecturerDate;
 
     public Lecture toEntity() {
         return Lecture.builder()

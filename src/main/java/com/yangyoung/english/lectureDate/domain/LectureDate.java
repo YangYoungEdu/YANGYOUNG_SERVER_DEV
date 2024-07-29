@@ -31,4 +31,8 @@ public class LectureDate {
         this.lectureDate = lectureDate;
         this.lecture = lecture;
     }
+
+    public void updateLectureDate(LocalDate lectureDate) {
+        this.lectureDate = lectureDate;
+    }
 }
