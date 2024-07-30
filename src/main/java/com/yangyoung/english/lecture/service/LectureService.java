@@ -472,4 +472,22 @@ public class LectureService {
                 map(LectureBriefResponse::new)
                 .toList();
     }
+
+    // 강의 복사
+    @Transactional
+    public LectureResponse copyLecture(Long lectureId, LocalDate newLectureDate) {
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(lectureId);
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+
+        Lecture copyLecture = lectureDate.get().getLecture();
+        lectureRepository.save(copyLecture);
+
+        LectureDate copyLectureDate = new LectureDate(newLectureDate, copyLecture);
+        lectureDateRepository.save(copyLectureDate);
+
+        return new LectureResponse(copyLecture, newLectureDate);
+    }
 }

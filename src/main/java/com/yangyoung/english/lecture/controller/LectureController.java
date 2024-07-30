@@ -133,4 +133,13 @@ public class LectureController {
 
         return ResponseEntity.ok(responses);
     }
+
+    // 강의 복사
+    @PostMapping("/copy")
+    @Operation(summary = "강의 복사", description = "강의를 복사합니다.")
+    public ResponseEntity<LectureResponse> copyLecture(@RequestParam final Long lectureId,
+                                                       @RequestParam final LocalDate newLectureDate,
+                                                       @RequestHeader(value = "Authorization") String token) {
+        return ResponseEntity.ok(lectureService.copyLecture(lectureId, newLectureDate));
+    }
 }
