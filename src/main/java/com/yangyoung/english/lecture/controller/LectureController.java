@@ -81,7 +81,7 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.getLecture(lectureId));
     }
 
-    // 강의 정보 수정 컨트롤러
+    // 강의 정보 수정 컨트롤러 - 모달
     @PatchMapping("")
     @Operation(summary = "강의 정보 수정", description = "강의 정보를 수정합니다.")
     public ResponseEntity<LectureResponse> updateLecture(@RequestBody final LectureUpdateRequest request,
@@ -89,12 +89,12 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.updateLecture(request));
     }
 
-    // 강의 수업 날짜 수정 컨트롤러
-    @PatchMapping("/date")
-    @Operation(summary = "강의 수업 날짜 수정", description = "강의 수업 날짜를 수정합니다.")
-    public ResponseEntity<LectureResponse> updateLectureDate(@RequestBody final LectureDateUpdateRequest request,
-                                                             @RequestHeader(value = "Authorization") String token) {
-        return ResponseEntity.ok(lectureService.updateLectureDate(request));
+    // 강의 수정 - 드래그 앤 드롭
+    @PatchMapping("/drag")
+    @Operation(summary = "강의 수정 - 드래그 앤 드롭", description = "강의를 드래그 앤 드롭하여 수정합니다.")
+    public ResponseEntity<LectureResponse> dragLecture(@RequestBody final LectureUpdateRequestByDAD request,
+                                                       @RequestHeader(value = "Authorization") String token) {
+        return ResponseEntity.ok(lectureService.updateLectureByDAD(request));
     }
 
     // 강의 수강 학생 수정 컨트롤러
@@ -153,13 +153,5 @@ public class LectureController {
                                                        @RequestParam final LocalDate newLectureDate,
                                                        @RequestHeader(value = "Authorization") String token) {
         return ResponseEntity.ok(lectureService.copyLecture(lectureId, newLectureDate));
-    }
-
-    // 강의 수정 - 드래그 앤 드롭
-    @PatchMapping("/drag")
-    @Operation(summary = "강의 수정 - 드래그 앤 드롭", description = "강의를 드래그 앤 드롭하여 수정합니다.")
-    public ResponseEntity<LectureResponse> dragLecture(@RequestBody final LectureUpdateRequestByDAD request,
-                                                       @RequestHeader(value = "Authorization") String token) {
-        return ResponseEntity.ok(lectureService.updateLectureByDAD(request));
     }
 }

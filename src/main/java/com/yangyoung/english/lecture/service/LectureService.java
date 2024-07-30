@@ -399,7 +399,8 @@ public class LectureService {
             Lecture newLecture = request.toEntity(lectureCode);
             lectureRepository.save(newLecture);
 
-            LectureDate newLectureDate = new LectureDate(date, newLecture);
+            LocalDate newDate = request.getLectureDates().get(0);
+            LectureDate newLectureDate = new LectureDate(newDate, newLecture);
             lectureDateRepository.save(newLectureDate);
 
             return new LectureResponse(newLecture, date);
@@ -407,26 +408,13 @@ public class LectureService {
 
         if (request.getIsAllUpdate()) {
             lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime(), request.getLectureType());
+            List<LectureDate> lectureDateList = new ArrayList<>(lecture.getLectureDateList());
+            if (!lectureDateList.isEmpty()) {
+                lectureDateRepository.deleteAllBy(lectureDateList);
+            }
+
+            assignLectureDate(lecture, request.getLectureDates());
         }
-
-        return new LectureResponse(lectureDate.get());
-    }
-
-    @Transactional
-    public LectureResponse updateLectureDate(LectureDateUpdateRequest request) {
-
-        Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getId());
-        if (lectureDate.isEmpty()) {
-            return null;
-        }
-
-        Lecture lecture = lectureDate.get().getLecture();
-        List<LectureDate> lectureDateList = new ArrayList<>(lecture.getLectureDateList());
-        if (!lectureDateList.isEmpty()) {
-            lectureDateRepository.deleteAllBy(lectureDateList);
-        }
-
-        assignLectureDate(lecture, request.getUpdatedLectureDateList());
 
         return new LectureResponse(lectureDate.get());
     }

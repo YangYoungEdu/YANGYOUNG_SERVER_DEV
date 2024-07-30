@@ -30,6 +30,8 @@ public class LectureUpdateRequest {
 
     private LocalTime endTime;
 
+    private List<LocalDate> lectureDates;
+
 
     public Lecture toEntity(String lectureCode) {
         return Lecture.builder()
