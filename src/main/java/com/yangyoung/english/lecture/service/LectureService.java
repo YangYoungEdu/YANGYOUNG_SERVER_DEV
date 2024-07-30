@@ -375,7 +375,7 @@ public class LectureService {
         LocalDate date = lectureDate.get().getLectureDate();
 
         lecture.updateLectureTime(request.getStartTime(), request.getEndTime());
-        lectureDate.get().updateLectureDate(date);
+        lectureDate.get().updateLectureDate(request.getUpdatedLectureDate());
 
         return new LectureResponse(lectureDate.get());
     }
