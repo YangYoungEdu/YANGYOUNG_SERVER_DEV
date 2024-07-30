@@ -336,7 +336,8 @@ public class StudentService {
     @Transactional
     public List<StudentBriefResponse> getStudentsByLecture(Long lectureId) {
 
-        List<Student> studentList = studentUtilService.findStudentsByLectureId(lectureId);
+        Lecture lecture = lectureUtilService.findLectureByDateId(lectureId);
+        List<Student> studentList = studentUtilService.findStudentsByLectureId(lecture.getId());
 
         return studentList.stream()
                 .map(StudentBriefResponse::new)

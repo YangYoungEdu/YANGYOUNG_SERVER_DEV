@@ -1,5 +1,6 @@
 package com.yangyoung.english.student.service;
 
+import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.domain.StudentRepository;
 import com.yangyoung.english.student.exception.StudentErrorCode;
