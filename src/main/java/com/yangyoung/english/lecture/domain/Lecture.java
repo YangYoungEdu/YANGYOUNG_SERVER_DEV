@@ -122,6 +122,15 @@ public class Lecture extends BaseEntity {
         }
     }
 
+    public void updateLectureTime(LocalTime startTime, LocalTime endTime) {
+        if (startTime != null) {
+            this.startTime = startTime;
+        }
+        if (endTime != null) {
+            this.endTime = endTime;
+        }
+    }
+
     public void updateIsFinished() {
         this.isFinished = true;
     }

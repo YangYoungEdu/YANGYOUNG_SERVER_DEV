@@ -142,4 +142,12 @@ public class LectureController {
                                                        @RequestHeader(value = "Authorization") String token) {
         return ResponseEntity.ok(lectureService.copyLecture(lectureId, newLectureDate));
     }
+
+    // 강의 수정 - 드래그 앤 드롭
+    @PatchMapping("/drag")
+    @Operation(summary = "강의 수정 - 드래그 앤 드롭", description = "강의를 드래그 앤 드롭하여 수정합니다.")
+    public ResponseEntity<LectureResponse> dragLecture(@RequestBody final LectureUpdateRequestByDAD request,
+                                                       @RequestHeader(value = "Authorization") String token) {
+        return ResponseEntity.ok(lectureService.updateLectureByDAD(request));
+    }
 }

@@ -362,6 +362,25 @@ public class LectureService {
         return new LectureResponse(lectureDate.get());
     }
 
+    // 강의 정보 수정 - 드래그 앤 드랍
+    @Transactional
+    public LectureResponse updateLectureByDAD(LectureUpdateRequestByDAD request) {
+
+        Optional<LectureDate> lectureDate = lectureDateRepository.findById(request.getId());
+        if (lectureDate.isEmpty()) {
+            return null;
+        }
+
+        Lecture lecture = lectureDate.get().getLecture();
+        LocalDate date = lectureDate.get().getLectureDate();
+
+        lecture.updateLectureTime(request.getStartTime(), request.getEndTime());
+        lectureDate.get().updateLectureDate(date);
+
+        return new LectureResponse(lectureDate.get());
+    }
+
+
     // 강의 정보 수정
     @Transactional
     public LectureResponse updateLecture(LectureUpdateRequest request) {
