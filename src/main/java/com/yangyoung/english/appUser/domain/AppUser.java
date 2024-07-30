@@ -39,11 +39,10 @@ public class AppUser implements UserDetails {
     private List<String> roles = new ArrayList<>();
 
     @Builder
-    public AppUser(Student student) {
-        this.student = student;
-        this.username = student.getName();
-        this.password = String.valueOf(student.getId());
-        this.roles.add("STUDENT");
+    public AppUser(String username, String password) {
+        this.username = username;
+        this.password = password;
+        addRole("STUDENT");
     }
 
     @Override
@@ -71,5 +70,12 @@ public class AppUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void addRole(String role) {
+        if (this.roles == null) {
+            this.roles = new ArrayList<>();
+        }
+        this.roles.add(role);
     }
 }

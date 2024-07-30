@@ -92,7 +92,9 @@ public class StudentService {
 //        List<Section> section = sectionUtilService.findSectionByName(request.getSection());
         Student newStudent = request.toEntity(school);
         studentRepository.save(newStudent);
-        AppUser appUser = new AppUser(newStudent);
+        String userName = newStudent.getName();
+        String password = newStudent.getId().toString();
+        AppUser appUser = new AppUser(userName, password);
         appUserRepository.save(appUser);
 
         return new StudentResponse(newStudent);
@@ -109,18 +111,21 @@ public class StudentService {
             if (!validateStudentData(studentData)) { // 필수 데이터 확인
                 continue;
             }
+            School school = schoolUtilService.findSchoolByName(studentData.get(STUDENT_SCHOOL_INDEX).toString());
 
             Student existingStudent = studentUtilService.findStudentById(Long.parseLong(studentData.get(STUDENT_ID_INDEX).toString()));
             if (existingStudent != null) {
                 if (isNeedToUpdate(existingStudent, studentData)) {
-                    existingStudent.update(studentData);
+                    existingStudent.update(studentData, school);
                 }
+                continue;
             }
 
-            School school = schoolUtilService.findSchoolByName(studentData.get(STUDENT_SCHOOL_INDEX).toString());
             Student newStudent = new Student(studentData, school);
             studentRepository.save(newStudent);
-            AppUser appUser = new AppUser(newStudent);
+            String userName = newStudent.getName();
+            String password = newStudent.getId().toString();
+            AppUser appUser = new AppUser(userName, password);
             appUserRepository.save(appUser);
 
             String section = studentData.get(STUDENT_SECTION_INDEX).toString();

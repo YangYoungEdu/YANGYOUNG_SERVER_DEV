@@ -18,7 +18,7 @@ public class CORSConfig {
                 //for develop
                 corsRegistry
                         .addMapping("/**")
-                        .allowedOriginPatterns("https://www.ebhttps.store", "http://localhost:3000")
+                        .allowedOriginPatterns("https://www.ebhttps.store/", "http://localhost:3000")
                         .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTION");
             }
         };
