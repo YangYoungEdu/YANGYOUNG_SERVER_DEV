@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,21 @@ public class LectureResponse {
                     .map(lectureDate -> lectureDate.getLectureDate().toString())
                     .collect(Collectors.toList());
         }
+    }
+
+    public LectureResponse(Lecture lecture, LocalDate localDate) {
+        this.id = lecture.getId();
+        this.lectureCode = lecture.getLectureCode();
+        this.name = lecture.getName();
+        this.lectureType = lecture.getLectureType().getDescription();
+        this.teacher = lecture.getTeacher();
+        this.room = lecture.getRoom();
+        this.startTime = new LectureTime(lecture.getStartTime().getHour(), lecture.getStartTime().getMinute());
+        this.endTime = new LectureTime(lecture.getEndTime().getHour(), lecture.getEndTime().getMinute());
+        this.isFinished = lecture.isFinished();
+        this.isRepeated = lecture.isRepeated();
+        this.lectureDate = localDate.toString();
+        this.allLectureDate = List.of(localDate.toString());
     }
 
     public LectureResponse(LectureDate lectureDate) {

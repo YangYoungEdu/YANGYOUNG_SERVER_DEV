@@ -149,7 +149,6 @@ public class LectureService {
         Lecture tempLecture = null;
         String tempSchool = null;
         for (List<Object> lectureData : lectureDataList) {
-
             Lecture newLecture = null;
 
             if (!isLectureDataValid(lectureData) && tempLecture == null) { // 강의 필수 정보가 없고 이전 강의가 없을 경우
@@ -382,7 +381,8 @@ public class LectureService {
 
             LectureDate newLectureDate = new LectureDate(date, newLecture);
             lectureDateRepository.save(newLectureDate);
-            return new LectureResponse(newLecture);
+
+            return new LectureResponse(newLecture, date);
         }
 
         if (request.getIsAllUpdate()) {

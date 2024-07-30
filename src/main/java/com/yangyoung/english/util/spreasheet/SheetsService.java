@@ -14,10 +14,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,7 +27,7 @@ public class SheetsService {
 
     private static final String APPLICATION_NAME = "양영학원 고등부 영어과 관리 프로그램";
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "/tokens";
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
@@ -55,17 +52,17 @@ public class SheetsService {
 
             // Check if tokens directory exists and delete it if it does.
             Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
-//            if (Files.exists(tokenPath)) {
-//                Files.walk(tokenPath)
-//                        .map(Path::toFile)
-//                        .forEach(File::delete);
-//                Files.delete(tokenPath);
-//            }
+            if (!Files.exists(tokenPath)) {
+                log.info("Creating tokens directory");
+                Files.createDirectories(tokenPath); // 디렉토리가 없으면 생성
+            }
+            log.info("existing tokens directory");
+            File tokenDirectory = tokenPath.toFile();
 
             // Build flow and trigger user authorization request.
             GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                     HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                    .setDataStoreFactory(new FileDataStoreFactory(tokenPath.toFile()))
+                    .setDataStoreFactory(new FileDataStoreFactory(tokenDirectory))
                     .setAccessType("offline")
                     .build();
             LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(443).setCallbackPath("/CallBack").build();
