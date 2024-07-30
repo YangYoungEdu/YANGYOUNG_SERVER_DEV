@@ -134,6 +134,18 @@ public class LectureController {
         return ResponseEntity.ok(responses);
     }
 
+    // 특정 학생이 수강하는 강의 조회 - 일주일
+    @GetMapping("/student/{studentId}/week")
+    @Operation(summary = "특정 학생이 수강하는 강의 조회 - 일주일", description = "특정 학생이 수강하는 ���의 목록을 일주일 단위로 조회합니다.")
+    public ResponseEntity<List<LectureResponse>> getLectureByStudentWeek(@PathVariable(value = "studentId") final Long studentId,
+                                                                         @RequestParam final LocalDate date,
+                                                                         @RequestHeader(value = "Authorization") String token) {
+
+        List<LectureResponse> responses = lectureService.getLecturesByStudentByWeek(studentId, date);
+
+        return ResponseEntity.ok(responses);
+    }
+
     // 강의 복사
     @PostMapping("/copy")
     @Operation(summary = "강의 복사", description = "강의를 복사합니다.")

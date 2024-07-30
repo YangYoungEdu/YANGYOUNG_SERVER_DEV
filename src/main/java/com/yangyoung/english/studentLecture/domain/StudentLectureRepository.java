@@ -44,8 +44,12 @@ public interface StudentLectureRepository extends JpaRepository<StudentLecture, 
             "JOIN l.lectureDateList ld " +
             "JOIN l.studentLectureList sl " +
             "WHERE sl.student.id = :studentId " +
-            "AND l.isFinished = false " +
-            "AND ld.lectureDate = :date")
-    List<Lecture> findDistinctLecturesByStudentIdAndDate(@Param("studentId") Long studentId,
-                                                         @Param("date") LocalDate date);
+            "AND ld.lectureDate BETWEEN :startDate AND :endDate " +
+            "AND l.isFinished = false")
+    List<Lecture> findDistinctLecturesByStudentIdAndDateRange(
+            @Param("studentId") Long studentId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
 }

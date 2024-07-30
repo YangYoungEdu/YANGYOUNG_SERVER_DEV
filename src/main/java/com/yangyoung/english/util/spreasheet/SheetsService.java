@@ -27,7 +27,8 @@ public class SheetsService {
 
     private static final String APPLICATION_NAME = "양영학원 고등부 영어과 관리 프로그램";
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final String TOKENS_DIRECTORY_PATH = "/tokens"; // 개발
+//    private static final String TOKENS_DIRECTORY_PATH = "tokens"; // 배포
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 

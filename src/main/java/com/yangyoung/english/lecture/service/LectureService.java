@@ -6,7 +6,6 @@ import com.yangyoung.english.lecture.domain.LectureType;
 import com.yangyoung.english.lecture.dto.request.*;
 import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
-import com.yangyoung.english.lecture.exception.LectureErrorCode;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.lectureDay.domain.LectureDay;
@@ -36,8 +35,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.WeekFields;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -489,6 +490,22 @@ public class LectureService {
 
         return studentList.stream().
                 map(LectureBriefResponse::new)
+                .toList();
+    }
+
+    // 학생이 수강하는 강의 조회 - 일주일
+    @Transactional
+    public List<LectureResponse> getLecturesByStudentByWeek(Long studentId, LocalDate date) {
+
+        LocalDate firstDayOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate lastDayOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        log.info("firstDayOfWeek: {}", firstDayOfWeek);
+        log.info("lastDayOfWeek: {}", lastDayOfWeek);
+
+        List<Lecture> lectureList = lectureRepository.findLecturesByStudentIdAndDateRange(studentId, firstDayOfWeek, lastDayOfWeek);
+
+        return lectureList.stream()
+                .map(LectureResponse::new)
                 .toList();
     }
 

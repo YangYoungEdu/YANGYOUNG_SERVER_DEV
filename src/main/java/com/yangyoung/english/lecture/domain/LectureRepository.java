@@ -54,4 +54,17 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
             "AND l.isFinished = false")
     Optional<Lecture> findLectureByDateId(@Param("dateId") Long dateId);
 
+    // 학생이 수강하는 강의 조회 - 일주일
+    @Query("SELECT l FROM Lecture l " +
+            "JOIN l.lectureDateList ld " +
+            "JOIN l.studentLectureList ls " +
+            "WHERE ls.student.id = :studentId " +
+            "AND ld.lectureDate BETWEEN :startDate AND :endDate " +
+            "AND l.isFinished = false")
+    List<Lecture> findLecturesByStudentIdAndDateRange(
+            @Param("studentId") Long studentId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
 }
