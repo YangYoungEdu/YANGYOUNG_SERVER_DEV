@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    private final static Long TWO_HOURS = 7200000L;
-    private final static Long TWO_WEEKS = 86400000 * 14L;
+    private final static Long TWO_HOURS = 2L; // 2시간
+    private final static Long TWO_WEEKS = 2L * 7; // 2주
     private final Key key;
     private final String secretKey;
 
@@ -42,9 +42,7 @@ public class JwtTokenProvider {
     public JwtToken generateToken(Authentication authentication) {
 
         // 권한 가져오기
-        Optional<String> authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(",")).describeConstable();
+        Optional<String> authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")).describeConstable();
         if (authorities.isEmpty()) {
             throw new RuntimeException("권한 정보가 없습니다.");
         } else {
@@ -61,51 +59,37 @@ public class JwtTokenProvider {
         Date refreshTokenExpiresInDate = Date.from(refreshTokenExpiresIn);
 
         // Access Token 생성
-        Optional<String> accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("roles", authorities.get())
-                .setExpiration(accessTokenExpiresInDate)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact().describeConstable();
+        Optional<String> accessToken = Jwts.builder().setSubject(authentication.getName()).claim("roles", authorities.get()).setExpiration(accessTokenExpiresInDate).signWith(key, SignatureAlgorithm.HS256).compact().describeConstable();
         if (accessToken.isEmpty()) {
             throw new RuntimeException("Access Token 생성 실패");
         }
 
         // Refresh Token 생성
-        Optional<String> refreshToken = Jwts.builder()
-                .setExpiration(refreshTokenExpiresInDate)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact().describeConstable();
+        Optional<String> refreshToken = Jwts.builder().setExpiration(refreshTokenExpiresInDate).signWith(key, SignatureAlgorithm.HS256).compact().describeConstable();
         if (refreshToken.isEmpty()) {
             throw new RuntimeException("Refresh Token 생성 실패");
         }
 
-        Optional<JwtToken> jwtToken = Optional.of(JwtToken.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken.get())
-                .refreshToken(refreshToken.get())
-                .build());
+        Optional<JwtToken> jwtToken = Optional.of(JwtToken.builder().grantType("Bearer").accessToken(accessToken.get()).refreshToken(refreshToken.get()).build());
 
         return jwtToken.get();
     }
 
     // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
     public Authentication getAuthentication(String accessToken) {
-
-        // Jwt 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
-        if (claims.get("roles") == null) {
+        List<String> roles = Arrays.asList(claims.get("roles").toString().split(","));
+        if (roles.isEmpty()) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
+        log.info("roles: {}", claims.get("roles").toString());
+        for (String role : roles) {
+            System.out.println("role: " + role);
+        }
 
-        // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("roles").toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
-        // UserDetails 객체를 만들어서 Authentication return
-        // UserDetails: interface, User: UserDetails를 구현한 class
         UserDetails principal = new User(claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
@@ -114,15 +98,13 @@ public class JwtTokenProvider {
     // 토큰 정보를 검증하는 메서드
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
         } catch (ExpiredJwtException e) {
             log.info("Expired JWT Token", e);
+            return false;
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
         } catch (IllegalArgumentException e) {
@@ -135,11 +117,7 @@ public class JwtTokenProvider {
     // accessToken
     private Claims parseClaims(String accessToken) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(accessToken)
-                    .getBody();
+            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
@@ -151,28 +129,15 @@ public class JwtTokenProvider {
     }
 
     public String getUsername(String token) {
-        return Jwts.parserBuilder().
-                setSigningKey(secretKey).
-                build().
-                parseClaimsJws(token).
-                getBody().
-                getSubject();
+        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public String getRefreshToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody().get("refreshToken").toString();
     }
 
     public List<String> getRoles(String token) {
-        List<String> roles = new ArrayList<>();
-
-        Claims claims = Jwts.
-                parserBuilder().
-                setSigningKey(secretKey).
-                build().
-                parseClaimsJws(token).
-                getBody();
-
-        System.out.println(claims.get("roles").toString());
-
-//        roles = roleList.get();
-
-        return roles;
+        Claims claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        return Arrays.asList(claims.get("roles").toString().split(","));
     }
 }

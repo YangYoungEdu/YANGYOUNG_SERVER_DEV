@@ -40,4 +40,10 @@ public class AppUserController {
     public String test() {
         return SecurityUtil.getCurrentUsername();
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshAccessToken(@RequestParam String userName, @RequestParam String password, @RequestParam String refreshToken) {
+        JwtToken jwtToken = appUserService.refreshToken(userName, password, refreshToken);
+        return ResponseEntity.ok(jwtToken);
+    }
 }
