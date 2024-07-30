@@ -101,14 +101,14 @@ public class Lecture extends BaseEntity {
     }
 
 
-    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
-        if (!name.isBlank()) {
+    public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureType) {
+        if (name != null) {
             this.name = name;
         }
-        if (!teacher.isBlank()) {
+        if (teacher != null) {
             this.teacher = teacher;
         }
-        if (!room.isBlank()) {
+        if (room != null) {
             this.room = room;
         }
         if (startTime != null) {
@@ -117,19 +117,12 @@ public class Lecture extends BaseEntity {
         if (endTime != null) {
             this.endTime = endTime;
         }
+        if (lectureType != null) {
+            this.lectureType = LectureType.getLectureTypeByDescription(lectureType);
+        }
     }
 
     public void updateIsFinished() {
         this.isFinished = true;
-    }
-
-    public void addAttendance(Attendance attendance) {
-        this.attendanceList.add(attendance);
-        attendance.addLecture(this);
-    }
-
-    public void removeAttendance(Attendance attendance) {
-        this.attendanceList.remove(attendance);
-        attendance.removeLecture();
     }
 }

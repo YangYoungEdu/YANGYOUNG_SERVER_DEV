@@ -386,7 +386,7 @@ public class LectureService {
         }
 
         if (request.getIsAllUpdate()) {
-            lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime());
+            lecture.update(request.getName(), request.getTeacher(), request.getRoom(), request.getStartTime(), request.getEndTime(), request.getLectureType());
         }
 
         return new LectureResponse(lectureDate.get());
