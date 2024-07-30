@@ -1,6 +1,8 @@
 package com.yangyoung.english.lectureDate.domain;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,4 +33,7 @@ public interface LectureDateRepository extends JpaRepository<LectureDate, Long> 
             "AND ld.lectureDate = :date")
     List<LectureDate> findByStudentIdAndDate(@Param("studentId") Long studentId, @Param("date") LocalDate date);
 
+    @Modifying
+    @Query("DELETE FROM LectureDate ld WHERE ld IN :lectureDateList")
+    void deleteAllBy(@Param("lectureDateList") List<LectureDate> lectureDateList);
 }

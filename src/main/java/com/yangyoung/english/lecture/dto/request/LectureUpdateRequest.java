@@ -33,7 +33,6 @@ public class LectureUpdateRequest {
 
     public Lecture toEntity(String lectureCode) {
         return Lecture.builder()
-                .id(id)
                 .lectureCode(lectureCode)
                 .name(name)
                 .teacher(teacher)

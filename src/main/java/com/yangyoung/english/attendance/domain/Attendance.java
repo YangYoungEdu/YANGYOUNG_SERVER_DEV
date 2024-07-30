@@ -71,4 +71,12 @@ public class Attendance extends BaseEntity {
             this.attendanceType = attendanceType;
         }
     }
+
+    public void addLecture(Lecture lecture) {
+        this.lecture = lecture;
+    }
+
+    public void removeLecture() {
+        this.lecture = null;
+    }
 }

@@ -52,7 +52,7 @@ public class Lecture extends BaseEntity {
     @JsonBackReference
     private List<LectureDay> lectureDayList;
 
-    @OneToMany(mappedBy = "lecture")
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<LectureDate> lectureDateList;
 
@@ -87,6 +87,20 @@ public class Lecture extends BaseEntity {
         this.lectureType = lectureType;
     }
 
+    @Builder
+    public Lecture(String name, String teacher, String room, LocalTime startTime, LocalTime endTime, String lectureCode, boolean isRepeated, LectureType lectureType) {
+        this.name = name;
+        this.teacher = teacher;
+        this.room = room;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.isFinished = false;
+        this.lectureCode = lectureCode;
+        this.isRepeated = isRepeated;
+        this.lectureType = lectureType;
+    }
+
+
     public void update(String name, String teacher, String room, LocalTime startTime, LocalTime endTime) {
         if (!name.isBlank()) {
             this.name = name;
@@ -107,5 +121,15 @@ public class Lecture extends BaseEntity {
 
     public void updateIsFinished() {
         this.isFinished = true;
+    }
+
+    public void addAttendance(Attendance attendance) {
+        this.attendanceList.add(attendance);
+        attendance.addLecture(this);
+    }
+
+    public void removeAttendance(Attendance attendance) {
+        this.attendanceList.remove(attendance);
+        attendance.removeLecture();
     }
 }
