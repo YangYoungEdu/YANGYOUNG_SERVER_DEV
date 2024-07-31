@@ -105,21 +105,12 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.updateLectureStudents(request));
     }
 
-    // 강의 정보 삭제 - multiple 컨트롤러
-    @DeleteMapping("")
-    @Operation(summary = "강의 정보 삭제 - multiple", description = "강의 정보를 삭제합니다.")
-    public ResponseEntity<Void> deleteLectures(@RequestParam final List<Long> lectureIds,
-                                               @RequestHeader(value = "Authorization") String token) {
-        lectureService.deleteLectures(lectureIds);
-        return ResponseEntity.ok().build();
-    }
-
     @DeleteMapping("/{lectureId}")
-    @Operation(summary = "강의 정보 삭제 - single", description = "강의 정보를 삭제합니다.")
+    @Operation(summary = "강의 정보 삭제", description = "강의 정보를 삭제합니다.")
     public ResponseEntity<Void> deleteLecture(@PathVariable final Long lectureId,
-                                              @RequestParam final boolean isRepeated,
+                                              @RequestParam final boolean isAllDeleted,
                                               @RequestHeader(value = "Authorization") String token) {
-        lectureService.deleteLecture(lectureId, isRepeated);
+        lectureService.deleteLecture(lectureId, isAllDeleted);
         return ResponseEntity.ok().build();
     }
 
