@@ -7,6 +7,8 @@ import com.yangyoung.english.attendance.dto.request.AttendanceUpdateRequest;
 import com.yangyoung.english.attendance.dto.response.AttendanceResponse;
 import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.service.LectureUtilService;
+import com.yangyoung.english.lectureDate.domain.LectureDate;
+import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
 import com.yangyoung.english.student.domain.Student;
 import com.yangyoung.english.student.service.StudentUtilService;
 import com.yangyoung.english.studentLecture.domain.StudentLecture;
@@ -32,6 +34,7 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final StudentUtilService studentUtilService;
     private final LectureUtilService lectureUtilService;
+    private final LectureDateRepository lectureDateRepository;
 
     // 출석 - 학생
     @Transactional
@@ -91,7 +94,7 @@ public class AttendanceService {
                 .toList();
 
         // 한 번의 쿼리로 모든 출석 정보 가져오기
-        Map<Long, Attendance> attendanceMap = attendanceRepository.findByLectureIdAndAttendedDateTimeBetween(lectureId, startDateTime, endDateTime)
+        Map<Long, Attendance> attendanceMap = attendanceRepository.findByLectureIdAndAttendedDateTimeBetween(lecture.getId(), startDateTime, endDateTime)
                 .stream().collect(Collectors.toMap(attendance -> attendance.getStudent().getId(), attendance -> attendance));
         log.info(String.valueOf(attendanceMap.size()));
 
@@ -111,6 +114,7 @@ public class AttendanceService {
     // 출석 정보 수정
     @Transactional
     public void updateAttendance(List<AttendanceUpdateRequest> requestList) {
+        log.info("Update Attendance");
 
         for (AttendanceUpdateRequest request : requestList) {
             Optional<Long> id = Optional.ofNullable(request.getId());
@@ -121,9 +125,12 @@ public class AttendanceService {
             }
 
             if (pastAttendance.isEmpty()) {
-                if (request.getAttendDateTime() == null) {
-                    continue;
+                Optional<LectureDate> date = lectureDateRepository.findById(request.getLectureId());
+                if (date.isEmpty()) {
+                    log.error("Lecture Date Not Found");
+                    return;
                 }
+                LocalDateTime lectureDate = date.get().getLectureDate().atStartOfDay();
 
                 log.info("New Attendance");
                 Student student = studentUtilService.findStudentById(request.getStudentId());
@@ -134,7 +141,7 @@ public class AttendanceService {
                         .student(student)
                         .lecture(lecture)
                         .attendanceType(attendanceType)
-                        .attendedDateTime(request.getAttendDateTime())
+                        .attendedDateTime(lectureDate)
                         .build();
 
                 attendanceRepository.save(newAttendance);

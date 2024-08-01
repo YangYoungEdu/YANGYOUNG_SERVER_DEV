@@ -23,4 +23,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByStudentIdInAndAttendedDateTimeBetween(List<Long> studentIds, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     List<Attendance> findByLectureIdAndAttendedDateTimeBetween(Long lectureId, LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+    List<Attendance> findByLecture_LectureDateList_IdAndAttendedDateTimeBetween(Long lectureDateId, LocalDateTime startDateTime, LocalDateTime endDateTime);
 }
