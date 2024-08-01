@@ -117,10 +117,10 @@ public class LectureController {
     // 특정 학생이 수강하는 강의 조회 컨트롤러
     @GetMapping("/student/{studentId}")
     @Operation(summary = "특정 학생이 수강하는 강의 조회", description = "특정 학생이 수강하는 강의 목록을 조회합니다.")
-    public ResponseEntity<List<LectureBriefResponse>> getLectureByStudent(@PathVariable(value = "studentId") final Long studentId,
-                                                                          @RequestHeader(value = "Authorization") String token) {
+    public ResponseEntity<List<LectureResponse>> getLectureByStudent(@PathVariable(value = "studentId") final Long studentId,
+                                                                     @RequestHeader(value = "Authorization") String token) {
 
-        List<LectureBriefResponse> responses = lectureService.getLecturesByStudent(studentId);
+        List<LectureResponse> responses = lectureService.getLecturesByStudent(studentId);
 
         return ResponseEntity.ok(responses);
     }

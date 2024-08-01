@@ -53,7 +53,8 @@ public class LectureResponse {
         this.endTime = new LectureTime(lecture.getEndTime().getHour(), lecture.getEndTime().getMinute());
         this.isFinished = lecture.isFinished();
         this.isRepeated = lecture.isRepeated();
-        if (lecture.getLectureDateList() != null) {
+        if (!lecture.getLectureDateList().isEmpty()) {
+            System.out.println("hi: " + lecture.getLectureDateList().size());
             this.lectureDate = lecture.getLectureDateList().get(0).getLectureDate().toString();
             this.allLectureDate = lecture.getLectureDateList()
                     .stream()

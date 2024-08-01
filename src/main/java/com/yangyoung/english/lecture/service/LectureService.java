@@ -4,7 +4,6 @@ import com.yangyoung.english.lecture.domain.Lecture;
 import com.yangyoung.english.lecture.domain.LectureRepository;
 import com.yangyoung.english.lecture.domain.LectureType;
 import com.yangyoung.english.lecture.dto.request.*;
-import com.yangyoung.english.lecture.dto.response.LectureBriefResponse;
 import com.yangyoung.english.lecture.dto.response.LectureResponse;
 import com.yangyoung.english.lectureDate.domain.LectureDate;
 import com.yangyoung.english.lectureDate.domain.LectureDateRepository;
@@ -472,12 +471,12 @@ public class LectureService {
 
     // 특정 학생이 수강하는 강의 조회
     @Transactional
-    public List<LectureBriefResponse> getLecturesByStudent(Long studentId) {
+    public List<LectureResponse> getLecturesByStudent(Long studentId) {
 
         List<Lecture> studentList = studentLectureRepository.findLecturesByStudentId(studentId);
 
         return studentList.stream().
-                map(LectureBriefResponse::new)
+                map(LectureResponse::new)
                 .toList();
     }
 
