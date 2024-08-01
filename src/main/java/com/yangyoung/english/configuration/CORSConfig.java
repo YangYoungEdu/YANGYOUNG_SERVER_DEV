@@ -18,7 +18,7 @@ public class CORSConfig {
                 //for develop
                 corsRegistry
                         .addMapping("/**")
-                        .allowedOriginPatterns("https://www.ebhttps.store/", "http://localhost:3000")
+                        .allowedOriginPatterns("http://localhost:3000", "https://yangyoung-admin.web.app", "https://yangyoung-client-d710c.web.app")
                         .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTION");
             }
         };

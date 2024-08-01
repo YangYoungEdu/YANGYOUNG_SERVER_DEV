@@ -42,6 +42,7 @@ import java.util.*;
 public class SynologyFileStationService {
 
     private final static String fixedPath = "/YangYoung/고등관/프로그램/";
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
     private final RestTemplate restTemplate;
     private LectureDateRepository lectureDateRepository;
     @Value("${synology.url}")
@@ -50,6 +51,7 @@ public class SynologyFileStationService {
     private String username;
     @Value("${synology.password}")
     private String password;
+
 //    private final static String fixedPath = "/YangYoung/";
 
     @Autowired
@@ -86,13 +88,16 @@ public class SynologyFileStationService {
 
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             for (MultipartFile file : fileList) {
+                log.info("File name: {}", file.getSize());
+                if (file.getSize() > MAX_FILE_SIZE) {
+                    throw new IOException("File size exceeds the maximum limit of " + MAX_FILE_SIZE + " bytes");
+                }
+
                 HttpPost httppost = new HttpPost(uploadUrl);
 
                 File tempFile = File.createTempFile("upload", file.getOriginalFilename());
                 file.transferTo(tempFile);
 
-                // 파일명을 UTF-8로 인코딩하여 사용
-//                String fileName = new String(Objects.requireNonNull(file.getOriginalFilename()).getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
                 String fileName = file.getOriginalFilename();
                 FileBody fileBody = new FileBody(tempFile, ContentType.DEFAULT_BINARY, fileName);
 
