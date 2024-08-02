@@ -22,7 +22,8 @@ public class AttendanceController {
     // 출석 - 학생
     @PostMapping("/{studentId}")
     @Operation(summary = "학생 출석 - client", description = "학생의 출석을 처리합니다.")
-    public ResponseEntity<AttendanceResponse> attend(@PathVariable(value = "studentId") Long studentId) {
+    public ResponseEntity<AttendanceResponse> attend(@PathVariable(value = "studentId") Long studentId,
+                                                     @RequestHeader(value = "Authorization") String token) {
 
         AttendanceResponse response = attendanceService.attend(studentId);
 
