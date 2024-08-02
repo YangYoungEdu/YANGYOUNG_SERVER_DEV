@@ -38,16 +38,6 @@ public class LectureController {
         return ResponseEntity.ok().build();
     }
 
-    // 강의 학생 추가 컨트롤러
-    @PostMapping("/student")
-    @Operation(summary = "강의 학생 추가", description = "강의 학생을 추가합니다.")
-    public ResponseEntity<LectureResponse> addLectureStudent(@RequestBody final LectureStudentAddRequest request,
-                                                             @RequestHeader(value = "Authorization") String token) {
-
-        lectureService.addStudentToLecture(request);
-        return ResponseEntity.ok().build();
-    }
-
     // 강의 전체 조회 - 달 단위
     @GetMapping("/month")
     @Operation(summary = "강의 전체 조회 - 달 단위", description = "강의 정보를 달 단위로 조회합니다.")
