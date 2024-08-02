@@ -53,7 +53,7 @@ public class LectureResponse {
         this.endTime = new LectureTime(lecture.getEndTime().getHour(), lecture.getEndTime().getMinute());
         this.isFinished = lecture.isFinished();
         this.isRepeated = lecture.isRepeated();
-        if (!lecture.getLectureDateList().isEmpty()) {
+        if (lecture.getLectureDateList() != null && !lecture.getLectureDateList().isEmpty()) {
             System.out.println("hi: " + lecture.getLectureDateList().size());
             this.lectureDate = lecture.getLectureDateList().get(0).getLectureDate().toString();
             this.allLectureDate = lecture.getLectureDateList()
@@ -82,7 +82,7 @@ public class LectureResponse {
         this.id = lectureDate.getId();
         this.lectureCode = lectureDate.getLecture().getLectureCode();
         this.lectureDate = lectureDate.getLectureDate().toString();
-        if (lectureDate.getLecture().getLectureDateList() != null) {
+        if (lectureDate.getLecture().getLectureDateList() != null && !lectureDate.getLecture().getLectureDateList().isEmpty()) {
             this.allLectureDate = lectureDate.getLecture().getLectureDateList()
                     .stream()
                     .map(lectureDateObj -> lectureDateObj.getLectureDate().toString()) // LectureDate 객체의 getLectureDate() 메소드 호출 후 toString() 호출
