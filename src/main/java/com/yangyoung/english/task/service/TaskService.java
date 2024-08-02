@@ -129,7 +129,8 @@ public class TaskService {
     @Transactional
     public List<LectureTaskResponse> getAllLectureTask(Long lectureId) {
 
-        List<Task> taskList = lectureTaskRepository.findByLectureId(lectureId);
+        Lecture lecture = lectureUtilService.findLectureByDateId(lectureId);
+        List<Task> taskList = lectureTaskRepository.findByLectureId(lecture.getId());
 
         return taskList.stream()
                 .map(LectureTaskResponse::new)
