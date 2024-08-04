@@ -5,6 +5,7 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 public class SheetsService {
@@ -28,8 +30,8 @@ public class SheetsService {
     private static final String APPLICATION_NAME = "양영학원 고등부 영어과 관리 프로그램";
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "/tokens"; // 개발
-//    private static final String TOKENS_DIRECTORY_PATH = "tokens"; // 배포
-    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+    //    private static final String TOKENS_DIRECTORY_PATH = "tokens"; // 배포
+    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     private static final String SPREADSHEET_ID = "1P5p3-5WOHTXByVIs-ieR7rTOS2aeyEaRV7tP4u-muAU";
@@ -38,38 +40,59 @@ public class SheetsService {
 
     /**
      * Creates an authorized Credential object.
+     * <p>
+     * //     * @param HTTP_TRANSPORT The network HTTP Transport.
      *
-     * @param HTTP_TRANSPORT The network HTTP Transport.
      * @return An authorized Credential object.
      * @throws IOException              If the credentials.json file cannot be found.
      * @throws GeneralSecurityException If there is a security issue.
      */
-    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException, GeneralSecurityException {
+    public static Sheets getSheetsService() throws IOException, GeneralSecurityException {
+        // Load the service account credentials from classpath
         try (InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH)) {
             if (in == null) {
-                throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+                throw new FileNotFoundException("Resource not found: /credentials.json");
             }
-            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+            GoogleCredential credential = GoogleCredential.fromStream(in)
+                    .createScoped(SCOPES);
 
-            // Check if tokens directory exists and delete it if it does.
-            Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
-            if (!Files.exists(tokenPath)) {
-                log.info("Creating tokens directory");
-                Files.createDirectories(tokenPath); // 디렉토리가 없으면 생성
-            }
-            log.info("existing tokens directory");
-            File tokenDirectory = tokenPath.toFile();
-
-            // Build flow and trigger user authorization request.
-            GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                    HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                    .setDataStoreFactory(new FileDataStoreFactory(tokenDirectory))
-                    .setAccessType("offline")
+            // Build the Sheets service
+            return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, credential)
+                    .setApplicationName(APPLICATION_NAME)
                     .build();
-            LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(443).setCallbackPath("/CallBack").build();
-            return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
         }
     }
+//    public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException, GeneralSecurityException {
+//        // Load client secrets.
+//        try (InputStream in = SheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH)) {
+//            if (in == null) {
+//                throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+//            }
+//            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+//
+//            // Path to tokens directory.
+////            Path tokenPath = Paths.get(TOKENS_DIRECTORY_PATH);
+//            Path tokenPath = Paths.get(System.getProperty("user.home"), "tokens");
+//            if (!Files.exists(tokenPath)) {
+//                log.info("Creating tokens directory");
+//                Files.createDirectories(tokenPath);
+//            } else {
+//                log.info("Tokens directory exists");
+//            }
+//            File tokenDirectory = tokenPath.toFile();
+//
+//            // Build flow and trigger user authorization request.
+//            GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+//                    HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+//                    .setDataStoreFactory(new FileDataStoreFactory(tokenDirectory))
+//                    .setAccessType("offline")
+//                    .build();
+//
+//            return new AuthorizationCodeInstalledApp(
+//                    flow, new LocalServerReceiver())
+//                    .authorize("user");
+//        }
+//    }
 
     /**
      * Creates a new Sheets service client.
@@ -78,12 +101,12 @@ public class SheetsService {
      * @throws GeneralSecurityException If there is a security issue.
      * @throws IOException              If there is an IO issue.
      */
-    private static Sheets createSheetsService() throws GeneralSecurityException, IOException {
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
+//    private static Sheets createSheetsService() throws GeneralSecurityException, IOException {
+//        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+//        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+//                .setApplicationName(APPLICATION_NAME)
+//                .build();
+//    }
 
     /**
      * Reads the spreadsheet and returns the data.
@@ -100,7 +123,7 @@ public class SheetsService {
             default -> throw new IllegalArgumentException("Invalid type: " + type);
         };
 
-        Sheets service = createSheetsService();
+        Sheets service = getSheetsService();
 
         ValueRange response = service.spreadsheets().values()
                 .get(SPREADSHEET_ID, range)

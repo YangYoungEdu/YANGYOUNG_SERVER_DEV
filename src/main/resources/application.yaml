@@ -3,7 +3,7 @@ springdoc:
     path: /
 spring:
   profiles:
-    include: synology, jwt, dev
+    include: synology, jwt, prod
   servlet:
     multipart:
       max-request-size: 50MB
